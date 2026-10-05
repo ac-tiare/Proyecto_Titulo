@@ -32,9 +32,6 @@ La base utiliza Ionic, Angular, TypeScript y Capacitor. Esta etapa contiene pant
 
 Las propuestas, especificaciones, decisiones técnicas y tareas del proyecto se mantienen en `openspec/`.
 
-**********************************************************************************************
-
-
 ## Funcionalidades implementadas
 
 CONTIGO cuenta con una base visual y funcional para una aplicación móvil de apoyo temprano. La navegación conecta las siguientes pantallas:
