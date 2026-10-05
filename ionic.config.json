@@ -1,0 +1,7 @@
+{
+  "name": "CONTIGO",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

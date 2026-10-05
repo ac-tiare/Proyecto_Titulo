@@ -1,0 +1,36 @@
+<ion-content class="ion-padding">
+  <main class="page-content">
+    <p class="eyebrow">BIENESTAR EMOCIONAL</p>
+    <h1>Registro emocional</h1>
+    <p class="intro">¿Cómo te sientes en este momento?</p>
+    <p class="privacy-notice">
+      Tu selección es temporal. No se guarda en el dispositivo ni se envía a
+      ningún servicio.
+    </p>
+
+    <div class="mood-options" role="group" aria-label="Opciones de estado emocional">
+      @for (mood of moods; track mood.id) {
+        <button
+          class="mood-option"
+          [class.selected]="selectedMood() === mood.id"
+          type="button"
+          [attr.aria-pressed]="selectedMood() === mood.id"
+          (click)="selectMood(mood.id)"
+        >
+          <span class="mood-emoji" aria-hidden="true">{{ mood.emoji }}</span>
+          <span>{{ mood.label }}</span>
+        </button>
+      }
+    </div>
+
+    @if (selectedMood(); as moodId) {
+      <p class="selection-status" role="status" aria-live="polite">
+        Selección temporal: {{ moodLabels[moodId] }}.
+      </p>
+    }
+
+    <ion-button expand="block" fill="outline" (click)="finish()">
+      Volver a Inicio
+    </ion-button>
+  </main>
+</ion-content>

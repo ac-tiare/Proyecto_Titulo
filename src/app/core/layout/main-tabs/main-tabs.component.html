@@ -1,0 +1,44 @@
+<ion-header class="app-header">
+  <ion-toolbar>
+    <ion-title>CONTIGO</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        class="profile-button"
+        routerLink="/perfil"
+        aria-label="Perfil"
+      >
+        <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+      </ion-button>
+      <ion-button
+        class="help-button"
+        routerLink="/necesito-ayuda"
+        aria-label="Necesito ayuda"
+      >
+        <ion-icon slot="start" name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        Necesito ayuda
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-tabs>
+  <ion-router-outlet></ion-router-outlet>
+  <ion-tab-bar slot="bottom" aria-label="Navegación principal">
+    <ion-tab-button tab="inicio" href="/inicio" aria-label="Inicio">
+      <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
+      <ion-label>Inicio</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="bienestar" href="/bienestar" aria-label="Mi bienestar">
+      <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+      <ion-label>Mi bienestar</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="plan-seguridad" href="/plan-seguridad" aria-label="Plan de seguridad">
+      <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+      <ion-label>Plan</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="red-apoyo" href="/red-apoyo" aria-label="Red de apoyo">
+      <ion-icon name="people-outline" aria-hidden="true"></ion-icon>
+      <ion-label>Red de apoyo</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>

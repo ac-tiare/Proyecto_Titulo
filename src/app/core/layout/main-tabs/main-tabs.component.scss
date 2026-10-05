@@ -1,0 +1,88 @@
+.app-header {
+  ion-toolbar {
+    --background: var(--ion-color-light);
+    --color: var(--ion-color-dark);
+    --min-height: 64px;
+    padding-inline:
+      max(8px, env(safe-area-inset-left))
+      max(8px, env(safe-area-inset-right));
+  }
+
+  ion-title {
+    font-size: 1.1rem;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+  }
+}
+
+.help-button {
+  --background: var(--ion-color-danger);
+  --background-activated: var(--ion-color-danger-shade);
+  --border-radius: 999px;
+  --color: var(--ion-color-danger-contrast);
+  --padding-end: 14px;
+  --padding-start: 14px;
+  font-weight: 650;
+  margin-inline-end: 8px;
+}
+
+.profile-button {
+  --color: var(--ion-color-primary);
+
+  ion-icon {
+    font-size: 1.5rem;
+  }
+}
+
+ion-tab-bar {
+  --background: var(--ion-color-light);
+  --border: 1px solid var(--ion-color-step-150);
+  --color: var(--ion-color-medium);
+  --color-selected: var(--ion-color-primary);
+  min-height: 64px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+ion-tab-button {
+  --padding-bottom: 6px;
+  --padding-top: 6px;
+
+  ion-icon {
+    font-size: 22px;
+  }
+
+  ion-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+}
+
+ion-button:focus-visible,
+ion-button.ion-focused,
+ion-tab-button:focus-visible,
+ion-tab-button.ion-focused {
+  outline: 3px solid var(--ion-color-primary);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+@media (max-width: 360px) {
+  .help-button {
+    font-size: 0.8rem;
+    --padding-end: 10px;
+    --padding-start: 10px;
+  }
+
+  ion-tab-button ion-label {
+    font-size: 0.68rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

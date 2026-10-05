@@ -1,0 +1,78 @@
+.page-content {
+  margin-inline: auto;
+  max-width: 42rem;
+  padding-block: 1rem 2rem;
+}
+
+.eyebrow {
+  color: var(--ion-color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+h1 {
+  color: var(--ion-color-dark);
+  font-size: clamp(1.8rem, 6vw, 2.5rem);
+  line-height: 1.15;
+  margin-block: 0.5rem;
+}
+
+.intro {
+  color: var(--ion-color-dark);
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.privacy-notice {
+  background: #e9f5f2;
+  border-radius: 1rem;
+  color: #20302c;
+  line-height: 1.55;
+  padding: 1rem;
+}
+
+.mood-options {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  margin-block: 1.25rem;
+}
+
+.mood-option {
+  align-items: center;
+  background: var(--ion-color-light);
+  border: 2px solid var(--ion-color-step-150);
+  border-radius: 1rem;
+  color: var(--ion-color-dark);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  gap: 0.5rem;
+  justify-content: center;
+  min-height: 6rem;
+  padding: 0.75rem 0.5rem;
+}
+
+.mood-option.selected {
+  background: #e9f5f2;
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 2px rgb(35 104 90 / 16%);
+}
+
+.mood-option:focus-visible {
+  outline: 3px solid var(--ion-color-primary);
+  outline-offset: 3px;
+}
+
+.mood-emoji {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.selection-status {
+  color: var(--ion-color-primary-shade);
+  font-weight: 650;
+  margin-block: 1.25rem;
+}
