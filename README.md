@@ -26,7 +26,7 @@ En Git Bash puedes usar `npm` en lugar de `npm.cmd`.
 
 ## Alcance actual
 
-La base utiliza Ionic, Angular, TypeScript y Capacitor. Esta etapa contiene pantallas y contenido de demostración; no implementa inicio de sesión, almacenamiento de datos, Firebase, análisis emocional ni notificaciones push. El contenido de ejemplo no representa datos personales, y la aplicación no diagnostica ni reemplaza la atención profesional.
+La aplicación utiliza Ionic, Angular, TypeScript y Capacitor. Incluye una interfaz navegable con pantallas de demostración. El Login todavía no autentica usuarios y los registros emocionales no se guardan ni se envían a un servicio. No se implementan Firebase, análisis emocional automático ni notificaciones push. La aplicación no diagnostica ni reemplaza la atención profesional.
 
 ## Estructura OpenSpec
 
@@ -34,10 +34,11 @@ Las propuestas, especificaciones, decisiones técnicas y tareas del proyecto se 
 
 ## Funcionalidades implementadas
 
-CONTIGO cuenta con una base visual y funcional para una aplicación móvil de apoyo temprano. La navegación conecta las siguientes pantallas:
+CONTIGO cuenta con una interfaz visual y navegable para una aplicación móvil de apoyo temprano. La navegación conecta las siguientes pantallas:
 
-- **Inicio:** presenta accesos a las secciones principales y a las herramientas de apoyo.
-- **Registro emocional:** permite seleccionar un estado emocional. La selección se mantiene temporalmente en memoria y se borra al salir; no se guarda ni se envía.
+- **Login visual:** muestra campos etiquetados para correo y contraseña, con contraseña oculta por defecto y control para mostrarla u ocultarla. «Iniciar sesión» continúa a Inicio como demostración, sin autenticar ni validar una cuenta. «¿Olvidaste tu contraseña?» y «Crear cuenta» muestran avisos de que esas opciones aún no están disponibles.
+- **Inicio:** presenta el saludo «Hola 👋», la pregunta «¿Cómo te sientes hoy?» y cinco opciones emocionales: Muy bien, Bien, Regular, Mal y Muy mal. Incluye una tarjeta ilustrada con un mensaje tranquilo, accesos a Mi Plan de Seguridad, Mi Red de Apoyo e Información y recursos, y un botón «Necesito ayuda».
+- **Registro emocional:** permite seleccionar un estado emocional desde Inicio o desde la pantalla de registro. La elección se conserva temporalmente en memoria mientras dura la sesión de navegación; no se guarda en el dispositivo ni se envía.
 - **Mi bienestar:** muestra el espacio destinado al bienestar. Como aún no hay registros persistentes, presenta un estado vacío y no inventa historiales ni tendencias.
 - **Plan de seguridad:** ofrece orientaciones de demostración para ayudar a pensar en próximos pasos. No es un plan personalizado.
 - **Red de apoyo:** muestra el espacio para contactos de confianza, sin inventar nombres ni números.
@@ -47,9 +48,11 @@ CONTIGO cuenta con una base visual y funcional para una aplicación móvil de ap
 
 ## Navegación y experiencia de uso
 
-La aplicación incluye una barra inferior para acceder a **Inicio**, **Mi bienestar**, **Plan** y **Red de apoyo**. También mantiene accesos a **Perfil** y **Necesito ayuda** en la cabecera.
+La ruta inicial y las rutas desconocidas llevan al **Login**. Desde allí, «Iniciar sesión» abre Inicio en modo demostración. Las pantallas de la aplicación incluyen una barra inferior para acceder a **Inicio**, **Mi bienestar**, **Plan** y **Red de apoyo**.
 
-Se configuraron las rutas de la aplicación, el idioma español, el tema visual y estados de foco visibles para facilitar la navegación. La interfaz se revisó en una pantalla estrecha de 320 px para comprobar que no apareciera desbordamiento horizontal.
+La cabecera compartida muestra el logotipo de **CONTIGO** con una hoja decorativa, el acceso a **Perfil** y un acceso a **Necesito ayuda**. En pantallas móviles estrechas, el botón de ayuda se compacta a un icono accesible para dejar visible el logotipo.
+
+La pantalla Inicio usa fondos claros, superficies redondeadas, acentos pastel y una ilustración decorativa hecha con SVG local. Se conservaron las rutas e interacciones existentes. La interfaz se adaptó y comprobó en anchos de 320 px y 375 px, sin desbordamiento horizontal.
 
 ## Tecnologías y estructura
 
@@ -62,16 +65,16 @@ Las pantallas están organizadas por áreas funcionales dentro de `src/app/featu
 
 ## Privacidad y alcance actual
 
-Esta versión es una base de interfaz y navegación. No implementa inicio de sesión, backend, Firebase, almacenamiento persistente, sincronización, análisis emocional ni notificaciones push. El registro emocional solo existe temporalmente en memoria.
+Esta versión es una base de interfaz y navegación. El Login no usa autenticación real, backend ni Firebase; sus campos no se envían a ningún servicio y el botón principal solo permite continuar a Inicio en modo demostración. El registro emocional solo existe temporalmente en memoria: no hay almacenamiento persistente, sincronización ni análisis emocional. Tampoco se implementan notificaciones push.
 
 El contenido es de demostración: la aplicación no diagnostica, no reemplaza la atención profesional y no debe interpretarse como un servicio de emergencia.
 
 ## Verificaciones realizadas
 
 - Compilación de producción: correcta.
-- Pruebas automatizadas: 14 pruebas aprobadas en 10 archivos.
+- Pruebas automatizadas: 17 pruebas aprobadas en 11 archivos.
 - Lint: completado sin errores.
-- Auditoría de dependencias: cero vulnerabilidades reportadas.
-- Validación OpenSpec: correcta, con 11 de 11 tareas completadas.
+- Validación OpenSpec: correcta para la especificación principal `home-screen`; los cambios de Login y los rediseños de Inicio están registrados en sus artefactos OpenSpec.
+- La compilación muestra un aviso no bloqueante: los estilos de Inicio superan el umbral de aviso de 3 kB, pero permanecen por debajo del límite de error de 4 kB.
 
 La compilación y las pruebas se pueden ejecutar con los comandos descritos en **Desarrollo local**.

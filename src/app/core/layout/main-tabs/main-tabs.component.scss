@@ -9,9 +9,51 @@
   }
 
   ion-title {
-    font-size: 1.1rem;
-    font-weight: 750;
-    letter-spacing: 0.04em;
+    --color: #183e5a;
+    font-size: 1rem;
+  }
+}
+
+.brand {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+
+  span {
+    font-weight: 800;
+  }
+}
+
+.brand-mark {
+  display: block;
+  flex: 0 0 1.8rem;
+  height: 1.8rem;
+  width: 1.8rem;
+}
+
+@media (max-width: 360px) {
+  .brand {
+    gap: 0.3rem;
+  }
+
+  .brand-mark {
+    flex-basis: 1.55rem;
+    height: 1.55rem;
+    width: 1.55rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .help-button {
+    --padding-end: 10px;
+    --padding-start: 10px;
+    min-width: 40px;
+  }
+
+  .help-label {
+    display: none;
   }
 }
 

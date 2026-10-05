@@ -5,7 +5,7 @@ import {
   IonContent,
   IonIcon,
 } from '@ionic/angular';
-import { EmotionalSessionService, MoodId, moodOptions } from '../wellbeing/emotional-session';
+import { EmotionalSessionService, MoodId } from '../wellbeing/emotional-session';
 
 @Component({
   selector: 'app-home',
@@ -17,7 +17,13 @@ export class HomePage {
   private readonly router = inject(Router);
   private readonly emotionalSession = inject(EmotionalSessionService);
 
-  readonly moods = moodOptions;
+  readonly moods: readonly { id: MoodId; label: string; emoji: string }[] = [
+    { id: 'muy-bien', label: 'Muy bien', emoji: '😄' },
+    { id: 'bien', label: 'Bien', emoji: '🙂' },
+    { id: 'mas-o-menos', label: 'Regular', emoji: '😐' },
+    { id: 'mal', label: 'Mal', emoji: '😔' },
+    { id: 'muy-mal', label: 'Muy mal', emoji: '😣' },
+  ];
 
   async selectMood(moodId: MoodId): Promise<void> {
     this.emotionalSession.select(moodId);

@@ -1,18 +1,14 @@
-<ion-content class="home-content" [fullscreen]="true">
+<ion-content class="home-content">
   <main class="home-page">
     <section class="welcome" aria-labelledby="welcome-heading">
-      <p class="eyebrow">UN ESPACIO PARA TI</p>
-      <h1 id="welcome-heading">Hola, qué bueno que estás aquí.</h1>
-      <p class="welcome-copy">
-        Puedes tomarte un momento para revisar cómo estás y encontrar apoyo.
-      </p>
+      <p class="welcome-eyebrow">Tu espacio de bienestar</p>
+      <h1 id="welcome-heading">Hola 👋</h1>
+      <p class="welcome-copy">¿Cómo te sientes hoy?</p>
     </section>
 
     <section class="mood-section" aria-labelledby="mood-heading">
       <div class="section-heading">
-        <p class="eyebrow">REGISTRO EMOCIONAL</p>
-        <h2 id="mood-heading">¿Cómo te sientes hoy?</h2>
-        <p>Elige la opción que mejor te represente en este momento.</p>
+        <h2 id="mood-heading">Elige cómo te sientes</h2>
       </div>
 
       <div class="mood-options">
@@ -33,30 +29,45 @@
       </p>
     </section>
 
+    <section class="wellbeing-card" aria-labelledby="wellbeing-heading">
+      <div class="wellbeing-copy">
+        <span class="wellbeing-kicker">Un momento para ti</span>
+        <h2 id="wellbeing-heading">Está bien hacer una pausa</h2>
+        <p>Respira con calma y recuerda que puedes avanzar a tu propio ritmo.</p>
+      </div>
+      <svg class="wellbeing-art" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        <circle cx="60" cy="60" r="54" fill="#ffffff" fill-opacity=".45"></circle>
+        <circle cx="82" cy="34" r="17" fill="#f8d996"></circle>
+        <path d="M5 91c20-13 43-11 63-1 17 8 30 7 47-3v33H5z" fill="#b9d6c0"></path>
+        <path d="M62 92c3-13 2-25-1-38" fill="none" stroke="#72977a" stroke-linecap="round" stroke-width="4"></path>
+        <path d="M61 72c-17 0-24-10-22-20 14-2 23 4 22 20m1-7c2-17 13-23 24-20-1 14-8 22-24 20" fill="#84a98a"></path>
+      </svg>
+    </section>
+
     <section class="quick-links" aria-label="Herramientas de apoyo">
-      <a class="action-card" routerLink="/plan-seguridad">
+      <a class="action-card plan-card" routerLink="/plan-seguridad">
         <span class="action-icon plan-icon" aria-hidden="true">
           <ion-icon name="shield-checkmark-outline"></ion-icon>
         </span>
         <span class="action-copy">
-          <span class="action-title">Mi plan de seguridad</span>
+          <span class="action-title">Mi Plan de Seguridad</span>
           <span class="action-description">Revisa herramientas de apoyo.</span>
         </span>
         <ion-icon class="action-arrow" name="arrow-forward-outline" aria-hidden="true"></ion-icon>
       </a>
 
-      <a class="action-card" routerLink="/red-apoyo">
+      <a class="action-card network-card" routerLink="/red-apoyo">
         <span class="action-icon network-icon" aria-hidden="true">
           <ion-icon name="people-outline"></ion-icon>
         </span>
         <span class="action-copy">
-          <span class="action-title">Mi red de apoyo</span>
+          <span class="action-title">Mi Red de Apoyo</span>
           <span class="action-description">Piensa en personas de confianza.</span>
         </span>
         <ion-icon class="action-arrow" name="arrow-forward-outline" aria-hidden="true"></ion-icon>
       </a>
 
-      <a class="action-card" routerLink="/informacion-recursos">
+      <a class="action-card resources-card" routerLink="/informacion-recursos">
         <span class="action-icon resources-icon" aria-hidden="true">
           <ion-icon name="information-circle-outline"></ion-icon>
         </span>

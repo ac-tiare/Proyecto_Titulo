@@ -1,0 +1,123 @@
+<ion-content class="login-content">
+  <main class="login-page">
+    <section class="login-card" aria-labelledby="login-title">
+      <header class="login-header">
+        <div class="brand" aria-label="CONTIGO">
+          <span class="brand-mark" aria-hidden="true">
+            <ion-icon [icon]="brandIcon"></ion-icon>
+          </span>
+          <span class="brand-name">CONTIGO</span>
+        </div>
+        <p class="welcome-label">Bienvenido/a</p>
+        <h1 id="login-title">Tu espacio de apoyo y bienestar</h1>
+        <p class="welcome-copy">
+          Un momento para ti, cuando lo necesites.
+        </p>
+      </header>
+
+      <p class="demo-notice" role="note">
+        Modo demostración: todavía no existe inicio de sesión real. No ingreses
+        contraseñas reales.
+      </p>
+
+      <div class="login-fields">
+        <div class="field-group">
+          <ion-input
+            class="login-input"
+            fill="outline"
+            type="email"
+            label="Correo electrónico"
+            label-placement="floating"
+            placeholder="nombre@ejemplo.cl"
+            autocomplete="email"
+            inputmode="email"
+            name="email"
+          >
+            <ion-icon
+              slot="start"
+              [icon]="emailIcon"
+              aria-hidden="true"
+            ></ion-icon>
+          </ion-input>
+          <p class="field-hint">Usa un correo con formato válido.</p>
+        </div>
+
+        <div class="field-group">
+          <div class="password-input-row">
+            <ion-input
+              class="login-input"
+              fill="outline"
+              [type]="showPassword() ? 'text' : 'password'"
+              label="Contraseña"
+              label-placement="floating"
+              placeholder="Escribe tu contraseña"
+              autocomplete="current-password"
+              name="password"
+            >
+              <ion-icon
+                slot="start"
+                [icon]="passwordIcon"
+                aria-hidden="true"
+              ></ion-icon>
+            </ion-input>
+            <ion-button
+              class="visibility-button"
+              fill="clear"
+              type="button"
+              [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              [attr.aria-pressed]="showPassword()"
+              (click)="togglePasswordVisibility()"
+            >
+              <ion-icon
+                slot="icon-only"
+                [icon]="showPassword() ? hidePasswordIcon : showPasswordIcon"
+                aria-hidden="true"
+              ></ion-icon>
+            </ion-button>
+          </div>
+          <p class="field-hint">La contraseña debe tener al menos 8 caracteres.</p>
+        </div>
+      </div>
+
+      <div class="secondary-actions">
+        <ion-button
+          class="text-action"
+          fill="clear"
+          type="button"
+          (click)="showUnavailableNotice('recovery')"
+        >
+          ¿Olvidaste tu contraseña?
+        </ion-button>
+      </div>
+
+      <ion-button
+        class="login-button"
+        expand="block"
+        type="button"
+        (click)="continueDemo()"
+      >
+        Iniciar sesión
+      </ion-button>
+
+      <footer class="account-prompt">
+        <span>¿Aún no tienes una cuenta?</span>
+        <ion-button
+          class="text-action create-account"
+          fill="clear"
+          type="button"
+          (click)="showUnavailableNotice('registration')"
+        >
+          Crear cuenta
+        </ion-button>
+      </footer>
+    </section>
+  </main>
+
+  <ion-toast
+    [isOpen]="noticeOpen()"
+    [message]="noticeMessage()"
+    [duration]="3200"
+    position="bottom"
+    (didDismiss)="noticeOpen.set(false)"
+  ></ion-toast>
+</ion-content>

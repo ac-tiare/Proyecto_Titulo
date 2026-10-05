@@ -4,11 +4,17 @@ describe('application routes', () => {
   const shellRoute = routes.find((route) => route.path === '' && route.children);
   const childRoutes = shellRoute?.children ?? [];
 
-  it('opens Inicio by default', () => {
-    expect(childRoutes).toContainEqual(
+  it('opens Login by default outside the application shell', () => {
+    expect(routes).toContainEqual(
+      expect.objectContaining({
+        path: 'login',
+        loadComponent: expect.any(Function),
+      }),
+    );
+    expect(routes).toContainEqual(
       expect.objectContaining({
         path: '',
-        redirectTo: 'inicio',
+        redirectTo: 'login',
         pathMatch: 'full',
       }),
     );
@@ -29,11 +35,11 @@ describe('application routes', () => {
     );
   });
 
-  it('redirects unknown routes to Inicio', () => {
+  it('redirects unknown routes to Login', () => {
     expect(routes.at(-1)).toEqual(
       expect.objectContaining({
         path: '**',
-        redirectTo: 'inicio',
+        redirectTo: 'login',
       }),
     );
   });
