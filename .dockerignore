@@ -1,0 +1,11 @@
+.git
+.angular
+node_modules
+www
+dist
+coverage
+.env*
+**/.env*
+*.log
+Thumbs.db
+.DS_Store

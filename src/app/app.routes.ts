@@ -7,6 +7,13 @@ export const routes: Routes = [
       import('./features/login/login.page').then((module) => module.LoginPage),
   },
   {
+    path: 'crear-cuenta',
+    loadComponent: () =>
+      import('./features/login/register.page').then(
+        (module) => module.RegisterPage,
+      ),
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',

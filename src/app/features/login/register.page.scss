@@ -1,0 +1,212 @@
+.register-content {
+  --background:
+    radial-gradient(ellipse at 0% 0%, #e4f2f3 0, transparent 44%),
+    radial-gradient(ellipse at 100% 100%, #e9f1e8 0, transparent 42%),
+    #f6f8f6;
+}
+
+.register-page {
+  align-items: start;
+  display: grid;
+  justify-items: center;
+  min-height: 100%;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem
+    max(1.25rem, env(safe-area-inset-bottom));
+}
+
+.register-card {
+  background: #fff;
+  border: 1px solid #e5eceb;
+  border-radius: 1.5rem;
+  box-shadow: 0 0.8rem 2.2rem rgb(33 62 72 / 8%);
+  display: grid;
+  gap: 0.85rem;
+  max-width: 28rem;
+  padding: clamp(1.1rem, 5vw, 1.75rem);
+  width: 100%;
+}
+
+.register-header {
+  text-align: center;
+}
+
+.brand {
+  align-items: center;
+  color: #20465b;
+  display: inline-flex;
+  gap: 0.55rem;
+  justify-content: center;
+  margin-bottom: 0.8rem;
+}
+
+.brand-mark {
+  align-items: center;
+  background: #dceff0;
+  border-radius: 50%;
+  color: #28728a;
+  display: inline-flex;
+  height: 2.25rem;
+  justify-content: center;
+  width: 2.25rem;
+}
+
+.brand-mark ion-icon {
+  font-size: 1.2rem;
+}
+
+.brand-name {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.welcome-label {
+  color: #39768a;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 0 0 0.3rem;
+}
+
+h1 {
+  color: #203a46;
+  font-size: clamp(1.45rem, 6vw, 1.8rem);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.welcome-copy,
+.demo-notice,
+.field-error,
+.account-prompt {
+  color: #60747b;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.welcome-copy {
+  margin: 0.4rem 0 0;
+}
+
+.demo-notice {
+  background: #f2f5e9;
+  border: 1px solid #e6ebd7;
+  border-radius: 0.9rem;
+  color: #4c5f52;
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+}
+
+.register-fields {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.field-group {
+  min-width: 0;
+}
+
+.register-input {
+  --background: #fbfcfc;
+  --border-color: #d9e3e5;
+  --border-radius: 0.95rem;
+  --border-style: solid;
+  --border-width: 1px;
+  --color: #203a46;
+  --highlight-color-focused: #28728a;
+  --padding-end: 0.8rem;
+  --padding-start: 0.8rem;
+  --placeholder-color: #819197;
+  --placeholder-opacity: 1;
+  min-height: 3.4rem;
+}
+
+.register-input ion-icon {
+  color: #568191;
+  font-size: 1.1rem;
+  margin-inline-end: 0.5rem;
+}
+
+.field-error {
+  color: #a43e48;
+  font-size: 0.78rem;
+  margin: 0.25rem 0 0 0.25rem;
+}
+
+.password-input-row {
+  align-items: center;
+  display: grid;
+  gap: 0.25rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.visibility-button {
+  --border-radius: 0.85rem;
+  --color: #39768a;
+  --padding-start: 0.55rem;
+  --padding-end: 0.55rem;
+  min-height: 3rem;
+  min-width: 2.8rem;
+}
+
+.register-button {
+  --background: #2f7188;
+  --background-activated: #255c70;
+  --border-radius: 1rem;
+  --color: #fff;
+  font-size: 1rem;
+  font-weight: 750;
+  min-height: 3.25rem;
+  margin: 0;
+}
+
+.confirmation {
+  background: #edf5ee;
+  border-radius: 0.9rem;
+  color: #3f6350;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+}
+
+.account-prompt {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.4rem;
+  justify-content: center;
+  margin: -0.1rem 0 0;
+  text-align: center;
+}
+
+.text-action {
+  --color: #39768a;
+  --padding-start: 0.4rem;
+  --padding-end: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 750;
+  min-height: 2.75rem;
+  margin: 0;
+}
+
+.register-input:focus-within,
+.register-input.ion-focused,
+.visibility-button:focus-visible,
+.visibility-button.ion-focused,
+.text-action:focus-visible,
+.text-action.ion-focused,
+.register-button:focus-visible,
+.register-button.ion-focused {
+  outline: 3px solid #4e91a3;
+  outline-offset: 2px;
+}
+
+@media (max-height: 700px) {
+  .register-page {
+    padding-block: 0.75rem;
+  }
+
+  .register-card {
+    gap: 0.65rem;
+  }
+}

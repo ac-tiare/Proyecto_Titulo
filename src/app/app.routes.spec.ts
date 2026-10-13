@@ -20,6 +20,15 @@ describe('application routes', () => {
     );
   });
 
+  it('provides the standalone Crear Cuenta route', () => {
+    expect(routes).toContainEqual(
+      expect.objectContaining({
+        path: 'crear-cuenta',
+        loadComponent: expect.any(Function),
+      }),
+    );
+  });
+
   it('provides a route for every initial screen', () => {
     expect(childRoutes.map((route) => route.path)).toEqual(
       expect.arrayContaining([

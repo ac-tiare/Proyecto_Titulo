@@ -1,0 +1,161 @@
+<ion-content class="register-content">
+  <main class="register-page">
+    <section class="register-card" aria-labelledby="register-title">
+      <header class="register-header">
+        <div class="brand" aria-label="CONTIGO">
+          <span class="brand-mark" aria-hidden="true">
+            <ion-icon [icon]="nameIcon"></ion-icon>
+          </span>
+          <span class="brand-name">CONTIGO</span>
+        </div>
+        <p class="welcome-label">Comencemos</p>
+        <h1 id="register-title">Crear cuenta</h1>
+        <p class="welcome-copy">Tu espacio de apoyo y bienestar.</p>
+      </header>
+
+      <p class="demo-notice" role="note">
+        Modo demostración: tus datos no se enviarán ni crearán una cuenta real.
+      </p>
+
+      <div class="register-fields">
+        <div class="field-group">
+          <ion-input
+            class="register-input"
+            fill="outline"
+            type="text"
+            label="Nombre"
+            labelPlacement="floating"
+            autocomplete="name"
+            [value]="values().name"
+            [attr.aria-invalid]="errors().name ? 'true' : 'false'"
+            [attr.aria-describedby]="errors().name ? 'name-error' : null"
+            (ionInput)="updateField('name', $event.detail.value ?? '')"
+          >
+            <ion-icon slot="start" [icon]="nameIcon" aria-hidden="true"></ion-icon>
+          </ion-input>
+          @if (errors().name) {
+            <p class="field-error" id="name-error">{{ errors().name }}</p>
+          }
+        </div>
+
+        <div class="field-group">
+          <ion-input
+            class="register-input"
+            fill="outline"
+            type="email"
+            label="Correo electrónico"
+            labelPlacement="floating"
+            placeholder="nombre@ejemplo.cl"
+            autocomplete="email"
+            inputmode="email"
+            [value]="values().email"
+            [attr.aria-invalid]="errors().email ? 'true' : 'false'"
+            [attr.aria-describedby]="errors().email ? 'email-error' : null"
+            (ionInput)="updateField('email', $event.detail.value ?? '')"
+          >
+            <ion-icon slot="start" [icon]="emailIcon" aria-hidden="true"></ion-icon>
+          </ion-input>
+          @if (errors().email) {
+            <p class="field-error" id="email-error">{{ errors().email }}</p>
+          }
+        </div>
+
+        <div class="field-group">
+          <div class="password-input-row">
+            <ion-input
+              class="register-input"
+              fill="outline"
+              [type]="showPassword() ? 'text' : 'password'"
+              label="Contraseña"
+              labelPlacement="floating"
+              autocomplete="new-password"
+              [value]="values().password"
+              [attr.aria-invalid]="errors().password ? 'true' : 'false'"
+              [attr.aria-describedby]="errors().password ? 'password-error' : null"
+              (ionInput)="updateField('password', $event.detail.value ?? '')"
+            >
+              <ion-icon slot="start" [icon]="passwordIcon" aria-hidden="true"></ion-icon>
+            </ion-input>
+            <ion-button
+              class="visibility-button"
+              fill="clear"
+              type="button"
+              [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              [attr.aria-pressed]="showPassword()"
+              (click)="togglePasswordVisibility('password')"
+            >
+              <ion-icon
+                slot="icon-only"
+                [icon]="showPassword() ? hidePasswordIcon : showPasswordIcon"
+                aria-hidden="true"
+              ></ion-icon>
+            </ion-button>
+          </div>
+          @if (errors().password) {
+            <p class="field-error" id="password-error">{{ errors().password }}</p>
+          }
+        </div>
+
+        <div class="field-group">
+          <div class="password-input-row">
+            <ion-input
+              class="register-input"
+              fill="outline"
+              [type]="showConfirmPassword() ? 'text' : 'password'"
+              label="Confirmar contraseña"
+              labelPlacement="floating"
+              autocomplete="new-password"
+              [value]="values().confirmPassword"
+              [attr.aria-invalid]="errors().confirmPassword ? 'true' : 'false'"
+              [attr.aria-describedby]="errors().confirmPassword ? 'confirm-password-error' : null"
+              (ionInput)="updateField('confirmPassword', $event.detail.value ?? '')"
+            >
+              <ion-icon slot="start" [icon]="passwordIcon" aria-hidden="true"></ion-icon>
+            </ion-input>
+            <ion-button
+              class="visibility-button"
+              fill="clear"
+              type="button"
+              [attr.aria-label]="showConfirmPassword() ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'"
+              [attr.aria-pressed]="showConfirmPassword()"
+              (click)="togglePasswordVisibility('confirmPassword')"
+            >
+              <ion-icon
+                slot="icon-only"
+                [icon]="showConfirmPassword() ? hidePasswordIcon : showPasswordIcon"
+                aria-hidden="true"
+              ></ion-icon>
+            </ion-button>
+          </div>
+          @if (errors().confirmPassword) {
+            <p class="field-error" id="confirm-password-error">
+              {{ errors().confirmPassword }}
+            </p>
+          }
+        </div>
+      </div>
+
+      <ion-button class="register-button" expand="block" type="button" (click)="submit()">
+        Crear cuenta
+      </ion-button>
+
+      @if (confirmation()) {
+        <p class="confirmation" role="status" aria-live="polite">
+          {{ confirmation() }}
+        </p>
+      }
+
+      <footer class="account-prompt">
+        <span>¿Ya tienes una cuenta?</span>
+        <ion-button
+          class="text-action"
+          fill="clear"
+          type="button"
+          (click)="goToLogin()"
+        >
+          Iniciar sesión
+        </ion-button>
+      </footer>
+    </section>
+  </main>
+</ion-content>

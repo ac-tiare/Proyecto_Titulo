@@ -11,7 +11,8 @@
   gap: 1rem;
   margin-inline: auto;
   max-width: 42rem;
-  padding: calc(4.5rem + env(safe-area-inset-top)) 1rem 2rem;
+  min-height: 100%;
+  padding: 0.5rem 1rem calc(2rem + env(safe-area-inset-bottom));
 }
 
 h1,
@@ -111,10 +112,6 @@ h2 {
   background: #f9e1e7;
 }
 
-.mood-option:hover {
-  border-color: var(--home-primary);
-}
-
 .mood-option:focus-visible,
 .action-card:focus-visible,
 .home-help-button:focus-visible,
@@ -206,6 +203,7 @@ h2 {
   text-decoration: none;
 }
 
+.mood-option:hover,
 .action-card:hover {
   border-color: var(--home-primary);
 }

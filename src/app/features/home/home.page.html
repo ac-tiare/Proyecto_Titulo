@@ -1,5 +1,8 @@
-<ion-content class="home-content">
-  <main class="home-page">
+<ion-content class="home-content" scroll-y="true">
+  <main
+    class="home-page"
+    (pointerdown)="startMobileMouseScroll($event)"
+  >
     <section class="welcome" aria-labelledby="welcome-heading">
       <p class="welcome-eyebrow">Tu espacio de bienestar</p>
       <h1 id="welcome-heading">Hola 👋</h1>

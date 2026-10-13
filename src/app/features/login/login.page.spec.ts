@@ -58,7 +58,7 @@ describe('LoginPage', () => {
     expect(navigate).toHaveBeenNthCalledWith(2, ['/inicio']);
   });
 
-  it('shows local notices for unavailable account actions without navigation', async () => {
+  it('shows a local notice for unavailable recovery without navigation', async () => {
     await TestBed.configureTestingModule({
       imports: [LoginPage],
       providers: [provideRouter([])],
@@ -80,13 +80,24 @@ describe('LoginPage', () => {
       'recuperación de contraseña aún no está disponible',
     );
     expect(navigate).not.toHaveBeenCalled();
+  });
 
-    actions[1].click();
+  it('navigates to Crear Cuenta from Login', async () => {
+    await TestBed.configureTestingModule({
+      imports: [LoginPage],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(LoginPage);
     fixture.detectChanges();
-    expect(fixture.componentInstance.noticeOpen()).toBe(true);
-    expect(fixture.componentInstance.noticeMessage()).toContain(
-      'creación de cuentas aún no está disponible',
-    );
-    expect(navigate).not.toHaveBeenCalled();
+
+    const createAccount = fixture.nativeElement.querySelector(
+      '.create-account',
+    ) as HTMLIonButtonElement;
+    createAccount.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/crear-cuenta']);
   });
 });

@@ -7,11 +7,15 @@ La pantalla Inicio ofrece una entrada clara y acogedora al registro emocional y 
 ## Requirements
 
 ### Requirement: Inicio presenta la bienvenida y la selección emocional
-Inicio MUST presentar la bienvenida de la referencia y cinco estados emocionales identificables: «Muy bien», «Bien», «Regular», «Mal» y «Muy mal». Elegir un estado MUST conservar la selección temporal y abrir el registro emocional existente.
+Inicio MUST presentar la bienvenida de la referencia y cinco estados emocionales identificables: «Muy bien», «Bien», «Regular», «Mal» y «Muy mal». Elegir un estado MUST abrir Registro Emocional con la selección previamente aplicada y MUST NOT crear ni guardar un registro antes de que la persona confirme «Guardar registro» en esa pantalla.
 
 #### Scenario: La persona elige un estado emocional
 - **WHEN** la persona activa uno de los cinco estados en Inicio
-- **THEN** la aplicación conserva temporalmente la selección y navega a Registro emocional
+- **THEN** la aplicación conserva temporalmente la selección y navega a Registro Emocional con ese estado seleccionado, sin crear un registro
+
+#### Scenario: La persona cambia la selección inicial
+- **WHEN** la pantalla Registro Emocional se abre con un estado preseleccionado y la persona elige otro estado
+- **THEN** el nuevo estado queda seleccionado para el borrador del registro y todavía no se crea un registro
 
 ### Requirement: Inicio ofrece un mensaje visual de acompañamiento
 Inicio MUST incluir una tarjeta de acompañamiento cálida y no diagnóstica, con texto legible y un elemento visual decorativo accesible.

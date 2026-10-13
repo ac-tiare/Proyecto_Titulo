@@ -1,36 +1,80 @@
-<ion-content class="ion-padding">
-  <main class="page-content">
-    <p class="eyebrow">BIENESTAR EMOCIONAL</p>
-    <h1>Registro emocional</h1>
-    <p class="intro">¿Cómo te sientes en este momento?</p>
-    <p class="privacy-notice">
-      Tu selección es temporal. No se guarda en el dispositivo ni se envía a
-      ningún servicio.
-    </p>
+<ion-content class="emotional-content">
+  <main class="emotional-page">
+    <header class="page-heading">
+      <p class="eyebrow">BIENESTAR EMOCIONAL</p>
+      <h1>Registro emocional</h1>
+      <p class="intro">¿Cómo te sientes hoy?</p>
+    </header>
 
-    <div class="mood-options" role="group" aria-label="Opciones de estado emocional">
-      @for (mood of moods; track mood.id) {
-        <button
-          class="mood-option"
-          [class.selected]="selectedMood() === mood.id"
-          type="button"
-          [attr.aria-pressed]="selectedMood() === mood.id"
-          (click)="selectMood(mood.id)"
-        >
-          <span class="mood-emoji" aria-hidden="true">{{ mood.emoji }}</span>
-          <span>{{ mood.label }}</span>
-        </button>
-      }
-    </div>
+    <section class="form-card" aria-labelledby="mood-heading">
+      <h2 id="mood-heading">Elige un estado emocional</h2>
+      <div class="mood-options" role="radiogroup" aria-labelledby="mood-heading">
+        @for (mood of moods; track mood.id) {
+          <button
+            class="mood-option"
+            [class.selected]="selectedMood() === mood.id"
+            type="button"
+            role="radio"
+            [attr.aria-checked]="selectedMood() === mood.id"
+            [attr.aria-label]="mood.label"
+            (click)="selectMood(mood.id)"
+          >
+            <span class="mood-emoji" aria-hidden="true">{{ mood.emoji }}</span>
+            <span class="mood-label">{{ mood.label }}</span>
+          </button>
+        }
+      </div>
+    </section>
 
-    @if (selectedMood(); as moodId) {
-      <p class="selection-status" role="status" aria-live="polite">
-        Selección temporal: {{ moodLabels[moodId] }}.
-      </p>
-    }
+    <section class="form-card" aria-labelledby="emotions-heading">
+      <h2 id="emotions-heading">¿Qué emociones estás sintiendo?</h2>
+      <p class="section-hint">Puedes elegir más de una.</p>
+      <div class="emotion-options" role="group" aria-labelledby="emotions-heading">
+        @for (emotion of emotions; track emotion.id) {
+          <button
+            class="emotion-option"
+            [class.selected]="draft()?.emotionIds?.includes(emotion.id)"
+            type="button"
+            role="checkbox"
+            [attr.aria-checked]="draft()?.emotionIds?.includes(emotion.id) ?? false"
+            (click)="toggleEmotion(emotion.id)"
+          >
+            {{ emotion.label }}
+          </button>
+        }
+      </div>
+    </section>
 
-    <ion-button expand="block" fill="outline" (click)="finish()">
-      Volver a Inicio
+    <section class="form-card note-card" aria-labelledby="note-heading">
+      <h2 id="note-heading">¿Quieres agregar algo?</h2>
+      <ion-textarea
+        class="note-input"
+        label="Nota (opcional)"
+        labelPlacement="floating"
+        fill="outline"
+        autoGrow="true"
+        maxlength="500"
+        [value]="draft()?.note ?? ''"
+        (ionInput)="updateNote($event.detail.value ?? '')"
+      ></ion-textarea>
+      <div class="date-row">
+        <ion-icon name="calendar-clear-outline" aria-hidden="true"></ion-icon>
+        <span>Fecha del registro: {{ draft()?.date }}</span>
+      </div>
+    </section>
+
+    <ion-button
+      class="save-button"
+      expand="block"
+      type="button"
+      [disabled]="draft()?.saved ?? false"
+      (click)="save()"
+    >
+      Guardar registro
     </ion-button>
+
+    @if (saveMessage()) {
+      <p class="save-message" role="status" aria-live="polite">{{ saveMessage() }}</p>
+    }
   </main>
 </ion-content>

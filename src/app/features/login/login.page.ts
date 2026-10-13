@@ -37,15 +37,17 @@ export class LoginPage {
     return this.router.navigate(['/inicio']);
   }
 
+  goToRegistration(): Promise<boolean> {
+    return this.router.navigate(['/crear-cuenta']);
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword.update((visible) => !visible);
   }
 
-  showUnavailableNotice(feature: 'recovery' | 'registration'): void {
+  showRecoveryNotice(): void {
     this.noticeMessage.set(
-      feature === 'recovery'
-        ? 'La recuperación de contraseña aún no está disponible.'
-        : 'La creación de cuentas aún no está disponible.',
+      'La recuperación de contraseña aún no está disponible.',
     );
     this.noticeOpen.set(true);
   }

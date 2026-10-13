@@ -1,3 +1,10 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .app-header {
   ion-toolbar {
     --background: var(--ion-color-light);
@@ -74,6 +81,15 @@
   ion-icon {
     font-size: 1.5rem;
   }
+}
+
+ion-tabs {
+  flex: 1 1 0%;
+  height: auto;
+  inset: auto !important;
+  min-height: 0;
+  position: relative !important;
+  width: 100%;
 }
 
 ion-tab-bar {

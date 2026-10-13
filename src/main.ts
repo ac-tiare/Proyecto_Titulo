@@ -4,6 +4,7 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 import {
   alertCircleOutline,
   arrowForwardOutline,
+  calendarClearOutline,
   heartOutline,
   homeOutline,
   informationCircleOutline,
@@ -19,6 +20,7 @@ import { AppComponent } from './app/app.component';
 addIcons({
   alertCircleOutline,
   arrowForwardOutline,
+  calendarClearOutline,
   heartOutline,
   homeOutline,
   informationCircleOutline,
