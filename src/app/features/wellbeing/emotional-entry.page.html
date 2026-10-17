@@ -45,6 +45,20 @@
       </div>
     </section>
 
+    @if (draft()?.emotionIds?.includes('otra')) {
+      <section class="form-card" aria-labelledby="other-emotion-heading">
+        <h2 id="other-emotion-heading">¿Qué otra emoción sientes?</h2>
+        <ion-input
+          label="Otra emoción (opcional)"
+          labelPlacement="floating"
+          fill="outline"
+          maxlength="500"
+          [value]="draft()?.otherEmotion ?? ''"
+          (ionInput)="updateOtherEmotion($event.detail.value ?? '')"
+        ></ion-input>
+      </section>
+    }
+
     <section class="form-card note-card" aria-labelledby="note-heading">
       <h2 id="note-heading">¿Quieres agregar algo?</h2>
       <ion-textarea
@@ -67,10 +81,10 @@
       class="save-button"
       expand="block"
       type="button"
-      [disabled]="draft()?.saved ?? false"
+      [disabled]="saving() || (draft()?.saved ?? false)"
       (click)="save()"
     >
-      Guardar registro
+      {{ saving() ? 'Guardando…' : 'Guardar registro' }}
     </ion-button>
 
     @if (saveMessage()) {

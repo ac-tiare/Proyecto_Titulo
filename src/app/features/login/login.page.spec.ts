@@ -1,13 +1,21 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
+import { AuthService } from '../../core/firebase/auth.service';
 import { LoginPage } from './login.page';
 
 describe('LoginPage', () => {
+  const createAuthMock = () => ({
+    signIn: vi.fn().mockResolvedValue({ uid: 'user-1' }),
+  });
+
   it('shows labeled fields and an accessible password visibility toggle', async () => {
     await TestBed.configureTestingModule({
       imports: [LoginPage],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: createAuthMock() },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(LoginPage);
@@ -26,8 +34,7 @@ describe('LoginPage', () => {
 
     expect(content).toContain('Bienvenido/a');
     expect(content).toContain('Tu espacio de apoyo y bienestar');
-    expect(content).toContain('Modo demostración');
-    expect(content).toContain('No ingreses contraseñas reales');
+    expect(content).not.toContain('Modo demostración');
     expect(email.getAttribute('label')).toBe('Correo electrónico');
     expect(password.getAttribute('label')).toBe('Contraseña');
     expect(password.type).toBe('password');
@@ -41,27 +48,82 @@ describe('LoginPage', () => {
     expect(visibilityButton.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('continues to Inicio in demo mode without processing credentials', async () => {
+  it('requires credentials before calling Firebase Authentication', async () => {
+    const auth = createAuthMock();
     await TestBed.configureTestingModule({
       imports: [LoginPage],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: auth },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(LoginPage);
+    await fixture.componentInstance.signIn();
+
+    expect(fixture.componentInstance.errorMessage()).toContain(
+      'Ingresa tu correo electrónico y contraseña.',
+    );
+    expect(auth.signIn).not.toHaveBeenCalled();
+  });
+
+  it('authenticates and navigates to Inicio by default', async () => {
+    const auth = createAuthMock();
+    await TestBed.configureTestingModule({
+      imports: [LoginPage],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: auth },
+      ],
     }).compileComponents();
 
     const router = TestBed.inject(Router);
-    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     const fixture = TestBed.createComponent(LoginPage);
+    fixture.componentInstance.email.set(' alex@example.cl ');
+    fixture.componentInstance.password.set('secure-password');
 
-    await fixture.componentInstance.continueDemo();
-    await fixture.componentInstance.continueDemo();
+    await fixture.componentInstance.signIn();
 
-    expect(navigate).toHaveBeenNthCalledWith(1, ['/inicio']);
-    expect(navigate).toHaveBeenNthCalledWith(2, ['/inicio']);
+    expect(auth.signIn).toHaveBeenCalledWith(
+      ' alex@example.cl ',
+      'secure-password',
+    );
+    expect(navigate).toHaveBeenCalledWith('/inicio', { replaceUrl: true });
+  });
+
+  it('shows an authentication error instead of navigating', async () => {
+    const auth = createAuthMock();
+    auth.signIn.mockRejectedValue(new Error('network'));
+    await TestBed.configureTestingModule({
+      imports: [LoginPage],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: auth },
+      ],
+    }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(LoginPage);
+    fixture.componentInstance.email.set('alex@example.cl');
+    fixture.componentInstance.password.set('bad-password');
+
+    await fixture.componentInstance.signIn();
+
+    expect(fixture.componentInstance.errorMessage()).toContain(
+      'No fue posible completar la operación.',
+    );
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('shows a local notice for unavailable recovery without navigation', async () => {
     await TestBed.configureTestingModule({
       imports: [LoginPage],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: createAuthMock() },
+      ],
     }).compileComponents();
 
     const router = TestBed.inject(Router);
@@ -85,7 +147,10 @@ describe('LoginPage', () => {
   it('navigates to Crear Cuenta from Login', async () => {
     await TestBed.configureTestingModule({
       imports: [LoginPage],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: createAuthMock() },
+      ],
     }).compileComponents();
 
     const router = TestBed.inject(Router);

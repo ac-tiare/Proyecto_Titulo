@@ -31,27 +31,33 @@ export const emotionOptions = [
 
 export type EmotionId = (typeof emotionOptions)[number]['id'];
 
+export const emotionLabels: Record<EmotionId, string> = {
+  tristeza: 'Tristeza',
+  ansiedad: 'Ansiedad',
+  miedo: 'Miedo',
+  enojo: 'Enojo',
+  soledad: 'Soledad',
+  calma: 'Calma',
+  esperanza: 'Esperanza',
+  otra: 'Otra',
+};
+
 export interface EmotionalDraft {
   id: number;
   moodId: MoodId | null;
   emotionIds: readonly EmotionId[];
+  otherEmotion: string;
   note: string;
   date: string;
   saved: boolean;
 }
 
-export interface EmotionalRecord extends Omit<EmotionalDraft, 'saved'> {
-  moodId: MoodId;
-}
-
 @Injectable({ providedIn: 'root' })
 export class EmotionalSessionService {
   private readonly currentDraft = signal<EmotionalDraft | null>(null);
-  private readonly currentRecords = signal<readonly EmotionalRecord[]>([]);
   private nextDraftId = 1;
 
   readonly draft = this.currentDraft.asReadonly();
-  readonly records = this.currentRecords.asReadonly();
   readonly selectedMood = computed(() => this.currentDraft()?.moodId ?? null);
 
   startDraft(moodId: MoodId): void {
@@ -59,6 +65,7 @@ export class EmotionalSessionService {
       id: this.nextDraftId++,
       moodId,
       emotionIds: [],
+      otherEmotion: '',
       note: '',
       date: new Date().toLocaleDateString('es-CL', {
         day: 'numeric',
@@ -75,6 +82,7 @@ export class EmotionalSessionService {
         id: this.nextDraftId++,
         moodId: null,
         emotionIds: [],
+        otherEmotion: '',
         note: '',
         date: new Date().toLocaleDateString('es-CL', {
           day: 'numeric',
@@ -113,16 +121,15 @@ export class EmotionalSessionService {
     this.currentDraft.update((draft) => (draft ? { ...draft, note } : draft));
   }
 
-  saveDraft(): EmotionalRecord | null {
-    const draft = this.currentDraft();
-    if (!draft || !draft.moodId || !draft.emotionIds.length || draft.saved) {
-      return null;
-    }
+  updateOtherEmotion(otherEmotion: string): void {
+    this.ensureDraft();
+    this.currentDraft.update((draft) =>
+      draft ? { ...draft, otherEmotion } : draft,
+    );
+  }
 
-    const record: EmotionalRecord = { ...draft, moodId: draft.moodId };
-    this.currentRecords.update((records) => [...records, record]);
-    this.currentDraft.set({ ...draft, saved: true });
-    return record;
+  markSaved(): void {
+    this.currentDraft.update((draft) => (draft ? { ...draft, saved: true } : draft));
   }
 
   clear(): void {

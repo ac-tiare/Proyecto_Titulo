@@ -1,4 +1,5 @@
 import { routes } from './app.routes';
+import { authGuard } from './core/firebase/auth.guard';
 
 describe('application routes', () => {
   const shellRoute = routes.find((route) => route.path === '' && route.children);
@@ -42,6 +43,10 @@ describe('application routes', () => {
         'perfil',
       ]),
     );
+  });
+
+  it('protects every screen inside the shared application shell', () => {
+    expect(shellRoute?.canActivate).toContain(authGuard);
   });
 
   it('redirects unknown routes to Login', () => {

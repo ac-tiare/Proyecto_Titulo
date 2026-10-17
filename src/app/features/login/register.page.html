@@ -13,10 +13,6 @@
         <p class="welcome-copy">Tu espacio de apoyo y bienestar.</p>
       </header>
 
-      <p class="demo-notice" role="note">
-        Modo demostración: tus datos no se enviarán ni crearán una cuenta real.
-      </p>
-
       <div class="register-fields">
         <div class="field-group">
           <ion-input
@@ -135,8 +131,8 @@
         </div>
       </div>
 
-      <ion-button class="register-button" expand="block" type="button" (click)="submit()">
-        Crear cuenta
+      <ion-button class="register-button" expand="block" type="button" [disabled]="submitting()" (click)="submit()">
+        {{ submitting() ? 'Creando cuenta…' : 'Crear cuenta' }}
       </ion-button>
 
       @if (confirmation()) {

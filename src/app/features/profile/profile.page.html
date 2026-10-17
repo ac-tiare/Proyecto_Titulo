@@ -3,14 +3,30 @@
     <p class="eyebrow">CONTIGO</p>
     <h1>Perfil</h1>
     <section class="profile-notice" aria-labelledby="profile-heading">
-      <h2 id="profile-heading">Todavía no hay un perfil personal</h2>
-      <p>
-        Esta versión no tiene registro ni inicio de sesión. No recopila ni guarda
-        información de perfil.
-      </p>
+      <h2 id="profile-heading">{{ user()?.displayName || 'Tu cuenta' }}</h2>
+      <p>{{ user()?.email }}</p>
     </section>
+    <ion-button
+      expand="block"
+      color="medium"
+      [disabled]="signingOut()"
+      (click)="signOut()"
+    >
+      {{ signingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
+    </ion-button>
     <ion-button routerLink="/inicio" expand="block" fill="outline">
       Volver a Inicio
     </ion-button>
+    @if (errorMessage()) {
+      <p role="alert">{{ errorMessage() }}</p>
+    }
   </main>
 </ion-content>
+
+<ion-toast
+  [isOpen]="noticeOpen()"
+  [message]="errorMessage()"
+  [duration]="3200"
+  position="bottom"
+  (didDismiss)="noticeOpen.set(false)"
+></ion-toast>

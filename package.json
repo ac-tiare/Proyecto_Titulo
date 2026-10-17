@@ -19,6 +19,7 @@
     "@angular/router": "22.2.1",
     "@capacitor/core": "8.5.2",
     "@ionic/angular": "^9.0.0",
+    "firebase": "^13.0.0",
     "ionicons": "^8.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
@@ -37,5 +38,8 @@
     "typescript-eslint": "^8.61.0",
     "vitest": "4.1.11"
   },
-  "description": "Aplicación móvil preventiva de apoyo temprano"
+  "description": "Aplicación móvil preventiva de apoyo temprano",
+  "overrides": {
+    "@grpc/grpc-js": "1.14.6"
+  }
 }

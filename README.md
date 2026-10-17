@@ -4,9 +4,9 @@ Aplicación móvil preventiva de apoyo temprano para pasajeros y trabajadores de
 
 ## Resumen de avances
 
-- Se construyó la interfaz móvil CONTIGO con Ionic y Angular: Login y Crear Cuenta de demostración, Inicio, Registro Emocional y secciones de bienestar y apoyo. Se añadieron validaciones e interacciones frontend; no hay autenticación real ni almacenamiento persistente.
+- Se construyó la interfaz móvil CONTIGO con Ionic y Angular: Login y Crear Cuenta, Inicio, Registro Emocional y secciones de bienestar y apoyo.
 - Se ajustó el desplazamiento vertical de Inicio para que el contenido se desplace entre el encabezado y la barra inferior, manteniendo ambas áreas visibles y permitiendo llegar a las secciones finales.
-- Se incorporó Docker para compilar la aplicación y servirla con Nginx. Compose ejecuta solo el frontend en `http://localhost:8080`; las rutas Angular se pueden abrir directamente y recargar. No se añadieron backend ni base de datos.
+- Se incorporó Docker para compilar la aplicación y servirla con Nginx. Compose ejecuta solo el frontend en `http://localhost:8080`; las rutas Angular se pueden abrir directamente y recargar. No se añadieron backend propio ni contenedores de datos; Firebase ofrece Authentication y Firestore como servicios administrados.
 - Se documentaron en este README los pasos de ejecución local y Docker, incluidos los comandos para clonar, iniciar, comprobar, ver logs y detener la aplicación.
 
 ## Requisitos
@@ -14,9 +14,17 @@ Aplicación móvil preventiva de apoyo temprano para pasajeros y trabajadores de
 - Node.js 24 LTS
 - npm (incluido con Node.js)
 
+## Firebase Authentication y Cloud Firestore
+
+La aplicación usa el SDK web modular oficial. Crear Cuenta y Login se conectan a Firebase Authentication, y todas las rutas excepto Login y Crear Cuenta requieren una sesión. Registro Emocional guarda documentos en `usuarios/{uid}/registros_emocionales/{registroId}` y Mi Bienestar consulta el historial de la cuenta autenticada.
+
+La configuración web está en `src/environments/environment.ts` y `src/environments/environment.prod.ts`; Angular sustituye el entorno de desarrollo en la compilación de producción. La configuración de Firebase para una app web, incluida su API key, es pública y queda visible en el bundle del navegador. No contiene una contraseña ni una clave privada de cuenta de servicio.
+
+**Las reglas de Firestore no fueron modificadas ni publicadas.** El historial solo funcionará si las reglas ya desplegadas permiten operaciones autenticadas bajo el UID propio y validan los documentos. Si Firestore deniega una operación, CONTIGO muestra un error y no indica que la lectura o el guardado fueron exitosos. Antes de usar datos reales, revisa y configura manualmente reglas restrictivas en Firebase Console; no uses reglas abiertas.
+
 ## Ejecutar con Docker
 
-Este proyecto solo necesita un contenedor: el frontend web. Angular se compila durante la construcción de la imagen y Nginx sirve los archivos resultantes. No hay backend ni base de datos en esta versión, así que no se necesita un contenedor de datos ni un archivo de contraseñas.
+Docker solo necesita un contenedor para el frontend web: Angular se compila durante la construcción de la imagen y Nginx sirve los archivos resultantes. Firebase Authentication y Cloud Firestore son servicios administrados y no requieren contenedores locales.
 
 ### Requisitos
 

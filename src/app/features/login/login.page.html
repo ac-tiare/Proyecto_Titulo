@@ -15,11 +15,6 @@
         </p>
       </header>
 
-      <p class="demo-notice" role="note">
-        Modo demostración: todavía no existe inicio de sesión real. No ingreses
-        contraseñas reales.
-      </p>
-
       <div class="login-fields">
         <div class="field-group">
           <ion-input
@@ -32,6 +27,8 @@
             autocomplete="email"
             inputmode="email"
             name="email"
+            [value]="email()"
+            (ionInput)="email.set($event.detail.value ?? '')"
           >
             <ion-icon
               slot="start"
@@ -53,6 +50,8 @@
               placeholder="Escribe tu contraseña"
               autocomplete="current-password"
               name="password"
+              [value]="password()"
+              (ionInput)="password.set($event.detail.value ?? '')"
             >
               <ion-icon
                 slot="start"
@@ -94,10 +93,15 @@
         class="login-button"
         expand="block"
         type="button"
-        (click)="continueDemo()"
+        [disabled]="submitting()"
+        (click)="signIn()"
       >
-        Iniciar sesión
+        {{ submitting() ? 'Iniciando sesión…' : 'Iniciar sesión' }}
       </ion-button>
+
+      @if (errorMessage()) {
+        <p class="field-error" role="alert">{{ errorMessage() }}</p>
+      }
 
       <footer class="account-prompt">
         <span>¿Aún no tienes una cuenta?</span>

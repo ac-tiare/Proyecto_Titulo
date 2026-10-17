@@ -41,3 +41,51 @@ h2 {
 .empty-state p {
   margin-bottom: 1.25rem;
 }
+
+.record-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.record-card {
+  background: var(--ion-color-light);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+}
+
+.record-heading {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: space-between;
+}
+
+.record-heading h2 {
+  margin: 0;
+}
+
+.record-heading time,
+.record-emotions {
+  color: var(--ion-color-step-700);
+  font-size: 0.9rem;
+}
+
+.record-emotions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.record-emotions span {
+  background: var(--ion-color-step-100);
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+}
+
+.record-note {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}

@@ -84,8 +84,8 @@ describe('HomePage', () => {
     await fixture.whenStable();
 
     expect(session.selectedMood()).toBe('bien');
-    expect(session.records()).toHaveLength(0);
     expect(session.draft()?.moodId).toBe('bien');
+    expect(session.draft()?.saved).toBe(false);
     expect(navigate).toHaveBeenCalledWith(['/registro-emocional']);
   });
 

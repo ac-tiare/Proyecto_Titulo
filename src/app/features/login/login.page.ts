@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonButton,
   IonContent,
@@ -7,6 +7,8 @@ import {
   IonInput,
   IonToast,
 } from '@ionic/angular';
+import { AuthService } from '../../core/firebase/auth.service';
+import { authErrorMessage } from '../../core/firebase/auth-error-message';
 import {
   eyeOffOutline,
   eyeOutline,
@@ -23,6 +25,8 @@ import {
 })
 export class LoginPage {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly auth = inject(AuthService);
 
   readonly brandIcon = heartOutline;
   readonly emailIcon = mailOutline;
@@ -32,9 +36,40 @@ export class LoginPage {
   readonly showPassword = signal(false);
   readonly noticeOpen = signal(false);
   readonly noticeMessage = signal('');
+  readonly email = signal('');
+  readonly password = signal('');
+  readonly errorMessage = signal('');
+  readonly submitting = signal(false);
 
-  continueDemo(): Promise<boolean> {
-    return this.router.navigate(['/inicio']);
+  constructor() {
+    if (this.route.snapshot.queryParamMap.has('sessionError')) {
+      this.errorMessage.set(
+        'No fue posible verificar tu sesión. Revisa tu conexión e inténtalo nuevamente.',
+      );
+    }
+  }
+
+  async signIn(): Promise<void> {
+    this.errorMessage.set('');
+    if (!this.email().trim() || !this.password()) {
+      this.errorMessage.set('Ingresa tu correo electrónico y contraseña.');
+      return;
+    }
+
+    this.submitting.set(true);
+    try {
+      await this.auth.signIn(this.email(), this.password());
+      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+      const destination =
+        returnUrl?.startsWith('/') && !returnUrl.startsWith('//')
+          ? returnUrl
+          : '/inicio';
+      await this.router.navigateByUrl(destination, { replaceUrl: true });
+    } catch (error) {
+      this.errorMessage.set(authErrorMessage(error));
+    } finally {
+      this.submitting.set(false);
+    }
   }
 
   goToRegistration(): Promise<boolean> {

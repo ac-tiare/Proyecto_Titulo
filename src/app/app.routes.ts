@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { authGuard } from './core/firebase/auth.guard';
+
 export const routes: Routes = [
   {
     path: 'login',
@@ -20,6 +22,7 @@ export const routes: Routes = [
   },
   {
     path: '',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./core/layout/main-tabs/main-tabs.component').then(
         (module) => module.MainTabsComponent,
