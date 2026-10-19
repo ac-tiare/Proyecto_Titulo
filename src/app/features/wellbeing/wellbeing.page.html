@@ -1,47 +1,120 @@
-<ion-content class="ion-padding">
+<ion-content class="wellbeing-content">
   <main class="page-content">
-    <p class="eyebrow">BIENESTAR EMOCIONAL</p>
-    <h1>Mi bienestar</h1>
-    <p class="intro">
-      Aquí puedes revisar los registros emocionales de tu cuenta.
-    </p>
+    <header class="page-heading">
+      <p class="eyebrow">BIENESTAR EMOCIONAL</p>
+      <h1>Mi Bienestar</h1>
+      <p class="intro">
+        Revisa tus registros y observa cómo te has sentido a lo largo del tiempo.
+      </p>
+    </header>
 
     @if (loading()) {
-      <p role="status" aria-live="polite">Cargando tus registros…</p>
+      <p class="loading-state" role="status" aria-live="polite">
+        Cargando tu historial emocional…
+      </p>
     } @else if (loadError()) {
-      <section class="empty-state" aria-labelledby="error-heading">
+      <section class="empty-state error-state" aria-labelledby="error-heading">
+        <span class="empty-icon" aria-hidden="true">!</span>
         <h2 id="error-heading">No pudimos cargar tu historial</h2>
         <p role="alert">{{ loadError() }}</p>
         <ion-button expand="block" (click)="loadRecords()">Reintentar</ion-button>
       </section>
-    } @else if (!records().length) {
-      <section class="empty-state" aria-labelledby="empty-heading">
-        <h2 id="empty-heading">Todavía no hay registros</h2>
-        <p>Cuando guardes un registro emocional, aparecerá aquí.</p>
-        <ion-button routerLink="/registro-emocional" expand="block">
-          Registrar cómo me siento
-        </ion-button>
-      </section>
     } @else {
-      <section class="record-list" aria-label="Historial emocional">
-        @for (record of records(); track record.id) {
-          <article class="record-card">
-            <div class="record-heading">
-              <h2>{{ moodLabels[record.moodId] }}</h2>
-              <time>{{ record.date }}</time>
-            </div>
-            <p class="record-emotions">
-              @for (emotionId of record.emotionIds; track emotionId) {
-                <span>{{ emotionLabels[emotionId] }}</span>
-              }
+      <section class="history-section" aria-labelledby="history-heading">
+        <div class="section-title">
+          <div>
+            <h2 id="history-heading">Tu historial</h2>
+            <p>Elige un período para revisar tus registros.</p>
+          </div>
+          <span class="record-count" aria-label="Registros en el período">
+            {{ filteredRecords().length }}
+          </span>
+        </div>
+
+        <div class="period-selector" role="group" aria-label="Filtrar historial por período">
+          <button
+            type="button"
+            [class.active]="selectedPeriod() === 'week'"
+            [attr.aria-pressed]="selectedPeriod() === 'week'"
+            (click)="selectPeriod('week')"
+          >
+            Semana
+          </button>
+          <button
+            type="button"
+            [class.active]="selectedPeriod() === 'month'"
+            [attr.aria-pressed]="selectedPeriod() === 'month'"
+            (click)="selectPeriod('month')"
+          >
+            Mes
+          </button>
+          <button
+            type="button"
+            [class.active]="selectedPeriod() === 'year'"
+            [attr.aria-pressed]="selectedPeriod() === 'year'"
+            (click)="selectPeriod('year')"
+          >
+            Año
+          </button>
+        </div>
+
+        @if (!records().length) {
+          <section class="empty-state" aria-labelledby="empty-heading">
+            <span class="empty-icon" aria-hidden="true">♡</span>
+            <h2 id="empty-heading">Tu historial comienza aquí</h2>
+            <p>
+              Cuando guardes un registro emocional, aparecerá en esta sección.
             </p>
-            @if (record.otherEmotion) {
-              <p><strong>Otra emoción:</strong> {{ record.otherEmotion }}</p>
+            <ion-button routerLink="/registro-emocional" expand="block">
+              Registrar cómo me siento
+            </ion-button>
+          </section>
+        } @else if (!filteredRecords().length) {
+          <section class="empty-state period-empty" aria-live="polite">
+            <h2>Aún no hay registros en este período</h2>
+            <p>
+              Tus registros de otros períodos siguen disponibles. Puedes cambiar
+              el filtro o crear un registro nuevo.
+            </p>
+            <ion-button routerLink="/registro-emocional" expand="block" fill="outline">
+              Registrar cómo me siento
+            </ion-button>
+          </section>
+        } @else {
+          <section class="record-list" aria-label="Historial emocional">
+            @for (record of filteredRecords(); track record.id) {
+              <article class="record-card">
+                <span
+                  class="mood-mark"
+                  [class.mood-positive]="record.moodId === 'muy-bien' || record.moodId === 'bien'"
+                  [class.mood-neutral]="record.moodId === 'mas-o-menos'"
+                  [class.mood-low]="record.moodId === 'mal' || record.moodId === 'muy-mal'"
+                  aria-hidden="true"
+                >
+                  {{ moodEmojis[record.moodId] }}
+                </span>
+                <div class="record-body">
+                  <div class="record-heading">
+                    <h3>{{ moodLabels[record.moodId] }}</h3>
+                    <time>{{ record.date }}</time>
+                  </div>
+                  <div class="record-emotions" aria-label="Emociones seleccionadas">
+                    @for (emotionId of record.emotionIds; track emotionId) {
+                      <span>{{ emotionLabels[emotionId] }}</span>
+                    }
+                  </div>
+                  @if (record.otherEmotion) {
+                    <p class="record-detail">
+                      <strong>Otra emoción:</strong> {{ record.otherEmotion }}
+                    </p>
+                  }
+                  @if (record.note) {
+                    <p class="record-note">{{ record.note }}</p>
+                  }
+                </div>
+              </article>
             }
-            @if (record.note) {
-              <p class="record-note">{{ record.note }}</p>
-            }
-          </article>
+          </section>
         }
       </section>
     }

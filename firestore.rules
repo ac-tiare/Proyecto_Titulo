@@ -1,0 +1,122 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /usuarios/{userId}/registros_emocionales/{recordId} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function hasValidRecord() {
+        let data = request.resource.data;
+        return data.keys().hasAll([
+            'estadoEmocional',
+            'emociones',
+            'usuarioId',
+            'fechaRegistro'
+          ])
+          && data.keys().hasOnly([
+            'estadoEmocional',
+            'emociones',
+            'usuarioId',
+            'fechaRegistro',
+            'nota',
+            'otraEmocion'
+          ])
+          && data.estadoEmocional in [
+            'muy-bien',
+            'bien',
+            'mas-o-menos',
+            'mal',
+            'muy-mal'
+          ]
+          && data.usuarioId == userId
+          && data.fechaRegistro == request.time
+          && data.emociones is list
+          && data.emociones.size() > 0
+          && data.emociones.hasOnly([
+            'tristeza',
+            'ansiedad',
+            'miedo',
+            'enojo',
+            'soledad',
+            'calma',
+            'esperanza',
+            'otra'
+          ])
+          && (
+            !data.keys().hasAny(['nota'])
+            || (data.nota is string && data.nota.size() <= 500)
+          )
+          && (
+            !data.keys().hasAny(['otraEmocion'])
+            || (
+              data.otraEmocion is string
+              && data.otraEmocion.size() > 0
+              && data.otraEmocion.size() <= 500
+              && data.emociones.hasAny(['otra'])
+            )
+          );
+      }
+
+      allow get, list: if isOwner();
+      allow create: if isOwner() && hasValidRecord();
+      allow update, delete: if false;
+    }
+
+    match /usuarios/{userId}/planes_seguridad/{planId} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function hasValidPlanDocument() {
+        return request.resource.data.keys().hasOnly(['usuarioId'])
+          && request.resource.data.usuarioId == userId;
+      }
+
+      allow get: if isOwner();
+      allow create, update: if isOwner() && hasValidPlanDocument();
+      allow list, delete: if false;
+
+      match /personas_lugares/{entryId} {
+        function hasValidEntry() {
+          let data = request.resource.data;
+          return data.keys().hasAll([
+              'tipo',
+              'nombre',
+              'detalle',
+              'usuarioId',
+              'createdAt',
+              'updatedAt'
+            ])
+            && data.keys().hasOnly([
+              'tipo',
+              'nombre',
+              'detalle',
+              'usuarioId',
+              'createdAt',
+              'updatedAt'
+            ])
+            && data.tipo in ['person', 'place']
+            && data.nombre is string
+            && data.nombre.size() > 0
+            && data.nombre.size() <= 100
+            && data.detalle is string
+            && data.detalle.size() <= 300
+            && data.usuarioId == userId
+            && data.createdAt is timestamp
+            && data.updatedAt == request.time;
+        }
+
+        allow get, list: if isOwner();
+        allow create: if isOwner()
+          && hasValidEntry()
+          && request.resource.data.createdAt == request.time;
+        allow update: if isOwner()
+          && hasValidEntry()
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isOwner();
+      }
+    }
+  }
+}

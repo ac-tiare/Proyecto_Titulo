@@ -1,39 +1,349 @@
-.page-content {
-  margin-inline: auto;
-  max-width: 42rem;
-  padding-block: 1rem 2rem;
+.profile-content {
+  --background: #f8f7fc;
 }
 
-.eyebrow {
-  color: var(--ion-color-primary);
+.profile-page {
+  display: grid;
+  gap: 1rem;
+  margin-inline: auto;
+  max-width: 42rem;
+  padding: 1.25rem 1rem calc(2rem + env(safe-area-inset-bottom));
+}
+
+.profile-heading .eyebrow {
+  color: #7c6bc4;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+  margin: 0 0 0.4rem;
 }
 
-h1 {
-  color: var(--ion-color-dark);
-  font-size: clamp(1.8rem, 6vw, 2.5rem);
+.profile-heading h1 {
+  color: #30303d;
+  font-size: clamp(1.8rem, 7vw, 2.4rem);
   line-height: 1.15;
-  margin-block: 0.5rem 1rem;
+  margin: 0;
 }
 
-h2 {
-  color: var(--ion-color-dark);
-  font-size: 1.15rem;
+.profile-heading > p:last-child {
+  color: #747480;
+  line-height: 1.5;
+  margin: 0.4rem 0 0;
 }
 
-.profile-notice {
-  background: var(--ion-color-light);
-  border: 1px solid var(--ion-color-step-150);
-  border-radius: 1rem;
-  margin-bottom: 1rem;
+.account-card,
+.settings-section,
+.session-section {
+  background: #fff;
+  border: 1px solid #ece9f5;
+  border-radius: 1.25rem;
+  box-shadow: 0 0.35rem 1.1rem rgb(48 48 61 / 5%);
   padding: 1rem;
 }
 
-.profile-notice p {
-  color: var(--ion-color-step-700);
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 0;
+.account-summary {
+  align-items: center;
+  display: flex;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.avatar {
+  align-items: center;
+  background: #e7e1fa;
+  border-radius: 50%;
+  color: #6655ae;
+  display: flex;
+  flex: 0 0 3.5rem;
+  font-size: 1.4rem;
+  font-weight: 750;
+  height: 3.5rem;
+  justify-content: center;
+}
+
+.account-copy {
+  min-width: 0;
+}
+
+.account-copy h2 {
+  color: #30303d;
+  font-size: 1.1rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.account-copy p {
+  color: #747480;
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-action {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0.85rem;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  gap: 0.75rem;
+  min-height: 4.4rem;
+  padding: 0.65rem 0.35rem;
+  text-align: start;
+  width: 100%;
+
+  &:focus-visible {
+    outline: 3px solid #7c6bc4;
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    background: #f8f7fc;
+  }
+}
+
+.edit-action {
+  border-top: 1px solid #eeedf3;
+  border-radius: 0;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+}
+
+.action-icon {
+  align-items: center;
+  background: #f1eeff;
+  border-radius: 0.8rem;
+  color: #6655ae;
+  display: flex;
+  flex: 0 0 2.7rem;
+  height: 2.7rem;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 1.35rem;
+  }
+}
+
+.notification-icon {
+  background: #e6f3eb;
+  color: #477457;
+}
+
+.privacy-icon {
+  background: #e5f1f5;
+  color: #39768a;
+}
+
+.action-copy {
+  display: grid;
+  flex: 1;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.action-title {
+  color: #30303d;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.action-description {
+  color: #747480;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.action-chevron {
+  color: #747480;
+  flex: 0 0 auto;
+}
+
+.settings-section h2,
+.session-section h2 {
+  color: #30303d;
+  font-size: 1.05rem;
+  margin: 0 0 0.4rem;
+}
+
+.settings-section .profile-action + .profile-action {
+  border-top: 1px solid #eeedf3;
+  border-radius: 0;
+}
+
+.settings-detail {
+  background: #f8f7fc;
+  border-radius: 0.9rem;
+  margin: 0.25rem 0 0.65rem;
+  padding: 0.8rem;
+
+  > p {
+    color: #747480;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    margin: 0 0 0.55rem;
+  }
+}
+
+.switch-row {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0.6rem;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.5rem 0;
+  text-align: start;
+  width: 100%;
+
+  &:focus-visible {
+    outline: 2px solid #7c6bc4;
+    outline-offset: 2px;
+  }
+}
+
+.switch-title,
+.switch-description {
+  display: block;
+}
+
+.switch-title {
+  color: #30303d;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.switch-description {
+  color: #747480;
+  font-size: 0.78rem;
+  margin-top: 0.15rem;
+}
+
+.switch {
+  background: #d9d8df;
+  border-radius: 999px;
+  flex: 0 0 2.6rem;
+  height: 1.45rem;
+  position: relative;
+
+  &::after {
+    background: #fff;
+    border-radius: 50%;
+    content: '';
+    height: 1.1rem;
+    inset: 0.175rem auto auto 0.175rem;
+    position: absolute;
+    transition: transform 160ms ease;
+    width: 1.1rem;
+  }
+}
+
+.switch-on {
+  background: #7c6bc4;
+
+  &::after {
+    transform: translateX(1.15rem);
+  }
+}
+
+.settings-detail .preview-note,
+.preview-note {
+  color: #747480;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin: 0.55rem 0 0;
+}
+
+.privacy-detail h3 {
+  color: #30303d;
+  font-size: 0.92rem;
+  margin: 0 0 0.35rem;
+}
+
+.profile-editor {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1rem;
+
+  label {
+    color: #30303d;
+    font-size: 0.85rem;
+    font-weight: 650;
+    margin-top: 0.25rem;
+  }
+
+  input {
+    background: #fbfcfc;
+    border: 1px solid #d9e3e5;
+    border-radius: 0.75rem;
+    color: #203a46;
+    font: inherit;
+    min-height: 2.9rem;
+    padding: 0.65rem 0.75rem;
+    width: 100%;
+
+    &:focus-visible {
+      border-color: #28728a;
+      outline: 3px solid rgb(78 145 163 / 30%);
+    }
+  }
+}
+
+.editor-actions {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
+.form-error {
+  color: #a43e48;
+  font-size: 0.82rem;
+  margin: 0.15rem 0;
+}
+
+.profile-feedback {
+  background: #edf5ee;
+  border-radius: 0.8rem;
+  color: #3f6350;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0.8rem;
+}
+
+.sign-out-button {
+  --border-color: #a43e48;
+  --border-radius: 0.9rem;
+  --color: #a43e48;
+  font-weight: 700;
+  margin: 0.65rem 0 0;
+  min-height: 3rem;
+}
+
+.back-button {
+  --color: #6655ae;
+  font-weight: 650;
+  margin: 0;
+}
+
+@media (max-width: 360px) {
+  .profile-page {
+    padding-inline: 0.75rem;
+  }
+
+  .account-card,
+  .settings-section,
+  .session-section {
+    padding: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch::after {
+    transition: none;
+  }
 }

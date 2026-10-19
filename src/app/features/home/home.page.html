@@ -1,8 +1,11 @@
-<ion-content class="home-content" scroll-y="true">
-  <main
-    class="home-page"
-    (pointerdown)="startMobileMouseScroll($event)"
+<ion-content class="home-content" scroll-y="false">
+  <div
+    class="home-scroll"
+    role="region"
+    aria-label="Contenido de inicio"
+    tabindex="0"
   >
+    <main class="home-page">
     <section class="welcome" aria-labelledby="welcome-heading">
       <p class="welcome-eyebrow">Tu espacio de bienestar</p>
       <h1 id="welcome-heading">Hola 👋</h1>
@@ -19,7 +22,11 @@
           <button
             class="mood-option"
             type="button"
-            [attr.aria-label]="'Registrar estado emocional: ' + mood.label"
+            [attr.aria-label]="'Ver consejos para: ' + mood.label"
+            [attr.aria-expanded]="selectedMood() === mood.id"
+            [attr.aria-controls]="selectedMood() === mood.id ? 'mood-advice' : null"
+            [attr.aria-pressed]="selectedMood() === mood.id"
+            [class.is-selected]="selectedMood() === mood.id"
             (click)="selectMood(mood.id)"
           >
             <span class="mood-emoji" aria-hidden="true">{{ mood.emoji }}</span>
@@ -28,9 +35,27 @@
         }
       </div>
       <p class="demo-note">
-        Al elegir un estado, podrás completar tu registro. Se guardará en tu
-        cuenta cuando pulses «Guardar registro».
+        Elegir un estado no guarda el registro. Para guardarlo, completa el
+        formulario y pulsa «Guardar registro».
       </p>
+      @if (selectedMood(); as moodId) {
+        <section class="mood-advice" id="mood-advice" aria-live="polite">
+          <h3>{{ moodAdvice[moodId].title }}</h3>
+          <ul>
+            @for (tip of moodAdvice[moodId].tips; track tip) {
+              <li>{{ tip }}</li>
+            }
+          </ul>
+          <ion-button
+            class="mood-entry-button"
+            expand="block"
+            type="button"
+            (click)="openMoodEntry(moodId)"
+          >
+            Registrar emoción
+          </ion-button>
+        </section>
+      }
     </section>
 
     <section class="wellbeing-card" aria-labelledby="wellbeing-heading">
@@ -94,5 +119,6 @@
         Necesito ayuda
       </ion-button>
     </section>
-  </main>
+    </main>
+  </div>
 </ion-content>

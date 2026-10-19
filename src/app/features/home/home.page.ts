@@ -1,9 +1,4 @@
-import {
-  Component,
-  HostListener,
-  inject,
-  viewChild,
-} from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
   IonButton,
@@ -11,14 +6,6 @@ import {
   IonIcon,
 } from '@ionic/angular';
 import { EmotionalSessionService, MoodId } from '../wellbeing/emotional-session';
-
-interface HomeScrollGesture {
-  pointerId: number;
-  startY: number;
-  startScrollTop: number;
-  scrollElement: HTMLElement | null;
-  moved: boolean;
-}
 
 @Component({
   selector: 'app-home',
@@ -29,10 +16,8 @@ interface HomeScrollGesture {
 export class HomePage {
   private readonly router = inject(Router);
   private readonly emotionalSession = inject(EmotionalSessionService);
-  private readonly content = viewChild.required(IonContent);
-  private scrollElement: HTMLElement | null = null;
-  private scrollGesture: HomeScrollGesture | null = null;
 
+  readonly selectedMood = signal<MoodId | null>(null);
   readonly moods: readonly { id: MoodId; label: string; emoji: string }[] = [
     { id: 'muy-bien', label: 'Muy bien', emoji: '😄' },
     { id: 'bien', label: 'Bien', emoji: '🙂' },
@@ -41,73 +26,54 @@ export class HomePage {
     { id: 'muy-mal', label: 'Muy mal', emoji: '😣' },
   ];
 
-  startMobileMouseScroll(event: PointerEvent): void {
-    const target = event.target;
-    if (
-      event.pointerType !== 'mouse' ||
-      event.button !== 0 ||
-      window.innerWidth > 600 ||
-      (target instanceof Element &&
-        target.closest('a, button, input, textarea, select, [role="button"]'))
-    ) {
-      return;
-    }
+  readonly moodAdvice: Record<MoodId, { title: string; tips: readonly string[] }> = {
+    'muy-bien': {
+      title: 'Disfruta y cuida este momento',
+      tips: [
+        'Date un momento para reconocer qué te está haciendo sentir bien.',
+        'Comparte esta energía con alguien de confianza, si te apetece.',
+        'Guarda una idea de lo que te ayuda para volver a ella otro día.',
+      ],
+    },
+    bien: {
+      title: 'Sostén lo que te hace bien',
+      tips: [
+        'Haz una pausa breve y nota cómo se siente tu cuerpo.',
+        'Mantén algún hábito sencillo que te ayude a estar en equilibrio.',
+        'Si puedes, dedica un momento a algo que disfrutes.',
+      ],
+    },
+    'mas-o-menos': {
+      title: 'Ve paso a paso',
+      tips: [
+        'Ponle nombre a lo que sientes, sin juzgarte por ello.',
+        'Prueba respirar despacio y apoyar los pies firmemente en el suelo.',
+        'Elige una tarea pequeña y amable para este momento.',
+      ],
+    },
+    mal: {
+      title: 'Acompáñate con amabilidad',
+      tips: [
+        'Permítete sentir sin exigirte resolverlo todo ahora.',
+        'Busca un lugar tranquilo y toma unas respiraciones pausadas.',
+        'Considera contarle a alguien de confianza cómo estás.',
+      ],
+    },
+    'muy-mal': {
+      title: 'Prioriza tu seguridad y busca apoyo',
+      tips: [
+        'Ve a un lugar donde te sientas más seguro y haz una cosa pequeña a la vez.',
+        'Contacta a alguien de confianza y dile claramente que necesitas compañía.',
+        'Si estás en peligro inmediato, busca ayuda de emergencia en tu zona.',
+      ],
+    },
+  };
 
-    const gesture: HomeScrollGesture = {
-      pointerId: event.pointerId,
-      startY: event.clientY,
-      startScrollTop: this.scrollElement?.scrollTop ?? 0,
-      scrollElement: this.scrollElement,
-      moved: false,
-    };
-    this.scrollGesture = gesture;
-
-    if (!gesture.scrollElement) {
-      void this.content()
-        .getScrollElement()
-        .then((element) => {
-          this.scrollElement = element;
-          if (this.scrollGesture === gesture) {
-            gesture.scrollElement = element;
-            gesture.startScrollTop = element.scrollTop;
-          }
-        });
-    }
+  selectMood(moodId: MoodId): void {
+    this.selectedMood.update((selected) => selected === moodId ? null : moodId);
   }
 
-  @HostListener('window:pointermove', ['$event'])
-  moveMobileMouseScroll(event: PointerEvent): void {
-    const gesture = this.scrollGesture;
-    if (
-      !gesture ||
-      gesture.pointerId !== event.pointerId ||
-      !gesture.scrollElement
-    ) {
-      return;
-    }
-
-    const distanceY = gesture.startY - event.clientY;
-    if (!gesture.moved && Math.abs(distanceY) < 6) {
-      return;
-    }
-
-    gesture.moved = true;
-    gesture.scrollElement.scrollTop = gesture.startScrollTop + distanceY;
-    event.preventDefault();
-  }
-
-  @HostListener('window:pointerup', ['$event'])
-  @HostListener('window:pointercancel', ['$event'])
-  finishMobileMouseScroll(event: PointerEvent): void {
-    const gesture = this.scrollGesture;
-    if (!gesture || gesture.pointerId !== event.pointerId) {
-      return;
-    }
-
-    this.scrollGesture = null;
-  }
-
-  async selectMood(moodId: MoodId): Promise<void> {
+  async openMoodEntry(moodId: MoodId): Promise<void> {
     this.emotionalSession.startDraft(moodId);
     await this.router.navigate(['/registro-emocional']);
   }

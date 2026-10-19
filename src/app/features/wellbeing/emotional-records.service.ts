@@ -26,6 +26,7 @@ export interface EmotionalRecord {
   note: string;
   otherEmotion: string;
   date: string;
+  dateTimestamp: number;
 }
 
 interface EmotionalRecordWrite {
@@ -173,6 +174,7 @@ export class EmotionalRecordsService {
         dateStyle: 'medium',
         timeStyle: 'short',
       }),
+      dateTimestamp: document.fechaRegistro.toMillis(),
     };
   }
 }

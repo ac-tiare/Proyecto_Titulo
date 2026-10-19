@@ -2,6 +2,22 @@
   --background: #f8f7fc;
 }
 
+.home-scroll {
+  box-sizing: border-box;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: -2px;
+  }
+}
+
 .home-page {
   --home-primary: #7c6bc4;
   --home-text: #30303d;
@@ -112,6 +128,10 @@ h2 {
   background: #f9e1e7;
 }
 
+.mood-option.is-selected {
+  border-color: var(--home-primary);
+}
+
 .mood-option:focus-visible,
 .action-card:focus-visible,
 .home-help-button:focus-visible,
@@ -138,6 +158,39 @@ h2 {
   line-height: 1.45;
   margin: 0.7rem 0 0;
   padding-inline: 0.15rem;
+}
+
+.mood-advice {
+  background: #f8f7fc;
+  border-radius: 1rem;
+  margin-top: 0.8rem;
+  padding: 0.85rem;
+
+  h3 {
+    color: var(--home-text);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  ul {
+    color: var(--home-muted);
+    line-height: 1.45;
+    margin: 0.55rem 0 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  li + li {
+    margin-top: 0.35rem;
+  }
+}
+
+.mood-entry-button {
+  --background: #7c6bc4;
+  --background-activated: #6553ad;
+  --border-radius: 0.85rem;
+  --color: #fff;
+  font-weight: 700;
+  margin: 0.8rem 0 0;
 }
 
 .wellbeing-card {
