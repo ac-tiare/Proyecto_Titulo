@@ -11,6 +11,10 @@ const firestoreSdk = vi.hoisted(() => {
     toDate(): Date {
       return this.date;
     }
+
+    toMillis(): number {
+      return this.date.getTime();
+    }
   }
 
   return {
@@ -167,6 +171,7 @@ describe('EmotionalRecordsService', () => {
         emotionIds: ['ansiedad', 'soledad'],
         note: 'Nota',
         otherEmotion: '',
+        dateTimestamp: new Date('2026-10-16T05:30:00.000Z').getTime(),
       },
     ]);
   });

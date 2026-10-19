@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { FirebaseError } from 'firebase/app';
 
 import { AuthService } from '../../core/firebase/auth.service';
 import { RegisterPage } from './register.page';
@@ -143,6 +144,32 @@ describe('RegisterPage', () => {
     expect(fixture.componentInstance.values().name).toBe('Alex');
     expect(fixture.componentInstance.confirmation()).toContain(
       'No fue posible completar la operación.',
+    );
+  });
+
+  it('shows the same eight-character minimum when Firebase rejects a weak password', async () => {
+    const auth = createAuthMock();
+    auth.register.mockRejectedValue(
+      new FirebaseError('auth/weak-password', 'Weak password'),
+    );
+    await TestBed.configureTestingModule({
+      imports: [RegisterPage],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: auth },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(RegisterPage);
+    fixture.componentInstance.updateField('name', 'Alex');
+    fixture.componentInstance.updateField('email', 'alex@example.cl');
+    fixture.componentInstance.updateField('password', 'secure-password');
+    fixture.componentInstance.updateField('confirmPassword', 'secure-password');
+
+    await fixture.componentInstance.submit();
+
+    expect(fixture.componentInstance.confirmation()).toBe(
+      'La contraseña debe tener al menos 8 caracteres.',
     );
   });
 

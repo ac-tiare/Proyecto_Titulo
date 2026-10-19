@@ -1,37 +1,281 @@
-<ion-content class="ion-padding">
+<ion-content class="safety-plan-content">
   <main class="page-content">
-    <p class="eyebrow">HERRAMIENTAS DE APOYO</p>
-    <h1>Mi plan de seguridad</h1>
+    <header class="page-heading">
+      <p class="eyebrow">HERRAMIENTAS DE APOYO</p>
+      <h1>Mi Plan de Seguridad</h1>
+      <p class="intro">
+        Prepara ideas y apoyos que quieras tener a mano en un momento difícil.
+        Puedes completar solo las secciones que te sirvan.
+      </p>
+    </header>
+
     <p class="demo-banner" role="note">
-      Contenido orientativo de demostración: no es un plan personal y no se
-      guarda en esta versión.
+      Las personas y lugares de apoyo se guardan en tu cuenta de forma privada.
+      Las demás secciones de este plan son una vista previa temporal.
     </p>
 
-    <p class="intro">
-      Si te sirve, puedes pensar con anticipación en apoyos que quisieras tener
-      a mano en un momento difícil.
-    </p>
+    <ol class="plan-steps" aria-label="Etapas del plan de seguridad">
+      @for (section of sections; track section.id; let index = $index) {
+        <li class="plan-step">
+          <span class="step-number" aria-hidden="true">{{ index + 1 }}</span>
+          <section class="plan-card" [attr.aria-labelledby]="section.id + '-heading'">
+            <div class="card-heading">
+              <div>
+                <p class="step-label">ETAPA {{ index + 1 }}</p>
+                <h2 [id]="section.id + '-heading'">{{ section.title }}</h2>
+              </div>
+              @if (isSectionComplete(section.id)) {
+                <span class="complete-badge">Completada</span>
+              }
+            </div>
+            <p class="section-description">{{ section.description }}</p>
 
-    <section class="plan-prompt">
-      <h2>Señales para hacer una pausa</h2>
-      <p>
-        Reflexiona sobre situaciones o sensaciones que te indiquen que podría
-        ayudarte detenerte y buscar compañía.
-      </p>
+            @if (section.id === 'support-places') {
+              @if (supportLoading()) {
+                <p class="support-status" role="status">Cargando tus personas y lugares…</p>
+              } @else if (supportLoadError()) {
+                <p class="support-error" role="alert">{{ supportLoadError() }}</p>
+                <ion-button
+                  type="button"
+                  fill="outline"
+                  (click)="loadSupportEntries()"
+                >
+                  Reintentar
+                </ion-button>
+              } @else {
+                @if (supportEntries().length) {
+                  <ul class="support-entry-list" aria-label="Personas y lugares guardados">
+                    @for (entry of supportEntries(); track entry.id) {
+                      <li class="support-entry">
+                        <div class="support-entry-copy">
+                          <span
+                            class="support-type"
+                            [class.place-type]="entry.type === 'place'"
+                          >
+                            {{ supportTypeLabel(entry.type) }}
+                          </span>
+                          <h3>{{ entry.name }}</h3>
+                          @if (entry.details) {
+                            <p>{{ entry.details }}</p>
+                          }
+                        </div>
+                        @if (deleteConfirmationId() === entry.id) {
+                          <div class="delete-confirmation">
+                            <p>¿Eliminar este registro?</p>
+                            <ion-button
+                              type="button"
+                              color="danger"
+                              fill="outline"
+                              [disabled]="deletingSupportId() === entry.id"
+                              (click)="deleteSupportEntry(entry)"
+                            >
+                              {{ deletingSupportId() === entry.id ? 'Eliminando…' : 'Confirmar' }}
+                            </ion-button>
+                            <ion-button
+                              type="button"
+                              fill="clear"
+                              (click)="cancelSupportDelete()"
+                            >
+                              Cancelar
+                            </ion-button>
+                          </div>
+                        } @else {
+                          <div class="support-entry-actions">
+                            <ion-button
+                              type="button"
+                              fill="clear"
+                              aria-label="Editar {{ entry.name }}"
+                              (click)="editSupportEntry(entry)"
+                            >
+                              Editar
+                            </ion-button>
+                            <ion-button
+                              type="button"
+                              fill="clear"
+                              color="danger"
+                              aria-label="Eliminar {{ entry.name }}"
+                              [disabled]="deletingSupportId() === entry.id"
+                              (click)="deleteSupportEntry(entry)"
+                            >
+                              Eliminar
+                            </ion-button>
+                          </div>
+                        }
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="empty-section">
+                    Aún no has agregado personas o lugares de apoyo.
+                  </p>
+                }
+
+                @if (supportNotice()) {
+                  <p class="support-notice" role="status" aria-live="polite">
+                    {{ supportNotice() }}
+                  </p>
+                }
+                @if (supportMutationError() && !supportFormOpen()) {
+                  <p class="support-error" role="alert">
+                    {{ supportMutationError() }}
+                  </p>
+                }
+
+                @if (supportFormOpen()) {
+                  <div class="section-editor">
+                    <label for="support-type">¿Qué quieres agregar?</label>
+                    <select
+                      id="support-type"
+                      [value]="supportType()"
+                      (change)="updateSupportType($event)"
+                    >
+                      <option value="person">Persona</option>
+                      <option value="place">Lugar</option>
+                    </select>
+                    <label for="support-name">
+                      {{ supportType() === 'person' ? 'Nombre de la persona' : 'Nombre del lugar' }}
+                    </label>
+                    <input
+                      id="support-name"
+                      type="text"
+                      maxlength="100"
+                      [value]="supportName()"
+                      (input)="updateSupportName($event)"
+                    />
+                    <label for="support-details">
+                      {{ supportType() === 'person' ? 'Contacto o cómo puede apoyarme (opcional)' : 'Ubicación o referencia (opcional)' }}
+                    </label>
+                    <textarea
+                      id="support-details"
+                      rows="3"
+                      maxlength="300"
+                      [value]="supportDetails()"
+                      (input)="updateSupportDetails($event)"
+                    ></textarea>
+                    @if (supportMutationError()) {
+                      <p class="support-error" role="alert">
+                        {{ supportMutationError() }}
+                      </p>
+                    }
+                    <div class="editor-actions">
+                      <ion-button
+                        type="button"
+                        expand="block"
+                        [disabled]="supportSaving()"
+                        (click)="saveSupportEntry()"
+                      >
+                        {{
+                          supportSaving()
+                            ? 'Guardando…'
+                            : editingSupportId()
+                              ? 'Guardar cambios'
+                              : 'Agregar a mi plan'
+                        }}
+                      </ion-button>
+                      <ion-button
+                        type="button"
+                        expand="block"
+                        fill="outline"
+                        [disabled]="supportSaving()"
+                        (click)="cancelSupportEdit()"
+                      >
+                        Cancelar
+                      </ion-button>
+                    </div>
+                  </div>
+                } @else {
+                  <ion-button
+                    class="section-action"
+                    type="button"
+                    fill="outline"
+                    (click)="openSupportForm()"
+                  >
+                    Agregar persona o lugar
+                  </ion-button>
+                }
+              }
+            } @else if (editingSection() === section.id) {
+              <div class="section-editor">
+                <label [for]="section.id + '-entries'">{{ section.prompt }}</label>
+                <textarea
+                  [id]="section.id + '-entries'"
+                  rows="4"
+                  maxlength="2000"
+                  [value]="draftText()"
+                  (input)="updateDraft($event)"
+                ></textarea>
+                <p class="editor-hint">Puedes escribir varios elementos, uno por línea.</p>
+                <div class="editor-actions">
+                  <ion-button
+                    type="button"
+                    expand="block"
+                    (click)="saveSection(section.id)"
+                  >
+                    Guardar en esta vista
+                  </ion-button>
+                  <ion-button
+                    type="button"
+                    expand="block"
+                    fill="outline"
+                    (click)="cancelEdit()"
+                  >
+                    Cancelar
+                  </ion-button>
+                </div>
+              </div>
+            } @else {
+              @if (sectionEntries(section.id).length) {
+                <ul class="entry-list">
+                  @for (entry of sectionEntries(section.id); track $index) {
+                    <li>{{ entry }}</li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty-section">Aún no has agregado información.</p>
+              }
+              <ion-button
+                class="section-action"
+                type="button"
+                fill="outline"
+                (click)="openEditor(section.id)"
+              >
+                {{ sectionLabel(section.id) }}
+              </ion-button>
+            }
+          </section>
+        </li>
+      }
+    </ol>
+
+    <section class="official-help" aria-labelledby="official-help-heading">
+      <div class="help-icon" aria-hidden="true">i</div>
+      <div class="official-help-copy">
+        <p class="step-label">APOYO INMEDIATO</p>
+        <h2 id="official-help-heading">Canales oficiales de ayuda</h2>
+        <p>
+          Si estás en Metro, puedes acercarte al personal de una estación y
+          pedir apoyo. Ante peligro inmediato, contacta los servicios locales
+          de emergencia.
+        </p>
+        <a
+          class="official-link"
+          href="https://www.metro.cl/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Sitio oficial de Metro de Santiago
+        </a>
+        <ion-button routerLink="/necesito-ayuda" expand="block">
+          Ver opciones de ayuda
+        </ion-button>
+      </div>
     </section>
-    <section class="plan-prompt">
-      <h2>Acciones cotidianas que te ayudan</h2>
-      <p>
-        Piensa en actividades sencillas que suelen ayudarte a sentirte más
-        acompañado o en calma.
-      </p>
-    </section>
-    <section class="plan-prompt">
-      <h2>Personas a quienes podrías acudir</h2>
-      <p>
-        Considera a quién te gustaría contactar y cómo podrías pedirle apoyo.
-        En esta etapa no se añaden ni guardan contactos.
-      </p>
-    </section>
+
+    <p class="privacy-note" role="note">
+      Las personas y lugares de apoyo se consultan y guardan bajo tu cuenta en
+      Cloud Firestore. Las demás secciones aún no se guardan. No incluyas datos
+      sensibles que no quieras registrar. Este plan no reemplaza ayuda
+      profesional ni los servicios de emergencia.
+    </p>
   </main>
 </ion-content>

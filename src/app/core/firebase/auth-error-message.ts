@@ -20,7 +20,7 @@ export function authErrorMessage(error: unknown): string {
     case 'auth/email-already-in-use':
       return 'Ya existe una cuenta con ese correo electrónico.';
     case 'auth/weak-password':
-      return 'La contraseña debe tener al menos 6 caracteres.';
+      return 'La contraseña debe tener al menos 8 caracteres.';
     case 'auth/too-many-requests':
       return 'Hubo demasiados intentos. Espera un momento e inténtalo nuevamente.';
     case 'auth/network-request-failed':

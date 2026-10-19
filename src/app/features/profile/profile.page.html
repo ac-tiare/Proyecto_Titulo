@@ -1,22 +1,186 @@
-<ion-content class="ion-padding">
-  <main class="page-content">
-    <p class="eyebrow">CONTIGO</p>
-    <h1>Perfil</h1>
-    <section class="profile-notice" aria-labelledby="profile-heading">
-      <h2 id="profile-heading">{{ user()?.displayName || 'Tu cuenta' }}</h2>
-      <p>{{ user()?.email }}</p>
+<ion-content class="profile-content">
+  <main class="profile-page">
+    <header class="profile-heading">
+      <p class="eyebrow">CONTIGO</p>
+      <h1>Mi Perfil</h1>
+      <p>Tu cuenta y las preferencias de tu espacio.</p>
+    </header>
+
+    <section class="account-card" aria-labelledby="account-heading">
+      <div class="account-summary">
+        <span class="avatar" aria-hidden="true">{{ profileInitial }}</span>
+        <div class="account-copy">
+          <h2 id="account-heading">{{ profileName() }}</h2>
+          <p>{{ profileEmail() }}</p>
+        </div>
+      </div>
+
+      @if (editingProfile()) {
+        <form class="profile-editor" (submit)="$event.preventDefault(); saveProfile()">
+          <label for="profile-name">Nombre</label>
+          <input
+            id="profile-name"
+            type="text"
+            autocomplete="name"
+            [value]="draftName()"
+            (input)="updateDraftName($event)"
+          />
+          <label for="profile-email">Correo electrónico</label>
+          <input
+            id="profile-email"
+            type="email"
+            autocomplete="email"
+            [value]="draftEmail()"
+            (input)="updateDraftEmail($event)"
+          />
+          @if (editError()) {
+            <p class="form-error" role="alert">{{ editError() }}</p>
+          }
+          <div class="editor-actions">
+            <ion-button type="submit" expand="block">Aplicar cambios</ion-button>
+            <ion-button
+              type="button"
+              fill="outline"
+              expand="block"
+              (click)="cancelProfileEdit()"
+            >
+              Cancelar
+            </ion-button>
+          </div>
+          <p class="preview-note">
+            Esta vista previa no modifica ni guarda los datos de tu cuenta.
+          </p>
+        </form>
+      } @else {
+        <button class="profile-action edit-action" type="button" (click)="openProfileEditor()">
+          <span class="action-icon" aria-hidden="true">
+            <ion-icon name="create-outline"></ion-icon>
+          </span>
+          <span class="action-copy">
+            <span class="action-title">Editar información del perfil</span>
+            <span class="action-description">Nombre y correo electrónico</span>
+          </span>
+          <ion-icon class="action-chevron" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </button>
+      }
     </section>
-    <ion-button
-      expand="block"
-      color="medium"
-      [disabled]="signingOut()"
-      (click)="signOut()"
-    >
-      {{ signingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
-    </ion-button>
-    <ion-button routerLink="/inicio" expand="block" fill="outline">
+
+    @if (feedback()) {
+      <p class="profile-feedback" role="status" aria-live="polite">{{ feedback() }}</p>
+    }
+
+    <section class="settings-section" aria-labelledby="settings-heading">
+      <h2 id="settings-heading">Configuración</h2>
+      <button
+        class="profile-action"
+        type="button"
+        aria-controls="notification-settings"
+        [attr.aria-expanded]="notificationsOpen()"
+        (click)="toggleNotifications()"
+      >
+        <span class="action-icon notification-icon" aria-hidden="true">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </span>
+        <span class="action-copy">
+          <span class="action-title">Notificaciones</span>
+          <span class="action-description">Gestiona tus preferencias de avisos</span>
+        </span>
+        <ion-icon
+          class="action-chevron"
+          [name]="notificationsOpen() ? 'chevron-down-outline' : 'chevron-forward-outline'"
+          aria-hidden="true"
+        ></ion-icon>
+      </button>
+      <div
+        class="settings-detail"
+        id="notification-settings"
+        [hidden]="!notificationsOpen()"
+      >
+          <p>Elige qué avisos quieres recibir en esta vista previa.</p>
+          <button
+            class="switch-row"
+            type="button"
+            role="switch"
+            [attr.aria-checked]="remindersEnabled()"
+            (click)="toggleReminders()"
+          >
+            <span>
+              <span class="switch-title">Recordatorios</span>
+              <span class="switch-description">Pausas y cuidado personal</span>
+            </span>
+            <span class="switch" [class.switch-on]="remindersEnabled()" aria-hidden="true"></span>
+          </button>
+          <button
+            class="switch-row"
+            type="button"
+            role="switch"
+            [attr.aria-checked]="wellbeingTipsEnabled()"
+            (click)="toggleWellbeingTips()"
+          >
+            <span>
+              <span class="switch-title">Consejos de bienestar</span>
+              <span class="switch-description">Contenido de apoyo de CONTIGO</span>
+            </span>
+            <span class="switch" [class.switch-on]="wellbeingTipsEnabled()" aria-hidden="true"></span>
+          </button>
+          <p class="preview-note">Las preferencias aún no se guardan en el dispositivo.</p>
+      </div>
+
+      <button
+        class="profile-action"
+        type="button"
+        aria-controls="privacy-details"
+        [attr.aria-expanded]="privacyOpen()"
+        (click)="togglePrivacy()"
+      >
+        <span class="action-icon privacy-icon" aria-hidden="true">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+        </span>
+        <span class="action-copy">
+          <span class="action-title">Privacidad y seguridad</span>
+          <span class="action-description">Información para proteger tu cuenta</span>
+        </span>
+        <ion-icon
+          class="action-chevron"
+          [name]="privacyOpen() ? 'chevron-down-outline' : 'chevron-forward-outline'"
+          aria-hidden="true"
+        ></ion-icon>
+      </button>
+      <div
+        class="settings-detail privacy-detail"
+        id="privacy-details"
+        [hidden]="!privacyOpen()"
+      >
+          <h3>Cuida tu cuenta</h3>
+          <p>
+            Usa una contraseña segura y no la compartas. Si utilizas un dispositivo
+            compartido, cierra tu sesión al terminar.
+          </p>
+          <p>
+            La edición del perfil y las preferencias de esta pantalla son una vista
+            previa; todavía no se sincronizan con tu cuenta.
+          </p>
+      </div>
+    </section>
+
+    <section class="session-section" aria-labelledby="session-heading">
+      <h2 id="session-heading">Tu sesión</h2>
+      <ion-button
+        class="sign-out-button"
+        expand="block"
+        fill="outline"
+        [disabled]="signingOut()"
+        (click)="signOut()"
+      >
+        <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
+        {{ signingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
+      </ion-button>
+    </section>
+
+    <ion-button class="back-button" routerLink="/inicio" expand="block" fill="clear">
       Volver a Inicio
     </ion-button>
+
     @if (errorMessage()) {
       <p role="alert">{{ errorMessage() }}</p>
     }

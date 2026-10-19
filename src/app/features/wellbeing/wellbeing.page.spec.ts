@@ -15,6 +15,7 @@ describe('WellbeingPage', () => {
     note: 'Hoy fue un día difícil.',
     otherEmotion: '',
     date: '16 oct 2026, 02:30',
+    dateTimestamp: Date.now(),
   };
 
   const configure = async (service: { listForCurrentUser: ReturnType<typeof vi.fn> }) =>
@@ -56,6 +57,111 @@ describe('WellbeingPage', () => {
     expect(content).toContain('Soledad');
     expect(content).toContain('Hoy fue un día difícil.');
     expect(content).toContain('16 oct 2026, 02:30');
+    expect(content).toContain('Semana');
+    expect(content).toContain('Mes');
+    expect(content).toContain('Año');
+  });
+
+  it('filters the history by week, month, and year', async () => {
+    const currentWeekRecord = {
+      ...sampleRecord,
+      id: 'this-week',
+      dateTimestamp: new Date('2026-10-16T12:00:00').getTime(),
+    };
+    const previousMonthRecord = {
+      ...sampleRecord,
+      id: 'this-month',
+      dateTimestamp: new Date('2026-10-01T12:00:00').getTime(),
+    };
+    const previousYearRecord = {
+      ...sampleRecord,
+      id: 'this-year',
+      dateTimestamp: new Date('2026-03-15T12:00:00').getTime(),
+    };
+    const lastYearRecord = {
+      ...sampleRecord,
+      id: 'last-year',
+      dateTimestamp: new Date('2025-05-15T12:00:00').getTime(),
+    };
+    const records = {
+      listForCurrentUser: vi.fn().mockResolvedValue([
+        currentWeekRecord,
+        previousMonthRecord,
+        previousYearRecord,
+        lastYearRecord,
+      ]),
+    };
+    await configure(records);
+
+    const fixture = TestBed.createComponent(WellbeingPage);
+    const page = fixture.componentInstance;
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-18T12:00:00'));
+    try {
+      await page.loadRecords();
+      fixture.detectChanges();
+
+      expect(page.filteredRecords().map((record) => record.id)).toEqual([
+        'this-week',
+      ]);
+
+      const periodButtons = Array.from(
+        fixture.nativeElement.querySelectorAll('.period-selector button'),
+      ) as HTMLButtonElement[];
+      const monthButton = periodButtons.find(
+        (button) => button.textContent?.trim() === 'Mes',
+      );
+      expect(monthButton).toBeDefined();
+      monthButton?.click();
+      fixture.detectChanges();
+      expect(page.filteredRecords().map((record) => record.id)).toEqual([
+        'this-week',
+        'this-month',
+      ]);
+
+      const yearButton = periodButtons.find(
+        (button) => button.textContent?.trim() === 'Año',
+      );
+      expect(yearButton).toBeDefined();
+      yearButton?.click();
+      fixture.detectChanges();
+      expect(page.filteredRecords().map((record) => record.id)).toEqual([
+        'this-week',
+        'this-month',
+        'this-year',
+      ]);
+      expect(yearButton?.getAttribute('aria-pressed')).toBe('true');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows an empty message when a selected period has no records', async () => {
+    const records = {
+      listForCurrentUser: vi.fn().mockResolvedValue([
+        {
+          ...sampleRecord,
+          dateTimestamp: new Date('2025-05-15T12:00:00').getTime(),
+        },
+      ]),
+    };
+    await configure(records);
+
+    const fixture = TestBed.createComponent(WellbeingPage);
+    const page = fixture.componentInstance;
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-18T12:00:00'));
+    try {
+      await page.loadRecords();
+      page.selectPeriod('week');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain(
+        'Aún no hay registros en este período',
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('distinguishes query errors from an empty history and allows retry', async () => {

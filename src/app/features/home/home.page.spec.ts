@@ -4,22 +4,6 @@ import { provideRouter, Router } from '@angular/router';
 import { EmotionalSessionService } from '../wellbeing/emotional-session';
 import { HomePage } from './home.page';
 
-function dispatchMousePointer(
-  target: HTMLElement,
-  type: string,
-  pointerId: number,
-  clientY: number,
-): void {
-  const event = new Event(type, { bubbles: true, cancelable: true });
-  Object.defineProperties(event, {
-    pointerId: { value: pointerId },
-    pointerType: { value: 'mouse' },
-    button: { value: 0 },
-    clientY: { value: clientY },
-  });
-  target.dispatchEvent(event);
-}
-
 describe('HomePage', () => {
   it('shows the greeting, emotional options, supportive message, and support links', async () => {
     await TestBed.configureTestingModule({
@@ -33,7 +17,12 @@ describe('HomePage', () => {
     const contentElement = fixture.nativeElement.querySelector(
       'ion-content',
     ) as HTMLIonContentElement;
-    expect(contentElement.scrollY).toBe(true);
+    expect(contentElement.scrollY).toBe(false);
+    const scrollRegion = fixture.nativeElement.querySelector(
+      '.home-scroll',
+    ) as HTMLElement;
+    expect(scrollRegion.getAttribute('role')).toBe('region');
+    expect(scrollRegion.getAttribute('tabindex')).toBe('0');
 
     const content = fixture.nativeElement.textContent as string;
     expect(content).toContain('Hola 👋');
@@ -48,6 +37,9 @@ describe('HomePage', () => {
     expect(content).toContain('Regular');
     expect(content).toContain('Mal');
     expect(content).toContain('Muy mal');
+    expect(content).toContain(
+      'Elegir un estado no lo guarda; solo se almacena si completas y guardas tu registro emocional.',
+    );
     expect(content).toContain('Mi Plan de Seguridad');
     expect(content).toContain('Mi Red de Apoyo');
     expect(content).toContain('Información y recursos');
@@ -65,7 +57,7 @@ describe('HomePage', () => {
     ]);
   });
 
-  it('opens the emotional entry screen with the session-only mood selection', async () => {
+  it('shows advice when an emotion is selected and opens its emotional entry on request', async () => {
     await TestBed.configureTestingModule({
       imports: [HomePage],
       providers: [provideRouter([])],
@@ -78,9 +70,22 @@ describe('HomePage', () => {
     fixture.detectChanges();
 
     const bienButton: HTMLButtonElement = fixture.nativeElement.querySelector(
-      '[aria-label="Registrar estado emocional: Bien"]',
+      '[aria-label="Ver consejos para: Bien"]',
     );
     bienButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Sostén lo que te hace bien');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Mantén algún hábito sencillo que te ayude a estar en equilibrio.',
+    );
+    expect(navigate).not.toHaveBeenCalled();
+    expect(session.draft()).toBeNull();
+
+    const entryButton = fixture.nativeElement.querySelector(
+      '.mood-entry-button',
+    ) as HTMLIonButtonElement;
+    entryButton.click();
     await fixture.whenStable();
 
     expect(session.selectedMood()).toBe('bien');
@@ -89,154 +94,28 @@ describe('HomePage', () => {
     expect(navigate).toHaveBeenCalledWith(['/registro-emocional']);
   });
 
-  it('supports mouse-drag scrolling in a mobile-width viewport', async () => {
-    const originalWidth = window.innerWidth;
-    Object.defineProperty(window, 'innerWidth', {
-      configurable: true,
-      value: 375,
-    });
+  it('shows safety-oriented advice for feeling very bad and lets the selection be dismissed', async () => {
+    await TestBed.configureTestingModule({
+      imports: [HomePage],
+      providers: [provideRouter([])],
+    }).compileComponents();
 
-    try {
-      await TestBed.configureTestingModule({
-        imports: [HomePage],
-        providers: [provideRouter([])],
-      }).compileComponents();
+    const fixture = TestBed.createComponent(HomePage);
+    fixture.detectChanges();
 
-      const fixture = TestBed.createComponent(HomePage);
-      fixture.detectChanges();
-      await fixture.whenStable();
+    const veryBadButton: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '[aria-label="Ver consejos para: Muy mal"]',
+    );
+    veryBadButton.click();
+    fixture.detectChanges();
 
-      const scrollElement = document.createElement('div');
-      Reflect.set(fixture.componentInstance, 'scrollElement', scrollElement);
-      const home = fixture.nativeElement.querySelector(
-        '.home-page',
-      ) as HTMLElement;
+    expect(fixture.nativeElement.textContent).toContain('Prioriza tu seguridad y busca apoyo');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Si estás en peligro inmediato, busca ayuda de emergencia en tu zona.',
+    );
 
-      dispatchMousePointer(home, 'pointerdown', 7, 300);
-      dispatchMousePointer(home, 'pointermove', 7, 180);
-
-      expect(scrollElement.scrollTop).toBe(120);
-
-      dispatchMousePointer(home, 'pointerup', 7, 180);
-    } finally {
-      Object.defineProperty(window, 'innerWidth', {
-        configurable: true,
-        value: originalWidth,
-      });
-    }
-  });
-
-  it('loads the Ionic scroll element when a mobile mouse drag starts', async () => {
-    const originalWidth = window.innerWidth;
-    Object.defineProperty(window, 'innerWidth', {
-      configurable: true,
-      value: 375,
-    });
-
-    try {
-      await TestBed.configureTestingModule({
-        imports: [HomePage],
-        providers: [provideRouter([])],
-      }).compileComponents();
-
-      const fixture = TestBed.createComponent(HomePage);
-      fixture.detectChanges();
-
-      const scrollElement = document.createElement('div');
-      const getScrollElement = vi.fn().mockResolvedValue(scrollElement);
-      Reflect.set(fixture.componentInstance, 'content', () => ({
-        getScrollElement,
-      }));
-
-      const home = fixture.nativeElement.querySelector(
-        '.home-page',
-      ) as HTMLElement;
-      dispatchMousePointer(home, 'pointerdown', 10, 300);
-      await Promise.resolve();
-      dispatchMousePointer(home, 'pointermove', 10, 180);
-
-      expect(getScrollElement).toHaveBeenCalledOnce();
-      expect(scrollElement.scrollTop).toBe(120);
-
-      dispatchMousePointer(home, 'pointerup', 10, 180);
-    } finally {
-      Object.defineProperty(window, 'innerWidth', {
-        configurable: true,
-        value: originalWidth,
-      });
-    }
-  });
-
-  it('does not convert mouse drags into scrolling on desktop-width viewports', async () => {
-    const originalWidth = window.innerWidth;
-    Object.defineProperty(window, 'innerWidth', {
-      configurable: true,
-      value: 900,
-    });
-
-    try {
-      await TestBed.configureTestingModule({
-        imports: [HomePage],
-        providers: [provideRouter([])],
-      }).compileComponents();
-
-      const fixture = TestBed.createComponent(HomePage);
-      fixture.detectChanges();
-      await fixture.whenStable();
-
-      const scrollElement = document.createElement('div');
-      Reflect.set(fixture.componentInstance, 'scrollElement', scrollElement);
-      const home = fixture.nativeElement.querySelector(
-        '.home-page',
-      ) as HTMLElement;
-
-      dispatchMousePointer(home, 'pointerdown', 8, 300);
-      dispatchMousePointer(home, 'pointermove', 8, 180);
-
-      expect(scrollElement.scrollTop).toBe(0);
-    } finally {
-      Object.defineProperty(window, 'innerWidth', {
-        configurable: true,
-        value: originalWidth,
-      });
-    }
-  });
-
-  it('keeps button interaction areas out of mouse-drag scrolling', async () => {
-    const originalWidth = window.innerWidth;
-    Object.defineProperty(window, 'innerWidth', {
-      configurable: true,
-      value: 375,
-    });
-
-    try {
-      await TestBed.configureTestingModule({
-        imports: [HomePage],
-        providers: [provideRouter([])],
-      }).compileComponents();
-
-      const fixture = TestBed.createComponent(HomePage);
-      fixture.detectChanges();
-      await fixture.whenStable();
-
-      const scrollElement = document.createElement('div');
-      Reflect.set(fixture.componentInstance, 'scrollElement', scrollElement);
-      const button = fixture.nativeElement.querySelector(
-        '.mood-option',
-      ) as HTMLButtonElement;
-      const home = fixture.nativeElement.querySelector(
-        '.home-page',
-      ) as HTMLElement;
-
-      dispatchMousePointer(button, 'pointerdown', 9, 300);
-      dispatchMousePointer(home, 'pointermove', 9, 180);
-
-      expect(scrollElement.scrollTop).toBe(0);
-    } finally {
-      Object.defineProperty(window, 'innerWidth', {
-        configurable: true,
-        value: originalWidth,
-      });
-    }
+    veryBadButton.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.mood-advice')).toBeNull();
   });
 });
