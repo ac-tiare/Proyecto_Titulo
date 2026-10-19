@@ -48,6 +48,9 @@ describe('HomePage', () => {
     expect(content).toContain('Regular');
     expect(content).toContain('Mal');
     expect(content).toContain('Muy mal');
+    expect(content).toContain(
+      'Al elegir un estado, podrás completar tu registro. Se guardará en tu cuenta cuando pulses «Guardar registro».',
+    );
     expect(content).toContain('Mi Plan de Seguridad');
     expect(content).toContain('Mi Red de Apoyo');
     expect(content).toContain('Información y recursos');
