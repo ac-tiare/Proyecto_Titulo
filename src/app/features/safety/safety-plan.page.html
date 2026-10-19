@@ -58,6 +58,9 @@
                           @if (entry.details) {
                             <p>{{ entry.details }}</p>
                           }
+                          @if (entry.type === 'person' && entry.phone) {
+                            <p>Teléfono: {{ entry.phone }}</p>
+                          }
                         </div>
                         @if (deleteConfirmationId() === entry.id) {
                           <div class="delete-confirmation">
@@ -152,6 +155,19 @@
                       [value]="supportDetails()"
                       (input)="updateSupportDetails($event)"
                     ></textarea>
+                    @if (supportType() === 'person') {
+                      <label for="support-phone">Teléfono (opcional)</label>
+                      <input
+                        id="support-phone"
+                        type="tel"
+                        inputmode="tel"
+                        autocomplete="tel"
+                        maxlength="24"
+                        placeholder="+56912345678"
+                        [value]="supportPhone()"
+                        (input)="updateSupportPhone($event)"
+                      />
+                    }
                     @if (supportMutationError()) {
                       <p class="support-error" role="alert">
                         {{ supportMutationError() }}

@@ -36,6 +36,7 @@ describe('application routes', () => {
         'inicio',
         'bienestar',
         'registro-emocional',
+        'mi-bienestar',
         'plan-seguridad',
         'red-apoyo',
         'necesito-ayuda',

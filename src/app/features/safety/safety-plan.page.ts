@@ -81,6 +81,7 @@ export class SafetyPlanPage {
   readonly supportType = signal<SafetySupportType>('person');
   readonly supportName = signal('');
   readonly supportDetails = signal('');
+  readonly supportPhone = signal('');
 
   ionViewWillEnter(): void {
     void this.loadSupportEntries();
@@ -105,6 +106,7 @@ export class SafetyPlanPage {
     this.supportType.set('person');
     this.supportName.set('');
     this.supportDetails.set('');
+    this.supportPhone.set('');
     this.supportMutationError.set('');
     this.supportNotice.set('');
     this.deleteConfirmationId.set(null);
@@ -116,6 +118,7 @@ export class SafetyPlanPage {
     this.supportType.set(entry.type);
     this.supportName.set(entry.name);
     this.supportDetails.set(entry.details);
+    this.supportPhone.set(entry.phone);
     this.supportMutationError.set('');
     this.supportNotice.set('');
     this.deleteConfirmationId.set(null);
@@ -128,6 +131,9 @@ export class SafetyPlanPage {
       (event.target.value === 'person' || event.target.value === 'place')
     ) {
       this.supportType.set(event.target.value);
+      if (event.target.value === 'place') {
+        this.supportPhone.set('');
+      }
     }
   }
 
@@ -140,6 +146,12 @@ export class SafetyPlanPage {
   updateSupportDetails(event: Event): void {
     if (event.target instanceof HTMLTextAreaElement) {
       this.supportDetails.set(event.target.value);
+    }
+  }
+
+  updateSupportPhone(event: Event): void {
+    if (event.target instanceof HTMLInputElement) {
+      this.supportPhone.set(event.target.value);
     }
   }
 
@@ -160,7 +172,12 @@ export class SafetyPlanPage {
     this.supportNotice.set('');
     try {
       const entryId = this.editingSupportId();
-      const input = { type: this.supportType(), name, details };
+      const input = {
+        type: this.supportType(),
+        name,
+        details,
+        phone: this.supportPhone(),
+      };
       if (entryId) {
         await this.supportService.update(entryId, input);
         this.supportNotice.set('El registro de apoyo fue actualizado.');

@@ -23,6 +23,7 @@ export interface SafetySupportEntry {
   type: SafetySupportType;
   name: string;
   details: string;
+  phone: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -31,6 +32,7 @@ interface SafetySupportDocument {
   tipo: unknown;
   nombre: unknown;
   detalle: unknown;
+  telefono?: unknown;
   usuarioId: unknown;
   createdAt: unknown;
   updatedAt: unknown;
@@ -63,9 +65,15 @@ export class SafetyPlanSupportService {
     type: SafetySupportType;
     name: string;
     details: string;
+    phone?: string;
   }): Promise<void> {
     const user = this.requireUser();
-    const { name, details } = this.validateInput(input.name, input.details);
+    const { name, details, phone } = this.validateInput(
+      input.type,
+      input.name,
+      input.details,
+      input.phone ?? '',
+    );
     await this.ensurePlanDocument(user.uid);
     const entries = collection(
       this.firebase.firestore,
@@ -79,6 +87,7 @@ export class SafetyPlanSupportService {
       tipo: input.type,
       nombre: name,
       detalle: details,
+      telefono: phone,
       usuarioId: user.uid,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -87,10 +96,20 @@ export class SafetyPlanSupportService {
 
   async update(
     entryId: string,
-    input: { type: SafetySupportType; name: string; details: string },
+    input: {
+      type: SafetySupportType;
+      name: string;
+      details: string;
+      phone?: string;
+    },
   ): Promise<void> {
     const user = this.requireUser();
-    const { name, details } = this.validateInput(input.name, input.details);
+    const { name, details, phone } = this.validateInput(
+      input.type,
+      input.name,
+      input.details,
+      input.phone ?? '',
+    );
     const entry = doc(
       this.firebase.firestore,
       'usuarios',
@@ -104,6 +123,7 @@ export class SafetyPlanSupportService {
       tipo: input.type,
       nombre: name,
       detalle: details,
+      telefono: phone,
       updatedAt: serverTimestamp(),
     });
   }
@@ -141,19 +161,34 @@ export class SafetyPlanSupportService {
     await setDoc(plan, { usuarioId: userId }, { merge: true });
   }
 
-  private validateInput(nameInput: string, detailsInput: string): {
+  private validateInput(
+    type: SafetySupportType,
+    nameInput: string,
+    detailsInput: string,
+    phoneInput: string,
+  ): {
     name: string;
     details: string;
+    phone: string;
   } {
     const name = nameInput.trim();
     const details = detailsInput.trim();
+    const phone = phoneInput.trim().replace(/[\s()-]/g, '');
     if (!name || name.length > 100) {
       throw new Error('El nombre debe tener entre 1 y 100 caracteres.');
     }
     if (details.length > 300) {
       throw new Error('Los detalles no pueden superar los 300 caracteres.');
     }
-    return { name, details };
+    if (
+      phone &&
+      (type !== 'person' || !/^\+?\d{7,15}$/.test(phone))
+    ) {
+      throw new Error(
+        'Ingresa un teléfono válido con 7 a 15 dígitos, o déjalo en blanco.',
+      );
+    }
+    return { name, details, phone };
   }
 
   private toEntry(
@@ -165,6 +200,7 @@ export class SafetyPlanSupportService {
       'tipo',
       'nombre',
       'detalle',
+      'telefono',
       'usuarioId',
       'createdAt',
       'updatedAt',
@@ -180,6 +216,13 @@ export class SafetyPlanSupportService {
       data.nombre.length > 100 ||
       typeof data.detalle !== 'string' ||
       data.detalle.length > 300 ||
+      (data.telefono !== undefined &&
+        (typeof data.telefono !== 'string' ||
+          data.telefono.length > 16 ||
+          (data.telefono !== '' && !/^\+?\d{7,15}$/.test(data.telefono)))) ||
+      (data.tipo === 'place' &&
+        data.telefono !== undefined &&
+        data.telefono !== '') ||
       data.usuarioId !== userId ||
       !(data.createdAt instanceof Timestamp) ||
       !(data.updatedAt instanceof Timestamp)
@@ -194,6 +237,7 @@ export class SafetyPlanSupportService {
       type: data.tipo,
       name: data.nombre,
       details: data.detalle,
+      phone: typeof data.telefono === 'string' ? data.telefono : '',
       createdAt: data.createdAt.toMillis(),
       updatedAt: data.updatedAt.toMillis(),
     };

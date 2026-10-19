@@ -93,6 +93,7 @@ service cloud.firestore {
               'tipo',
               'nombre',
               'detalle',
+              'telefono',
               'usuarioId',
               'createdAt',
               'updatedAt'
@@ -103,6 +104,18 @@ service cloud.firestore {
             && data.nombre.size() <= 100
             && data.detalle is string
             && data.detalle.size() <= 300
+            && (
+              !data.keys().hasAny(['telefono'])
+              || (
+                data.telefono is string
+                && data.telefono.size() <= 16
+                && (
+                  data.telefono == ''
+                  || data.telefono.matches('^\\+?[0-9]{7,15}$')
+                )
+                && (data.tipo == 'person' || data.telefono == '')
+              )
+            )
             && data.usuarioId == userId
             && data.createdAt is timestamp
             && data.updatedAt == request.time;

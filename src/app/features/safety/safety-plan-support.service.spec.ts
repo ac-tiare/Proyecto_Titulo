@@ -59,6 +59,7 @@ describe('SafetyPlanSupportService', () => {
       type: 'person',
       name: '  Alex  ',
       details: '  Puede acompañarme  ',
+      phone: ' +56 9 1234-5678 ',
     });
 
     expect(firestoreSdk.doc).toHaveBeenCalledWith(
@@ -85,6 +86,7 @@ describe('SafetyPlanSupportService', () => {
       tipo: 'person',
       nombre: 'Alex',
       detalle: 'Puede acompañarme',
+      telefono: '+56912345678',
       usuarioId: 'user-1',
       createdAt: timestamp,
       updatedAt: timestamp,
@@ -126,6 +128,7 @@ describe('SafetyPlanSupportService', () => {
         type: 'place',
         name: 'Plaza tranquila',
         details: 'Cerca de casa',
+        phone: '',
         createdAt: createdAt.toMillis(),
         updatedAt: updatedAt.toMillis(),
       },
@@ -150,6 +153,7 @@ describe('SafetyPlanSupportService', () => {
       tipo: 'place',
       nombre: 'Biblioteca',
       detalle: '',
+      telefono: '',
       updatedAt: 'server-time',
     });
 
@@ -183,6 +187,19 @@ describe('SafetyPlanSupportService', () => {
         details: '',
       }),
     ).rejects.toThrow('entre 1 y 100 caracteres');
+    expect(firestoreSdk.addDoc).not.toHaveBeenCalled();
+  });
+
+  it('rejects invalid phone numbers before writing', async () => {
+    const service = TestBed.inject(SafetyPlanSupportService);
+    await expect(
+      service.create({
+        type: 'person',
+        name: 'Alex',
+        details: '',
+        phone: 'tel:+56 9 123',
+      }),
+    ).rejects.toThrow('Ingresa un teléfono válido');
     expect(firestoreSdk.addDoc).not.toHaveBeenCalled();
   });
 });

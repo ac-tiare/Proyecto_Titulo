@@ -1,4 +1,4 @@
-<ion-content class="ion-padding">
+<ion-content class="need-help-content">
   <main class="page-content">
     <p class="eyebrow">APOYO HUMANO</p>
     <h1>Necesito ayuda</h1>
@@ -7,28 +7,131 @@
       persona que te genere confianza y cuéntale cómo te sientes.
     </p>
 
-    <section class="help-card" aria-labelledby="trusted-person-heading">
-      <h2 id="trusted-person-heading">Habla con alguien</h2>
-      <p>
-        Puedes contactar a una persona de confianza. Si estás en Metro, también
-        puedes acercarte a un trabajador o al personal de una estación y decir
-        que necesitas apoyo.
-      </p>
-    </section>
+    <ion-card class="help-card">
+      <ion-card-header>
+        <ion-card-title>Línea nacional *4141</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Si necesitas apoyo, puedes llamar a la línea de prevención del
+          suicidio. CONTIGO te pedirá confirmación antes de abrir la aplicación
+          de teléfono.
+        </p>
+        <ion-button
+          expand="block"
+          class="official-call-button"
+          type="button"
+          (click)="callOfficialLine()"
+        >
+          Llamar al *4141
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
 
-    <section class="urgent-card" aria-labelledby="urgent-heading">
-      <h2 id="urgent-heading">Si hay peligro inmediato</h2>
-      <p>
-        Si tú u otra persona no está a salvo, busca ayuda humana de inmediato:
-        contacta los servicios de emergencia locales o acude a un centro de
-        urgencia.
-      </p>
-    </section>
+    <ion-card class="contact-card">
+      <ion-card-header>
+        <ion-card-title>Contacta a alguien de confianza</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        @if (loading()) {
+          <p role="status">Cargando tus contactos…</p>
+        } @else if (loadError()) {
+          <p class="load-error" role="alert">{{ loadError() }}</p>
+          <ion-button type="button" fill="outline" (click)="loadContacts()">
+            Reintentar
+          </ion-button>
+        } @else if (contacts().length === 0) {
+          <p>
+            Aún no tienes personas guardadas. Puedes agregarlas junto con su
+            teléfono en tu Plan de Seguridad.
+          </p>
+          <ion-button
+            type="button"
+            fill="outline"
+            routerLink="/plan-seguridad"
+          >
+            Agregar contacto de confianza
+          </ion-button>
+        } @else {
+          <ul class="contact-list" aria-label="Contactos de confianza">
+            @for (contact of contacts(); track contact.id) {
+              <li>
+                <div class="contact-copy">
+                  <h2>{{ contact.name }}</h2>
+                  @if (contact.details) {
+                    <p>{{ contact.details }}</p>
+                  }
+                  @if (contact.phone) {
+                    <p class="contact-phone">{{ contact.phone }}</p>
+                  } @else {
+                    <p class="missing-phone">
+                      Agrega un teléfono en tu Plan de Seguridad para llamar o
+                      enviar un SMS.
+                    </p>
+                  }
+                </div>
+                @if (contact.phone) {
+                  <div class="contact-actions">
+                    <ion-button
+                      type="button"
+                      fill="outline"
+                      (click)="callContact(contact)"
+                    >
+                      Llamar
+                    </ion-button>
+                    <ion-button
+                      type="button"
+                      fill="outline"
+                      (click)="messageContact(contact)"
+                    >
+                      SMS
+                    </ion-button>
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+          <ion-button
+            type="button"
+            fill="clear"
+            routerLink="/plan-seguridad"
+          >
+            Administrar contactos
+          </ion-button>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="urgent-card">
+      <ion-card-header>
+        <ion-card-title>Si hay peligro inmediato</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          Si tú u otra persona no está a salvo, busca ayuda humana de inmediato:
+          contacta los servicios de emergencia locales o acude a un centro de
+          urgencia. Si estás en Metro, puedes acercarte a un trabajador o al
+          personal de una estación.
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <nav class="quick-links" aria-label="Accesos rápidos">
+      <ion-button expand="block" fill="outline" routerLink="/red-apoyo">
+        Mi Red de Apoyo
+      </ion-button>
+      <ion-button expand="block" fill="outline" routerLink="/plan-seguridad">
+        Mi Plan de Seguridad
+      </ion-button>
+      <ion-button expand="block" fill="outline" routerLink="/mi-bienestar">
+        Registro Emocional
+      </ion-button>
+    </nav>
 
     <p class="scope-note" role="note">
       CONTIGO no es un servicio de emergencia, no diagnostica ni reemplaza la
-      atención profesional. No hay teléfonos de ayuda verificados en esta
-      versión.
+      atención profesional. Las llamadas y los mensajes solo se abren tras tu
+      confirmación y no se envían automáticamente.
     </p>
   </main>
 </ion-content>

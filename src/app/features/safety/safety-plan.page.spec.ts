@@ -104,6 +104,7 @@ describe('SafetyPlanPage', () => {
       type: 'person',
       name: 'Alex',
       details: 'Puede acompañarme',
+      phone: '+56912345678',
       createdAt: 1,
       updatedAt: 1,
     };
@@ -135,22 +136,26 @@ describe('SafetyPlanPage', () => {
     page.openSupportForm();
     page.supportName.set('Alex');
     page.supportDetails.set('Puede acompañarme');
+    page.supportPhone.set('+56912345678');
     await page.saveSupportEntry();
     expect(service.create).toHaveBeenCalledWith({
       type: 'person',
       name: 'Alex',
       details: 'Puede acompañarme',
+      phone: '+56912345678',
     });
     expect(page.supportEntries()).toEqual([entry]);
 
     page.editSupportEntry(entry);
     page.supportName.set('Alex actualizado');
     page.supportDetails.set('Disponible por teléfono');
+    page.supportPhone.set('+56912345678');
     await page.saveSupportEntry();
     expect(service.update).toHaveBeenCalledWith('support-1', {
       type: 'person',
       name: 'Alex actualizado',
       details: 'Disponible por teléfono',
+      phone: '+56912345678',
     });
     expect(page.supportEntries()).toEqual([editedEntry]);
 

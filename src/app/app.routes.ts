@@ -48,6 +48,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'mi-bienestar',
+        loadComponent: () =>
+          import('./features/wellbeing/emotional-entry.page').then(
+            (module) => module.EmotionalEntryPage,
+          ),
+      },
+      {
         path: 'plan-seguridad',
         loadComponent: () =>
           import('./features/safety/safety-plan.page').then(
