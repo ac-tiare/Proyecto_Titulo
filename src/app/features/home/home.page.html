@@ -36,7 +36,7 @@
       </div>
       <p class="demo-note">
         Selecciona una emoción para continuar. Tu registro se guardará solo al
-        pulsar «Guardar registro».
+        pulsar «Registrar emoción».
       </p>
       @if (selectedMood(); as moodId) {
         <section class="mood-advice" id="mood-advice" aria-live="polite">
@@ -52,7 +52,7 @@
             type="button"
             (click)="openMoodEntry(moodId)"
           >
-            Registrar emoción
+            Guardar registro
           </ion-button>
         </section>
       }
