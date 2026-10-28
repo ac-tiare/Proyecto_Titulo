@@ -1,8 +1,6 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, computed, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { IonButton, IonContent, IonIcon, IonToast } from '@ionic/angular';
-import { AuthService } from '../../core/firebase/auth.service';
-import { authErrorMessage } from '../../core/firebase/auth-error-message';
 
 @Component({
   selector: 'app-profile',
@@ -11,17 +9,13 @@ import { authErrorMessage } from '../../core/firebase/auth-error-message';
   imports: [IonButton, IonContent, IonIcon, IonToast, RouterLink],
 })
 export class ProfilePage {
-  private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
-
-  readonly user = this.auth.user;
   private readonly updatedName = signal<string | null>(null);
   private readonly updatedEmail = signal<string | null>(null);
   readonly profileName = computed(
-    () => this.updatedName() ?? this.user()?.displayName ?? 'Usuario CONTIGO',
+    () => this.updatedName() ?? 'Usuario CONTIGO',
   );
   readonly profileEmail = computed(
-    () => this.updatedEmail() ?? this.user()?.email ?? 'Correo no disponible',
+    () => this.updatedEmail() ?? 'Correo no disponible',
   );
   readonly editingProfile = signal(false);
   readonly draftName = signal('');
@@ -34,7 +28,6 @@ export class ProfilePage {
   readonly wellbeingTipsEnabled = signal(false);
   readonly errorMessage = signal('');
   readonly noticeOpen = signal(false);
-  readonly signingOut = signal(false);
 
   get profileInitial(): string {
     return this.profileName().trim().charAt(0).toLocaleUpperCase('es-CL') || 'C';
@@ -103,17 +96,10 @@ export class ProfilePage {
     this.wellbeingTipsEnabled.update((enabled) => !enabled);
   }
 
-  async signOut(): Promise<void> {
-    this.signingOut.set(true);
-    this.errorMessage.set('');
-    try {
-      await this.auth.signOut();
-      await this.router.navigate(['/login'], { replaceUrl: true });
-    } catch (error) {
-      this.errorMessage.set(authErrorMessage(error));
-      this.noticeOpen.set(true);
-    } finally {
-      this.signingOut.set(false);
-    }
+  signOut(): void {
+    this.errorMessage.set(
+      'La gestión de sesiones está temporalmente inactiva; no hay una sesión que cerrar.',
+    );
+    this.noticeOpen.set(true);
   }
 }

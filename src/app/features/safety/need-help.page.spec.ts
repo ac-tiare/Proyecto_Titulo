@@ -3,7 +3,6 @@ import { provideRouter } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
 
 import { Capacitor } from '@capacitor/core';
-import { SafetyPlanSupportService } from './safety-plan-support.service';
 import { NeedHelpPage } from './need-help.page';
 
 const capacitorMock = vi.hoisted(() => ({
@@ -15,18 +14,6 @@ vi.mock('@capacitor/core', () => ({
 }));
 
 describe('NeedHelpPage', () => {
-  const contact = {
-    id: 'contact-1',
-    type: 'person' as const,
-    name: 'Alex',
-    details: 'Puede acompañarme',
-    phone: '+56912345678',
-    createdAt: 1,
-    updatedAt: 1,
-  };
-  const createSupportService = () => ({
-    list: vi.fn().mockResolvedValue([]),
-  });
   const alert = {
     present: vi.fn(),
     onDidDismiss: vi.fn(),
@@ -38,7 +25,6 @@ describe('NeedHelpPage', () => {
   const toastController = {
     create: vi.fn(),
   };
-  let supportService: ReturnType<typeof createSupportService>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -46,20 +32,18 @@ describe('NeedHelpPage', () => {
     alert.onDidDismiss.mockResolvedValue({ role: 'cancel' });
     alertController.create.mockResolvedValue(alert);
     toastController.create.mockResolvedValue(toast);
-    supportService = createSupportService();
 
     await TestBed.configureTestingModule({
       imports: [NeedHelpPage],
       providers: [
         provideRouter([]),
-        { provide: SafetyPlanSupportService, useValue: supportService },
         { provide: AlertController, useValue: alertController },
         { provide: ToastController, useValue: toastController },
       ],
     }).compileComponents();
   });
 
-  it('shows the official line and the three requested shortcuts', () => {
+  it('shows the official line, direct shortcuts, and contact-storage limitation', () => {
     const fixture = TestBed.createComponent(NeedHelpPage);
     fixture.detectChanges();
 
@@ -67,26 +51,18 @@ describe('NeedHelpPage', () => {
     expect(content).toContain('Línea nacional *4141');
     expect(content).toContain('Si hay peligro inmediato');
     expect(content).toContain('no se envían automáticamente');
+    expect(content).toContain('los datos remotos no se han eliminado');
     expect(
       Array.from(
         fixture.nativeElement.querySelectorAll('ion-button[routerlink]'),
         (button: Element) => button.getAttribute('href'),
       ),
-    ).toEqual(['/plan-seguridad', '/red-apoyo', '/plan-seguridad', '/mi-bienestar']);
-  });
-
-  it('loads saved people and excludes saved places', async () => {
-    supportService.list.mockResolvedValue([
-      contact,
-      { ...contact, id: 'place-1', name: 'Biblioteca', type: 'place' },
+    ).toEqual([
+      '/red-apoyo',
+      '/red-apoyo',
+      '/plan-seguridad',
+      '/mi-bienestar',
     ]);
-    const fixture = TestBed.createComponent(NeedHelpPage);
-    await fixture.componentInstance.loadContacts();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.contacts()).toEqual([contact]);
-    expect(fixture.nativeElement.textContent).toContain('Alex');
-    expect(fixture.nativeElement.textContent).not.toContain('Biblioteca');
   });
 
   it('requires confirmation and explains the number on devices without phone intents', async () => {
@@ -120,7 +96,7 @@ describe('NeedHelpPage', () => {
     expect(toastController.create).not.toHaveBeenCalled();
   });
 
-  it('opens a confirmed call or SMS only after user confirmation', async () => {
+  it('opens the official call intent only after user confirmation', async () => {
     vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
     alert.onDidDismiss.mockResolvedValue({ role: 'confirm' });
     const clickedUris: string[] = [];
@@ -131,29 +107,10 @@ describe('NeedHelpPage', () => {
     );
     const page = TestBed.createComponent(NeedHelpPage).componentInstance;
 
-    await page.callContact(contact);
-    await page.messageContact(contact);
+    await page.callOfficialLine();
 
-    expect(clickedUris).toEqual([
-      'tel:+56912345678',
-      'sms:+56912345678',
-    ]);
-    expect(alert.present).toHaveBeenCalledTimes(2);
+    expect(clickedUris).toEqual(['tel:*4141']);
+    expect(alert.present).toHaveBeenCalledOnce();
     expect(toastController.create).not.toHaveBeenCalled();
-  });
-
-  it('shows Firestore errors rather than silently treating them as no contacts', async () => {
-    supportService.list.mockRejectedValue(new Error('permission-denied'));
-    const fixture = TestBed.createComponent(NeedHelpPage);
-
-    await fixture.componentInstance.loadContacts();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.loadError()).toContain(
-      'reglas de Firestore',
-    );
-    expect(fixture.nativeElement.textContent).not.toContain(
-      'Aún no tienes personas guardadas.',
-    );
   });
 });

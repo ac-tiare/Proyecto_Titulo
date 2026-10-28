@@ -13,6 +13,10 @@
         <p class="welcome-copy">
           Un momento para ti, cuando lo necesites.
         </p>
+        <p class="field-hint" role="note">
+          El acceso a cuentas está temporalmente inactivo. Este formulario no
+          enviará tus datos.
+        </p>
       </header>
 
       <div class="login-fields">
@@ -93,10 +97,9 @@
         class="login-button"
         expand="block"
         type="button"
-        [disabled]="submitting()"
         (click)="signIn()"
       >
-        {{ submitting() ? 'Iniciando sesión…' : 'Iniciar sesión' }}
+        Iniciar sesión
       </ion-button>
 
       @if (errorMessage()) {

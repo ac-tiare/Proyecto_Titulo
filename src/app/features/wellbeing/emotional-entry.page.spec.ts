@@ -2,22 +2,17 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
 import { EmotionalSessionService } from './emotional-session';
-import { EmotionalRecordsService } from './emotional-records.service';
 import { EmotionalEntryPage } from './emotional-entry.page';
 
 describe('EmotionalEntryPage', () => {
-  const createRecordsMock = () => ({
-    save: vi.fn().mockResolvedValue(undefined),
-  });
+  const configure = async () =>
+    TestBed.configureTestingModule({
+      imports: [EmotionalEntryPage],
+      providers: [provideRouter([])],
+    }).compileComponents();
 
   it('shows all required mood, emotion, note, and date fields accessibly', async () => {
-    await TestBed.configureTestingModule({
-      imports: [EmotionalEntryPage],
-      providers: [
-        provideRouter([]),
-        { provide: EmotionalRecordsService, useValue: createRecordsMock() },
-      ],
-    }).compileComponents();
+    await configure();
 
     const fixture = TestBed.createComponent(EmotionalEntryPage);
     fixture.detectChanges();
@@ -41,17 +36,11 @@ describe('EmotionalEntryPage', () => {
   });
 
   it('starts with the mood selected on Inicio and allows replacing it', async () => {
-    await TestBed.configureTestingModule({
-      imports: [EmotionalEntryPage],
-      providers: [
-        provideRouter([]),
-        { provide: EmotionalRecordsService, useValue: createRecordsMock() },
-      ],
-    }).compileComponents();
+    await configure();
 
-    const fixture = TestBed.createComponent(EmotionalEntryPage);
     const session = TestBed.inject(EmotionalSessionService);
     session.startDraft('mal');
+    const fixture = TestBed.createComponent(EmotionalEntryPage);
     fixture.detectChanges();
 
     expect(
@@ -72,13 +61,7 @@ describe('EmotionalEntryPage', () => {
   });
 
   it('shows the optional field only while Otra is selected', async () => {
-    await TestBed.configureTestingModule({
-      imports: [EmotionalEntryPage],
-      providers: [
-        provideRouter([]),
-        { provide: EmotionalRecordsService, useValue: createRecordsMock() },
-      ],
-    }).compileComponents();
+    await configure();
 
     const fixture = TestBed.createComponent(EmotionalEntryPage);
     fixture.detectChanges();
@@ -99,20 +82,13 @@ describe('EmotionalEntryPage', () => {
     );
   });
 
-  it('validates required fields and does not write an incomplete record', async () => {
-    const records = createRecordsMock();
-    await TestBed.configureTestingModule({
-      imports: [EmotionalEntryPage],
-      providers: [
-        provideRouter([]),
-        { provide: EmotionalRecordsService, useValue: records },
-      ],
-    }).compileComponents();
+  it('validates required fields and does not save an incomplete record', async () => {
+    await configure();
 
     const fixture = TestBed.createComponent(EmotionalEntryPage);
+    const session = TestBed.inject(EmotionalSessionService);
     fixture.detectChanges();
-
-    await fixture.componentInstance.save();
+    fixture.componentInstance.save();
 
     expect(fixture.componentInstance.saveMessage()).toContain(
       'Selecciona un estado emocional.',
@@ -120,24 +96,11 @@ describe('EmotionalEntryPage', () => {
     expect(fixture.componentInstance.saveMessage()).toContain(
       'Selecciona al menos una emoción.',
     );
-    expect(records.save).not.toHaveBeenCalled();
+    expect(session.records()).toHaveLength(0);
   });
 
-  it('saves a valid record once and confirms only after Firestore resolves', async () => {
-    const records = createRecordsMock();
-    let resolveSave!: () => void;
-    records.save.mockReturnValue(
-      new Promise<void>((resolve) => {
-        resolveSave = resolve;
-      }),
-    );
-    await TestBed.configureTestingModule({
-      imports: [EmotionalEntryPage],
-      providers: [
-        provideRouter([]),
-        { provide: EmotionalRecordsService, useValue: records },
-      ],
-    }).compileComponents();
+  it('saves valid records once in session memory and reports the persistence limit', async () => {
+    await configure();
 
     const session = TestBed.inject(EmotionalSessionService);
     session.startDraft('bien');
@@ -148,88 +111,46 @@ describe('EmotionalEntryPage', () => {
     fixture.componentInstance.updateOtherEmotion('Alivio');
     fixture.componentInstance.toggleEmotion('calma');
     fixture.componentInstance.updateNote('Hoy me siento con calma.');
+    fixture.componentInstance.save();
+    fixture.detectChanges();
 
-    const firstSave = fixture.componentInstance.save();
-    await fixture.componentInstance.save();
-    expect(fixture.componentInstance.saving()).toBe(true);
-    expect(fixture.componentInstance.saveMessage()).toBe('');
-    expect(records.save).toHaveBeenCalledOnce();
-    expect(records.save).toHaveBeenCalledWith({
+    expect(session.records()).toHaveLength(1);
+    expect(session.records()[0]).toMatchObject({
       moodId: 'bien',
       emotionIds: ['otra', 'calma'],
-      note: 'Hoy me siento con calma.',
       otherEmotion: 'Alivio',
+      note: 'Hoy me siento con calma.',
     });
-
-    resolveSave();
-    await firstSave;
-    fixture.detectChanges();
-    expect(fixture.componentInstance.saveMessage()).toBe(
-      'Tu registro emocional fue guardado.',
+    expect(fixture.componentInstance.saveMessage()).toContain(
+      'se perderá al cerrar o recargar la app',
     );
     expect(fixture.nativeElement.querySelector('.save-button').disabled).toBe(true);
+
+    fixture.componentInstance.save();
+    expect(session.records()).toHaveLength(1);
   });
 
   it('allows valid saves without optional text', async () => {
-    const records = createRecordsMock();
-    await TestBed.configureTestingModule({
-      imports: [EmotionalEntryPage],
-      providers: [
-        provideRouter([]),
-        { provide: EmotionalRecordsService, useValue: records },
-      ],
-    }).compileComponents();
+    await configure();
 
     const session = TestBed.inject(EmotionalSessionService);
     session.startDraft('bien');
     const fixture = TestBed.createComponent(EmotionalEntryPage);
     fixture.detectChanges();
-    fixture.componentInstance.toggleEmotion('otra');
     fixture.componentInstance.toggleEmotion('esperanza');
 
-    await fixture.componentInstance.save();
+    fixture.componentInstance.save();
 
-    expect(records.save).toHaveBeenCalledWith({
+    expect(session.records()[0]).toMatchObject({
       moodId: 'bien',
-      emotionIds: ['otra', 'esperanza'],
+      emotionIds: ['esperanza'],
       note: '',
       otherEmotion: '',
     });
   });
 
-  it('shows Firestore errors and allows retrying the save', async () => {
-    const records = createRecordsMock();
-    records.save.mockRejectedValueOnce(new Error('permission-denied'));
-    await TestBed.configureTestingModule({
-      imports: [EmotionalEntryPage],
-      providers: [
-        provideRouter([]),
-        { provide: EmotionalRecordsService, useValue: records },
-      ],
-    }).compileComponents();
-
-    const session = TestBed.inject(EmotionalSessionService);
-    session.startDraft('bien');
-    const fixture = TestBed.createComponent(EmotionalEntryPage);
-    fixture.detectChanges();
-    fixture.componentInstance.toggleEmotion('calma');
-
-    await fixture.componentInstance.save();
-
-    expect(fixture.componentInstance.saveMessage()).toContain(
-      'permisos de Firestore',
-    );
-    expect(fixture.nativeElement.querySelector('.save-button').disabled).toBe(false);
-  });
-
   it('discards an unconfirmed draft when closing the registration', async () => {
-    await TestBed.configureTestingModule({
-      imports: [EmotionalEntryPage],
-      providers: [
-        provideRouter([]),
-        { provide: EmotionalRecordsService, useValue: createRecordsMock() },
-      ],
-    }).compileComponents();
+    await configure();
 
     const fixture = TestBed.createComponent(EmotionalEntryPage);
     const session = TestBed.inject(EmotionalSessionService);
@@ -241,6 +162,7 @@ describe('EmotionalEntryPage', () => {
 
     expect(session.selectedMood()).toBeNull();
     expect(session.draft()).toBeNull();
+    expect(session.records()).toHaveLength(0);
     expect(navigate).toHaveBeenCalledWith(['/inicio']);
   });
 });

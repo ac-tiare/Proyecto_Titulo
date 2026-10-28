@@ -11,6 +11,10 @@
         <p class="welcome-label">Comencemos</p>
         <h1 id="register-title">Crear cuenta</h1>
         <p class="welcome-copy">Tu espacio de apoyo y bienestar.</p>
+        <p class="field-hint" role="note">
+          La creación de cuentas está temporalmente inactiva. Este formulario
+          no enviará ni almacenará tus datos.
+        </p>
       </header>
 
       <div class="register-fields">
@@ -131,8 +135,8 @@
         </div>
       </div>
 
-      <ion-button class="register-button" expand="block" type="button" [disabled]="submitting()" (click)="submit()">
-        {{ submitting() ? 'Creando cuenta…' : 'Crear cuenta' }}
+      <ion-button class="register-button" expand="block" type="button" (click)="submit()">
+        Crear cuenta
       </ion-button>
 
       @if (confirmation()) {

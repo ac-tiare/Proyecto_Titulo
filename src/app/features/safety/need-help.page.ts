@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   AlertController,
@@ -11,11 +11,6 @@ import {
   IonContent,
   ToastController,
 } from '@ionic/angular';
-
-import {
-  SafetyPlanSupportService,
-  SafetySupportEntry,
-} from './safety-plan-support.service';
 
 @Component({
   selector: 'app-need-help',
@@ -32,32 +27,8 @@ import {
   ],
 })
 export class NeedHelpPage {
-  private readonly supportService = inject(SafetyPlanSupportService);
   private readonly alertController = inject(AlertController);
   private readonly toastController = inject(ToastController);
-
-  readonly contacts = signal<readonly SafetySupportEntry[]>([]);
-  readonly loading = signal(false);
-  readonly loadError = signal('');
-
-  ionViewWillEnter(): void {
-    void this.loadContacts();
-  }
-
-  async loadContacts(): Promise<void> {
-    this.loading.set(true);
-    this.loadError.set('');
-    try {
-      const entries = await this.supportService.list();
-      this.contacts.set(entries.filter((entry) => entry.type === 'person'));
-    } catch (error) {
-      this.loadError.set(
-        `No fue posible cargar tus contactos de confianza. Revisa tu conexión y las reglas de Firestore. ${this.errorDetails(error)}`,
-      );
-    } finally {
-      this.loading.set(false);
-    }
-  }
 
   async callOfficialLine(): Promise<void> {
     await this.confirmAndOpen(
@@ -65,30 +36,6 @@ export class NeedHelpPage {
       '*4141',
       'call',
       'Línea nacional de prevención del suicidio',
-    );
-  }
-
-  async callContact(contact: SafetySupportEntry): Promise<void> {
-    if (!contact.phone) {
-      return;
-    }
-    await this.confirmAndOpen(
-      `tel:${contact.phone}`,
-      contact.phone,
-      'call',
-      contact.name,
-    );
-  }
-
-  async messageContact(contact: SafetySupportEntry): Promise<void> {
-    if (!contact.phone) {
-      return;
-    }
-    await this.confirmAndOpen(
-      `sms:${contact.phone}`,
-      contact.phone,
-      'sms',
-      contact.name,
     );
   }
 
@@ -144,9 +91,5 @@ export class NeedHelpPage {
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(pointer: coarse)').matches
     );
-  }
-
-  private errorDetails(error: unknown): string {
-    return error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
   }
 }

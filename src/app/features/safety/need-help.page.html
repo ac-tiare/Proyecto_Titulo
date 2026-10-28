@@ -33,72 +33,14 @@
         <ion-card-title>Contacta a alguien de confianza</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        @if (loading()) {
-          <p role="status">Cargando tus contactos…</p>
-        } @else if (loadError()) {
-          <p class="load-error" role="alert">{{ loadError() }}</p>
-          <ion-button type="button" fill="outline" (click)="loadContacts()">
-            Reintentar
-          </ion-button>
-        } @else if (contacts().length === 0) {
-          <p>
-            Aún no tienes personas guardadas. Puedes agregarlas junto con su
-            teléfono en tu Plan de Seguridad.
-          </p>
-          <ion-button
-            type="button"
-            fill="outline"
-            routerLink="/plan-seguridad"
-          >
-            Agregar contacto de confianza
-          </ion-button>
-        } @else {
-          <ul class="contact-list" aria-label="Contactos de confianza">
-            @for (contact of contacts(); track contact.id) {
-              <li>
-                <div class="contact-copy">
-                  <h2>{{ contact.name }}</h2>
-                  @if (contact.details) {
-                    <p>{{ contact.details }}</p>
-                  }
-                  @if (contact.phone) {
-                    <p class="contact-phone">{{ contact.phone }}</p>
-                  } @else {
-                    <p class="missing-phone">
-                      Agrega un teléfono en tu Plan de Seguridad para llamar o
-                      enviar un SMS.
-                    </p>
-                  }
-                </div>
-                @if (contact.phone) {
-                  <div class="contact-actions">
-                    <ion-button
-                      type="button"
-                      fill="outline"
-                      (click)="callContact(contact)"
-                    >
-                      Llamar
-                    </ion-button>
-                    <ion-button
-                      type="button"
-                      fill="outline"
-                      (click)="messageContact(contact)"
-                    >
-                      SMS
-                    </ion-button>
-                  </div>
-                }
-              </li>
-            }
-          </ul>
-          <ion-button
-            type="button"
-            fill="clear"
-            routerLink="/plan-seguridad"
-          >
-            Administrar contactos
-          </ion-button>
-        }
+        <p role="note">
+          Los contactos sincronizados están temporalmente inactivos. Esta
+          versión no puede consultarlos ni iniciar llamadas o mensajes a partir
+          de ellos; los datos remotos no se han eliminado.
+        </p>
+        <ion-button type="button" fill="outline" routerLink="/red-apoyo">
+          Ver mi Red de Apoyo
+        </ion-button>
       </ion-card-content>
     </ion-card>
 

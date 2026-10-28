@@ -2,8 +2,9 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { IonButton, IonContent } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
 
-import { EmotionalRecordsService, EmotionalRecord } from './emotional-records.service';
 import {
+  EmotionalRecord,
+  EmotionalSessionService,
   emotionLabels,
   moodLabels,
   MoodId,
@@ -18,7 +19,7 @@ export type HistoryPeriod = 'week' | 'month' | 'year';
   imports: [IonButton, IonContent, RouterLink],
 })
 export class WellbeingPage {
-  private readonly recordsService = inject(EmotionalRecordsService);
+  private readonly emotionalSession = inject(EmotionalSessionService);
 
   readonly records = signal<readonly EmotionalRecord[]>([]);
   readonly loading = signal(false);
@@ -58,20 +59,10 @@ export class WellbeingPage {
     void this.loadRecords();
   }
 
-  async loadRecords(): Promise<void> {
-    this.loading.set(true);
+  loadRecords(): void {
+    this.loading.set(false);
     this.loadError.set('');
-    this.records.set([]);
-
-    try {
-      this.records.set(await this.recordsService.listForCurrentUser());
-    } catch {
-      this.loadError.set(
-        'No fue posible cargar tus registros. Revisa tu conexión o los permisos de Firestore e inténtalo nuevamente.',
-      );
-    } finally {
-      this.loading.set(false);
-    }
+    this.records.set(this.emotionalSession.records());
   }
 
   selectPeriod(period: HistoryPeriod): void {

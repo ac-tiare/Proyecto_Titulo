@@ -6,7 +6,7 @@ Aplicación móvil preventiva de apoyo temprano para pasajeros y trabajadores de
 
 - Se construyó la interfaz móvil CONTIGO con Ionic y Angular: Login y Crear Cuenta, Inicio, Registro Emocional y secciones de bienestar y apoyo.
 - Se ajustó el desplazamiento vertical de Inicio para que el contenido se desplace entre el encabezado y la barra inferior, manteniendo ambas áreas visibles y permitiendo llegar a las secciones finales.
-- Se incorporó Docker para compilar la aplicación y servirla con Nginx. Compose ejecuta solo el frontend en `http://localhost:8080`; las rutas Angular se pueden abrir directamente y recargar. No se añadieron backend propio ni contenedores de datos; Firebase ofrece Authentication y Firestore como servicios administrados.
+- Se incorporó Docker para compilar la aplicación y servirla con Nginx. Compose ejecuta solo el frontend en `http://localhost:8080`; las rutas Angular se pueden abrir directamente y recargar. La aplicación no incluye backend ni servicios de datos conectados.
 - Se documentaron en este README los pasos de ejecución local y Docker, incluidos los comandos para clonar, iniciar, comprobar, ver logs y detener la aplicación.
 
 ## Requisitos
@@ -14,17 +14,15 @@ Aplicación móvil preventiva de apoyo temprano para pasajeros y trabajadores de
 - Node.js 24 LTS
 - npm (incluido con Node.js)
 
-## Firebase Authentication y Cloud Firestore
+## Estado de almacenamiento y cuentas
 
-La aplicación usa el SDK web modular oficial. Crear Cuenta y Login se conectan a Firebase Authentication, y todas las rutas excepto Login y Crear Cuenta requieren una sesión. Registro Emocional guarda documentos en `usuarios/{uid}/registros_emocionales/{registroId}`, Mi Bienestar consulta el historial de la cuenta autenticada y Mi Plan de Seguridad guarda personas y lugares en `usuarios/{uid}/planes_seguridad/principal/personas_lugares/{entryId}`. Los contactos pueden incluir un teléfono para facilitar llamadas o SMS desde Necesito Ayuda.
+Firebase ya no forma parte del código ni de las dependencias de CONTIGO. El inicio de sesión, la creación de cuentas y la sincronización de contactos están temporalmente inactivos; la aplicación no crea cuentas ni modifica los datos que permanezcan en servicios remotos. Las rutas de las pantallas se pueden abrir directamente, sin autenticación.
 
-La configuración web está en `src/environments/environment.ts` y `src/environments/environment.prod.ts`; Angular sustituye el entorno de desarrollo en la compilación de producción. La configuración de Firebase para una app web, incluida su API key, es pública y queda visible en el bundle del navegador. No contiene una contraseña ni una clave privada de cuenta de servicio.
-
-Las reglas de acceso del proyecto están definidas en `firestore.rules` y vinculadas desde `firebase.json`. Permiten que cada usuario autenticado cree y consulte registros emocionales bajo su propio UID, sin modificarlos ni eliminarlos, y que gestione (cree, consulte, edite y elimine) solo sus personas y lugares del plan de seguridad. El teléfono del contacto es opcional y se valida antes de guardarlo. Las reglas validan los campos permitidos y el propietario. Las reglas son una configuración remota: **deben publicarse en el proyecto Firebase antes de que Firestore permita las operaciones**. En Firebase Console, abre Firestore Database > Rules, copia el contenido de `firestore.rules` y publícalo. No uses reglas abiertas. Si Firestore deniega una operación, CONTIGO muestra un error y no indica que la operación fue exitosa.
+Los registros emocionales guardados y las secciones editables del Plan de Seguridad se mantienen únicamente en memoria mientras la aplicación está abierta. Se pierden al cerrar o recargar la app. Esta versión no ofrece almacenamiento persistente para datos personales.
 
 ## Ejecutar con Docker
 
-Docker solo necesita un contenedor para el frontend web: Angular se compila durante la construcción de la imagen y Nginx sirve los archivos resultantes. Firebase Authentication y Cloud Firestore son servicios administrados y no requieren contenedores locales.
+Docker solo necesita un contenedor para el frontend web: Angular se compila durante la construcción de la imagen y Nginx sirve los archivos resultantes. No se ejecutan contenedores de backend ni de base de datos.
 
 ### Requisitos
 
@@ -134,30 +132,31 @@ En Git Bash puedes usar `npm` en lugar de `npm.cmd`.
 
 ## Alcance actual
 
-La aplicación utiliza Ionic, Angular, TypeScript y Capacitor. El registro y el inicio de sesión usan Firebase Authentication; los registros emocionales se guardan y consultan en Cloud Firestore, siempre que las reglas configuradas en Firebase permitan la operación. Las secciones de apoyo incluyen contenido orientativo y no personalizado. No se implementan análisis emocional automático ni notificaciones push. La aplicación no diagnostica ni reemplaza la atención profesional.
+La aplicación utiliza Ionic, Angular, TypeScript y Capacitor. No integra un servicio de autenticación ni una base de datos. Las secciones de apoyo incluyen contenido orientativo y no personalizado. No se implementan análisis emocional automático ni notificaciones push. La aplicación no diagnostica ni reemplaza la atención profesional.
 
 ## Estructura OpenSpec
 
 Las propuestas, especificaciones, decisiones técnicas y tareas del proyecto se mantienen en `openspec/`.
+Los artefactos históricos que mencionan servicios retirados se conservan como documentación; no se usan durante la compilación ni la ejecución.
 
 ## Funcionalidades implementadas
 
 CONTIGO cuenta con una interfaz visual y navegable para una aplicación móvil de apoyo temprano. La navegación conecta las siguientes pantallas:
 
-- **Login:** autentica con Firebase Authentication usando correo y contraseña. Informa los errores sin tratar un acceso rechazado como exitoso; la contraseña permanece oculta por defecto y se puede mostrar u ocultar. La recuperación de contraseña aún no está disponible.
-- **Crear Cuenta:** solicita nombre, correo, contraseña y confirmación. Valida el formato del correo, exige una contraseña de al menos 8 caracteres y comprueba su confirmación antes de crear la cuenta con Firebase Authentication. La confirmación de contraseña solo se usa en el formulario y no se envía a Firebase.
+- **Login:** conserva el formulario y la opción de mostrar u ocultar la contraseña. El inicio de sesión está temporalmente inactivo y la pantalla informa que no se inició una sesión.
+- **Crear Cuenta:** conserva la validación del formulario, pero la creación de cuentas está temporalmente inactiva. No se crea ni se guarda ninguna cuenta.
 - **Inicio:** presenta el saludo «Hola 👋», la pregunta «¿Cómo te sientes hoy?» y cinco opciones emocionales: Muy bien, Bien, Regular, Mal y Muy mal. Elegir un estado abre Registro Emocional y precarga un borrador; no se guarda hasta completar y confirmar explícitamente el registro. Incluye una tarjeta ilustrada con un mensaje tranquilo, accesos a Mi Plan de Seguridad, Mi Red de Apoyo e Información y recursos, y un botón «Necesito ayuda».
-- **Registro emocional:** permite elegir un estado, seleccionar una o varias emociones (Tristeza, Ansiedad, Miedo, Enojo, Soledad, Calma, Esperanza y Otra) y añadir una nota opcional. Al pulsar «Guardar registro», valida los campos y guarda el documento en Firestore bajo la cuenta autenticada. La operación puede ser denegada si las reglas de Firestore no están configuradas para permitirla.
-- **Mi Bienestar:** consulta el historial de la cuenta autenticada en Firestore, ordenado por fecha descendente. Permite filtrar los registros de los últimos siete días, el mes calendario actual y el año calendario actual; cada tarjeta muestra estado, emociones y fecha. Distingue entre carga, error reintentable, historial vacío y períodos sin registros.
-- **Mi Plan de Seguridad:** presenta en etapas señales de alerta, acciones de autocuidado, personas y lugares de apoyo y contactos de confianza. Personas y lugares se guardan en Firestore bajo la cuenta autenticada y se pueden consultar, agregar, editar y eliminar. Las demás secciones se completan en una vista previa local y sus cambios se descartan al salir. Incluye orientación para contactar al personal de Metro, los servicios locales de emergencia y el sitio oficial de Metro.
-- **Red de apoyo:** muestra las personas de confianza guardadas en el Plan de Seguridad y permite ir a administrarlas.
-- **Necesito ayuda:** permite confirmar y abrir la llamada a *4141, llamar o redactar un SMS a un contacto de confianza con teléfono guardado, y acceder a Red de Apoyo, Plan de Seguridad y Registro Emocional. Las llamadas y los mensajes requieren confirmación y nunca se envían automáticamente; en un navegador de escritorio informa el número para usarlo desde un teléfono.
+- **Registro emocional:** permite elegir un estado, seleccionar una o varias emociones (Tristeza, Ansiedad, Miedo, Enojo, Soledad, Calma, Esperanza y Otra) y añadir una nota opcional. Al pulsar «Guardar registro», valida los campos y conserva el registro en memoria durante la sesión actual.
+- **Mi Bienestar:** consulta los registros guardados en la sesión actual. Permite filtrar por los últimos siete días, el mes calendario actual y el año calendario actual; cada tarjeta muestra estado, emociones y fecha. Los registros se pierden al cerrar o recargar la app.
+- **Mi Plan de Seguridad:** presenta señales de alerta, acciones de autocuidado, personas y lugares de apoyo y contactos de confianza. La gestión sincronizada de personas y lugares está temporalmente inactiva; las otras secciones se editan en memoria y se pierden al cerrar o recargar la app. Incluye orientación para contactar al personal de Metro, los servicios locales de emergencia y el sitio oficial de Metro.
+- **Red de apoyo:** conserva la pantalla, pero muestra que los contactos sincronizados están temporalmente inactivos. Los datos remotos no se han eliminado, aunque esta versión no puede consultarlos.
+- **Necesito ayuda:** permite confirmar y abrir la llamada a *4141 y acceder a Red de Apoyo, Plan de Seguridad y Registro Emocional. La gestión de contactos y llamadas/SMS desde la lista están inactivas. La llamada a *4141 requiere confirmación y, en navegadores no compatibles, la app informa el número para marcar desde un teléfono.
 - **Información y recursos:** contiene un espacio para información de apoyo y prevención.
-- **Perfil:** muestra el nombre y correo asociados a la cuenta autenticada y permite cerrar sesión.
+- **Perfil:** conserva la interfaz y las preferencias de vista previa. La cuenta y la gestión de sesión no están disponibles sin autenticación.
 
 ## Navegación y experiencia de uso
 
-La ruta inicial y las rutas desconocidas llevan al **Login**. Solo Login y Crear Cuenta son públicas; las demás rutas requieren una sesión autenticada. Tras iniciar sesión, la aplicación abre el destino solicitado o Inicio. En Inicio, elegir un estado conduce a Registro Emocional; el registro se persiste únicamente al pulsar «Guardar registro». Las pantallas incluyen una barra inferior para acceder a **Inicio**, **Mi bienestar**, **Plan** y **Red de apoyo**.
+La ruta inicial y las rutas desconocidas llevan al **Login**. Las demás pantallas conservan sus rutas y pueden abrirse directamente; no hay autenticación configurada. En Inicio, elegir un estado conduce a Registro Emocional; el registro se guarda en memoria únicamente al pulsar «Guardar registro». Las pantallas incluyen una barra inferior para acceder a **Inicio**, **Mi bienestar**, **Plan** y **Red de apoyo**.
 
 La cabecera compartida muestra el logotipo de **CONTIGO** con una hoja decorativa, el acceso a **Perfil** y un acceso a **Necesito ayuda**. En pantallas móviles estrechas, el botón de ayuda se compacta a un icono accesible para dejar visible el logotipo.
 
@@ -174,7 +173,7 @@ Las pantallas están organizadas por áreas funcionales dentro de `src/app/featu
 
 ## Privacidad y alcance actual
 
-Firebase Authentication gestiona las credenciales; la aplicación solicita nombre, correo electrónico y contraseña, y la confirmación de contraseña solo se valida localmente. Los registros emocionales guardados se almacenan en Cloud Firestore bajo el UID de la cuenta. Antes de registrar datos reales, publica en Firebase Console las reglas definidas en `firestore.rules`. La selección inicial de estado no se persiste hasta que la persona guarda el registro.
+El registro emocional y el plan se mantienen temporalmente en memoria de la sesión y no se envían a ningún backend. La autenticación, la creación de cuentas y la sincronización de contactos están inactivas. Los datos remotos que pudieran existir no se modifican ni se eliminan mediante esta versión.
 
 Las secciones de apoyo ofrecen contenido orientativo, no planes personalizados. La aplicación no diagnostica, no reemplaza la atención profesional y no debe interpretarse como un servicio de emergencia.
 

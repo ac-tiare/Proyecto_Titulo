@@ -49,48 +49,31 @@ export interface EmotionalDraft {
   otherEmotion: string;
   note: string;
   date: string;
+  dateTimestamp: number;
   saved: boolean;
+}
+
+export interface EmotionalRecord extends Omit<EmotionalDraft, 'saved'> {
+  moodId: MoodId;
 }
 
 @Injectable({ providedIn: 'root' })
 export class EmotionalSessionService {
   private readonly currentDraft = signal<EmotionalDraft | null>(null);
+  private readonly currentRecords = signal<readonly EmotionalRecord[]>([]);
   private nextDraftId = 1;
 
   readonly draft = this.currentDraft.asReadonly();
+  readonly records = this.currentRecords.asReadonly();
   readonly selectedMood = computed(() => this.currentDraft()?.moodId ?? null);
 
   startDraft(moodId: MoodId): void {
-    this.currentDraft.set({
-      id: this.nextDraftId++,
-      moodId,
-      emotionIds: [],
-      otherEmotion: '',
-      note: '',
-      date: new Date().toLocaleDateString('es-CL', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      }),
-      saved: false,
-    });
+    this.currentDraft.set(this.createDraft(moodId));
   }
 
   ensureDraft(): void {
     if (!this.currentDraft()) {
-      this.currentDraft.set({
-        id: this.nextDraftId++,
-        moodId: null,
-        emotionIds: [],
-        otherEmotion: '',
-        note: '',
-        date: new Date().toLocaleDateString('es-CL', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        }),
-        saved: false,
-      });
+      this.currentDraft.set(this.createDraft(null));
     }
   }
 
@@ -128,11 +111,53 @@ export class EmotionalSessionService {
     );
   }
 
-  markSaved(): void {
-    this.currentDraft.update((draft) => (draft ? { ...draft, saved: true } : draft));
+  saveDraft(): EmotionalRecord | null {
+    const draft = this.currentDraft();
+    if (!draft || !draft.moodId || !draft.emotionIds.length || draft.saved) {
+      return null;
+    }
+
+    const record: EmotionalRecord = {
+      id: draft.id,
+      moodId: draft.moodId,
+      emotionIds: draft.emotionIds,
+      otherEmotion: draft.otherEmotion,
+      note: draft.note,
+      date: new Date(draft.dateTimestamp).toLocaleString('es-CL', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      dateTimestamp: draft.dateTimestamp,
+    };
+    this.currentRecords.update((records) =>
+      [...records, record].sort((a, b) => b.dateTimestamp - a.dateTimestamp),
+    );
+    this.currentDraft.set({ ...draft, saved: true });
+    return record;
   }
 
   clear(): void {
     this.currentDraft.set(null);
+  }
+
+  private createDraft(moodId: MoodId | null): EmotionalDraft {
+    const now = new Date();
+    return {
+      id: this.nextDraftId++,
+      moodId,
+      emotionIds: [],
+      otherEmotion: '',
+      note: '',
+      date: now.toLocaleDateString('es-CL', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+      dateTimestamp: now.getTime(),
+      saved: false,
+    };
   }
 }

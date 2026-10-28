@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   IonButton,
   IonContent,
@@ -7,8 +7,6 @@ import {
   IonInput,
   IonToast,
 } from '@ionic/angular';
-import { AuthService } from '../../core/firebase/auth.service';
-import { authErrorMessage } from '../../core/firebase/auth-error-message';
 import {
   eyeOffOutline,
   eyeOutline,
@@ -25,8 +23,6 @@ import {
 })
 export class LoginPage {
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  private readonly auth = inject(AuthService);
 
   readonly brandIcon = heartOutline;
   readonly emailIcon = mailOutline;
@@ -39,37 +35,18 @@ export class LoginPage {
   readonly email = signal('');
   readonly password = signal('');
   readonly errorMessage = signal('');
-  readonly submitting = signal(false);
 
-  constructor() {
-    if (this.route.snapshot.queryParamMap.has('sessionError')) {
-      this.errorMessage.set(
-        'No fue posible verificar tu sesión. Revisa tu conexión e inténtalo nuevamente.',
-      );
-    }
-  }
-
-  async signIn(): Promise<void> {
+  signIn(): void {
     this.errorMessage.set('');
     if (!this.email().trim() || !this.password()) {
       this.errorMessage.set('Ingresa tu correo electrónico y contraseña.');
       return;
     }
 
-    this.submitting.set(true);
-    try {
-      await this.auth.signIn(this.email(), this.password());
-      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-      const destination =
-        returnUrl?.startsWith('/') && !returnUrl.startsWith('//')
-          ? returnUrl
-          : '/inicio';
-      await this.router.navigateByUrl(destination, { replaceUrl: true });
-    } catch (error) {
-      this.errorMessage.set(authErrorMessage(error));
-    } finally {
-      this.submitting.set(false);
-    }
+    this.noticeMessage.set(
+      'El inicio de sesión está temporalmente inactivo; no se ha iniciado ninguna sesión.',
+    );
+    this.noticeOpen.set(true);
   }
 
   goToRegistration(): Promise<boolean> {

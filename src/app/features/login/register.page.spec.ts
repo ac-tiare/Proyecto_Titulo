@@ -1,23 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { FirebaseError } from 'firebase/app';
 
-import { AuthService } from '../../core/firebase/auth.service';
 import { RegisterPage } from './register.page';
 
 describe('RegisterPage', () => {
-  const createAuthMock = () => ({
-    register: vi.fn().mockResolvedValue({ uid: 'user-1' }),
-  });
+  const configure = async () =>
+    TestBed.configureTestingModule({
+      imports: [RegisterPage],
+      providers: [provideRouter([])],
+    }).compileComponents();
 
   it('shows the four labeled fields and independent password visibility controls', async () => {
-    await TestBed.configureTestingModule({
-      imports: [RegisterPage],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: createAuthMock() },
-      ],
-    }).compileComponents();
+    await configure();
 
     const fixture = TestBed.createComponent(RegisterPage);
     fixture.detectChanges();
@@ -44,15 +38,8 @@ describe('RegisterPage', () => {
     expect(toggles[0].getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('shows required, email, minimum password, and confirmation errors', async () => {
-    const auth = createAuthMock();
-    await TestBed.configureTestingModule({
-      imports: [RegisterPage],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: auth },
-      ],
-    }).compileComponents();
+  it('validates required fields, email, password length, and confirmation', async () => {
+    await configure();
 
     const fixture = TestBed.createComponent(RegisterPage);
     fixture.detectChanges();
@@ -85,21 +72,13 @@ describe('RegisterPage', () => {
     expect(fixture.nativeElement.textContent).toContain(
       'Las contraseñas no coinciden.',
     );
-    expect(auth.register).not.toHaveBeenCalled();
   });
 
-  it('creates the Firebase account and navigates to Inicio', async () => {
-    const auth = createAuthMock();
-    await TestBed.configureTestingModule({
-      imports: [RegisterPage],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: auth },
-      ],
-    }).compileComponents();
+  it('keeps form data and explicitly reports that no account is created', async () => {
+    await configure();
 
     const router = TestBed.inject(Router);
-    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigate = vi.spyOn(router, 'navigate');
     const fixture = TestBed.createComponent(RegisterPage);
     fixture.componentInstance.updateField('name', ' Alex ');
     fixture.componentInstance.updateField('email', 'alex@example.cl');
@@ -108,79 +87,15 @@ describe('RegisterPage', () => {
 
     await fixture.componentInstance.submit();
 
-    expect(auth.register).toHaveBeenCalledWith(
-      ' Alex ',
-      'alex@example.cl',
-      'secure-password',
-    );
-    expect(fixture.componentInstance.values()).toEqual({
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-    });
-    expect(navigate).toHaveBeenCalledWith(['/inicio'], { replaceUrl: true });
-  });
-
-  it('keeps entered values and displays a Firebase error when registration fails', async () => {
-    const auth = createAuthMock();
-    auth.register.mockRejectedValue(new Error('failed'));
-    await TestBed.configureTestingModule({
-      imports: [RegisterPage],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: auth },
-      ],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(RegisterPage);
-    fixture.componentInstance.updateField('name', 'Alex');
-    fixture.componentInstance.updateField('email', 'alex@example.cl');
-    fixture.componentInstance.updateField('password', 'secure-password');
-    fixture.componentInstance.updateField('confirmPassword', 'secure-password');
-
-    await fixture.componentInstance.submit();
-
-    expect(fixture.componentInstance.values().name).toBe('Alex');
+    expect(fixture.componentInstance.values().name).toBe(' Alex ');
     expect(fixture.componentInstance.confirmation()).toContain(
-      'No fue posible completar la operación.',
+      'no se creó ni guardó ninguna cuenta',
     );
-  });
-
-  it('shows the same eight-character minimum when Firebase rejects a weak password', async () => {
-    const auth = createAuthMock();
-    auth.register.mockRejectedValue(
-      new FirebaseError('auth/weak-password', 'Weak password'),
-    );
-    await TestBed.configureTestingModule({
-      imports: [RegisterPage],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: auth },
-      ],
-    }).compileComponents();
-
-    const fixture = TestBed.createComponent(RegisterPage);
-    fixture.componentInstance.updateField('name', 'Alex');
-    fixture.componentInstance.updateField('email', 'alex@example.cl');
-    fixture.componentInstance.updateField('password', 'secure-password');
-    fixture.componentInstance.updateField('confirmPassword', 'secure-password');
-
-    await fixture.componentInstance.submit();
-
-    expect(fixture.componentInstance.confirmation()).toBe(
-      'La contraseña debe tener al menos 8 caracteres.',
-    );
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('returns to Login', async () => {
-    await TestBed.configureTestingModule({
-      imports: [RegisterPage],
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: createAuthMock() },
-      ],
-    }).compileComponents();
+    await configure();
 
     const router = TestBed.inject(Router);
     const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);

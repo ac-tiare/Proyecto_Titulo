@@ -81,10 +81,10 @@
       class="save-button"
       expand="block"
       type="button"
-      [disabled]="saving() || (draft()?.saved ?? false)"
+      [disabled]="draft()?.saved ?? false"
       (click)="save()"
     >
-      {{ saving() ? 'Guardando…' : 'Guardar registro' }}
+      Guardar registro
     </ion-button>
 
     @if (saveMessage()) {

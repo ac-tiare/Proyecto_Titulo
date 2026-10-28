@@ -3,7 +3,7 @@
     <header class="profile-heading">
       <p class="eyebrow">CONTIGO</p>
       <h1>Mi Perfil</h1>
-      <p>Tu cuenta y las preferencias de tu espacio.</p>
+      <p>La autenticación y sincronización de cuenta están temporalmente inactivas.</p>
     </header>
 
     <section class="account-card" aria-labelledby="account-heading">
@@ -153,12 +153,12 @@
       >
           <h3>Cuida tu cuenta</h3>
           <p>
-            Usa una contraseña segura y no la compartas. Si utilizas un dispositivo
-            compartido, cierra tu sesión al terminar.
+            La autenticación no está disponible en esta versión. No hay una
+            sesión de cuenta activa.
           </p>
           <p>
             La edición del perfil y las preferencias de esta pantalla son una vista
-            previa; todavía no se sincronizan con tu cuenta.
+            previa y no se guardan en una cuenta.
           </p>
       </div>
     </section>
@@ -169,11 +169,10 @@
         class="sign-out-button"
         expand="block"
         fill="outline"
-        [disabled]="signingOut()"
         (click)="signOut()"
       >
         <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
-        {{ signingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
+        Cerrar sesión
       </ion-button>
     </section>
 

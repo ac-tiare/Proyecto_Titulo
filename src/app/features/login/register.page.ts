@@ -13,8 +13,6 @@ import {
   mailOutline,
   personOutline,
 } from 'ionicons/icons';
-import { AuthService } from '../../core/firebase/auth.service';
-import { authErrorMessage } from '../../core/firebase/auth-error-message';
 
 interface RegistrationValues {
   name: string;
@@ -34,7 +32,6 @@ type RegistrationErrors = Partial<Record<RegistrationField, string>>;
 })
 export class RegisterPage {
   private readonly router = inject(Router);
-  private readonly auth = inject(AuthService);
 
   readonly values = signal<RegistrationValues>({
     name: '',
@@ -46,7 +43,6 @@ export class RegisterPage {
   readonly showPassword = signal(false);
   readonly showConfirmPassword = signal(false);
   readonly confirmation = signal('');
-  readonly submitting = signal(false);
   private submitted = false;
 
   readonly nameIcon = personOutline;
@@ -70,7 +66,7 @@ export class RegisterPage {
     }
   }
 
-  async submit(): Promise<void> {
+  submit(): void {
     this.submitted = true;
     const errors = this.validate(this.values());
     this.errors.set(errors);
@@ -79,25 +75,9 @@ export class RegisterPage {
       return;
     }
 
-    this.submitting.set(true);
-    this.confirmation.set('');
-    try {
-      const values = this.values();
-      await this.auth.register(values.name, values.email, values.password);
-      this.values.set({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      });
-      this.errors.set({});
-      this.submitted = false;
-      await this.router.navigate(['/inicio'], { replaceUrl: true });
-    } catch (error) {
-      this.confirmation.set(authErrorMessage(error));
-    } finally {
-      this.submitting.set(false);
-    }
+    this.confirmation.set(
+      'La creación de cuentas está temporalmente inactiva; no se creó ni guardó ninguna cuenta.',
+    );
   }
 
   async goToLogin(): Promise<boolean> {

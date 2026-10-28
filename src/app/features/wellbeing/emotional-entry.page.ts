@@ -8,7 +8,6 @@ import {
   IonTextarea,
 } from '@ionic/angular';
 
-import { EmotionalRecordsService } from './emotional-records.service';
 import {
   EmotionalSessionService,
   emotionOptions,
@@ -27,7 +26,6 @@ import {
 export class EmotionalEntryPage {
   private readonly router = inject(Router);
   private readonly emotionalSession = inject(EmotionalSessionService);
-  private readonly records = inject(EmotionalRecordsService);
 
   readonly moods = moodOptions;
   readonly emotions = emotionOptions;
@@ -35,7 +33,6 @@ export class EmotionalEntryPage {
   readonly selectedMood = this.emotionalSession.selectedMood;
   readonly draft = this.emotionalSession.draft;
   readonly saveMessage = signal('');
-  readonly saving = signal(false);
 
   constructor() {
     this.emotionalSession.ensureDraft();
@@ -57,9 +54,9 @@ export class EmotionalEntryPage {
     this.emotionalSession.updateOtherEmotion(otherEmotion);
   }
 
-  async save(): Promise<void> {
+  save(): void {
     const draft = this.draft();
-    if (this.saving() || draft?.saved) {
+    if (draft?.saved) {
       return;
     }
 
@@ -76,23 +73,11 @@ export class EmotionalEntryPage {
       return;
     }
 
-    this.saving.set(true);
     this.saveMessage.set('');
-    try {
-      await this.records.save({
-        moodId: draft.moodId,
-        emotionIds: draft.emotionIds,
-        note: draft.note,
-        otherEmotion: draft.otherEmotion,
-      });
-      this.emotionalSession.markSaved();
-      this.saveMessage.set('Tu registro emocional fue guardado.');
-    } catch {
+    if (this.emotionalSession.saveDraft()) {
       this.saveMessage.set(
-        'No fue posible guardar el registro. Revisa tu conexión o los permisos de Firestore e inténtalo nuevamente.',
+        'Tu registro se guardó en esta sesión; se perderá al cerrar o recargar la app.',
       );
-    } finally {
-      this.saving.set(false);
     }
   }
 

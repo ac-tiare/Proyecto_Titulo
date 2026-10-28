@@ -7,40 +7,16 @@
       difícil en soledad.
     </p>
 
-    @if (loading()) {
-      <p role="status">Cargando tus contactos de confianza…</p>
-    } @else if (loadError()) {
-      <p class="load-error" role="alert">{{ loadError() }}</p>
-      <ion-button type="button" fill="outline" (click)="loadContacts()">
-        Reintentar
+    <section class="empty-state" aria-labelledby="empty-heading">
+      <h2 id="empty-heading">Contactos no disponibles temporalmente</h2>
+      <p>
+        La sincronización de la red de apoyo está inactiva en esta versión.
+        Los datos guardados anteriormente no se han eliminado, pero la app ya
+        no puede consultarlos.
+      </p>
+      <ion-button type="button" fill="outline" routerLink="/necesito-ayuda">
+        Ver opciones de ayuda
       </ion-button>
-    } @else if (contacts().length) {
-      <ul class="contact-list" aria-label="Contactos de confianza guardados">
-        @for (contact of contacts(); track contact.id) {
-          <li class="contact-card">
-            <h2>{{ contact.name }}</h2>
-            @if (contact.details) {
-              <p>{{ contact.details }}</p>
-            }
-            @if (contact.phone) {
-              <p class="contact-phone">Teléfono: {{ contact.phone }}</p>
-            }
-          </li>
-        }
-      </ul>
-      <ion-button type="button" fill="outline" routerLink="/plan-seguridad">
-        Administrar contactos
-      </ion-button>
-    } @else {
-      <section class="empty-state" aria-labelledby="empty-heading">
-        <h2 id="empty-heading">Todavía no hay contactos guardados</h2>
-        <p>
-          Agrega personas de confianza y su teléfono desde tu Plan de Seguridad.
-        </p>
-        <ion-button type="button" fill="outline" routerLink="/plan-seguridad">
-          Agregar contacto
-        </ion-button>
-      </section>
-    }
+    </section>
   </main>
 </ion-content>
