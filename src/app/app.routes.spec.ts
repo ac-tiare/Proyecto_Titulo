@@ -1,3 +1,4 @@
+import { authGuard } from './core/api/auth.guard';
 import { routes } from './app.routes';
 
 describe('application routes', () => {
@@ -45,8 +46,8 @@ describe('application routes', () => {
     );
   });
 
-  it('keeps feature routes directly accessible without account authentication', () => {
-    expect(shellRoute?.canActivate).toBeUndefined();
+  it('protects feature routes behind the authenticated session guard', () => {
+    expect(shellRoute?.canActivate).toContain(authGuard);
   });
 
   it('redirects unknown routes to Login', () => {

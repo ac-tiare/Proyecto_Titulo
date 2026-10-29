@@ -1,15 +1,33 @@
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
+import { apiInterceptor } from '../../core/api/api.interceptor';
 import { EmotionalSessionService } from './emotional-session';
 import { EmotionalEntryPage } from './emotional-entry.page';
 
 describe('EmotionalEntryPage', () => {
+  let httpTesting: HttpTestingController;
+
   const configure = async () =>
     TestBed.configureTestingModule({
       imports: [EmotionalEntryPage],
-      providers: [provideRouter([])],
-    }).compileComponents();
+      providers: [
+        provideRouter([]),
+        provideHttpClient(withInterceptors([apiInterceptor])),
+        provideHttpClientTesting(),
+      ],
+    })
+      .compileComponents()
+      .then(() => {
+        httpTesting = TestBed.inject(HttpTestingController);
+      });
+
+  afterEach(() => httpTesting.verify());
 
   it('shows all required mood, emotion, note, and date fields accessibly', async () => {
     await configure();
@@ -96,10 +114,11 @@ describe('EmotionalEntryPage', () => {
     expect(fixture.componentInstance.saveMessage()).toContain(
       'Selecciona al menos una emoción.',
     );
-    expect(session.records()).toHaveLength(0);
+    expect(session.draft()?.saved).toBe(false);
+    httpTesting.expectNone('/api/emociones');
   });
 
-  it('saves valid records once in session memory and reports the persistence limit', async () => {
+  it('reports success only after the backend confirms a valid record', async () => {
     await configure();
 
     const session = TestBed.inject(EmotionalSessionService);
@@ -112,22 +131,69 @@ describe('EmotionalEntryPage', () => {
     fixture.componentInstance.toggleEmotion('calma');
     fixture.componentInstance.updateNote('Hoy me siento con calma.');
     fixture.componentInstance.save();
-    fixture.detectChanges();
 
-    expect(session.records()).toHaveLength(1);
-    expect(session.records()[0]).toMatchObject({
+    const request = httpTesting.expectOne('/api/emociones');
+    expect(request.request.body).toEqual({
       moodId: 'bien',
       emotionIds: ['otra', 'calma'],
       otherEmotion: 'Alivio',
       note: 'Hoy me siento con calma.',
     });
-    expect(fixture.componentInstance.saveMessage()).toContain(
-      'se perderá al cerrar o recargar la app',
+    expect(fixture.componentInstance.saveMessage()).toBe('');
+    request.flush({
+      data: {
+        id: 'record-id',
+        moodId: 'bien',
+        emotionIds: ['otra', 'calma'],
+        otherEmotion: 'Alivio',
+        note: 'Hoy me siento con calma.',
+        date: '28 oct 2026, 12:00',
+        dateTimestamp: 1793199600000,
+      },
+    });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.saveMessage()).toBe(
+      'Tu registro emocional fue guardado.',
     );
+    expect(session.draft()?.saved).toBe(true);
     expect(fixture.nativeElement.querySelector('.save-button').disabled).toBe(true);
 
     fixture.componentInstance.save();
-    expect(session.records()).toHaveLength(1);
+    httpTesting.expectNone('/api/emociones');
+  });
+
+  it('requires details for Otra and does not report success when the API fails', async () => {
+    await configure();
+
+    const fixture = TestBed.createComponent(EmotionalEntryPage);
+    const session = TestBed.inject(EmotionalSessionService);
+    session.startDraft('bien');
+    fixture.detectChanges();
+
+    fixture.componentInstance.toggleEmotion('otra');
+    fixture.componentInstance.save();
+    expect(fixture.componentInstance.saveMessage()).toContain(
+      'Describe la otra emoción.',
+    );
+    httpTesting.expectNone('/api/emociones');
+
+    fixture.componentInstance.updateOtherEmotion('Alivio');
+    fixture.componentInstance.save();
+    httpTesting.expectOne('/api/emociones').flush(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Ocurrió un error inesperado. Inténtalo nuevamente.',
+        },
+      },
+      { status: 500, statusText: 'Server Error' },
+    );
+
+    expect(fixture.componentInstance.saveMessage()).toBe(
+      'Ocurrió un error inesperado. Inténtalo nuevamente.',
+    );
+    expect(session.draft()?.saved).toBe(false);
   });
 
   it('allows valid saves without optional text', async () => {
@@ -141,11 +207,23 @@ describe('EmotionalEntryPage', () => {
 
     fixture.componentInstance.save();
 
-    expect(session.records()[0]).toMatchObject({
+    const request = httpTesting.expectOne('/api/emociones');
+    expect(request.request.body).toMatchObject({
       moodId: 'bien',
       emotionIds: ['esperanza'],
       note: '',
       otherEmotion: '',
+    });
+    request.flush({
+      data: {
+        id: 'record-id',
+        moodId: 'bien',
+        emotionIds: ['esperanza'],
+        note: '',
+        otherEmotion: '',
+        date: '28 oct 2026, 12:00',
+        dateTimestamp: 1793199600000,
+      },
     });
   });
 
@@ -162,7 +240,7 @@ describe('EmotionalEntryPage', () => {
 
     expect(session.selectedMood()).toBeNull();
     expect(session.draft()).toBeNull();
-    expect(session.records()).toHaveLength(0);
+    expect(session.draft()).toBeNull();
     expect(navigate).toHaveBeenCalledWith(['/inicio']);
   });
 });

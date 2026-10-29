@@ -3,8 +3,14 @@
     <header class="profile-heading">
       <p class="eyebrow">CONTIGO</p>
       <h1>Mi Perfil</h1>
-      <p>La autenticación y sincronización de cuenta están temporalmente inactivas.</p>
+      <p>Consulta la información de tu cuenta y administra tu sesión.</p>
     </header>
+
+    @if (profileLoading()) {
+      <p role="status">Cargando la información de tu cuenta…</p>
+    } @else if (loadError()) {
+      <p class="form-error" role="alert">{{ loadError() }}</p>
+    }
 
     <section class="account-card" aria-labelledby="account-heading">
       <div class="account-summary">
@@ -22,6 +28,7 @@
             id="profile-name"
             type="text"
             autocomplete="name"
+            maxlength="100"
             [value]="draftName()"
             (input)="updateDraftName($event)"
           />
@@ -30,6 +37,7 @@
             id="profile-email"
             type="email"
             autocomplete="email"
+            maxlength="254"
             [value]="draftEmail()"
             (input)="updateDraftEmail($event)"
           />
@@ -37,19 +45,23 @@
             <p class="form-error" role="alert">{{ editError() }}</p>
           }
           <div class="editor-actions">
-            <ion-button type="submit" expand="block">Aplicar cambios</ion-button>
+            <ion-button
+              type="submit"
+              expand="block"
+              [disabled]="isSavingProfile()"
+            >
+              {{ isSavingProfile() ? 'Guardando…' : 'Guardar cambios' }}
+            </ion-button>
             <ion-button
               type="button"
               fill="outline"
               expand="block"
+              [disabled]="isSavingProfile()"
               (click)="cancelProfileEdit()"
             >
               Cancelar
             </ion-button>
           </div>
-          <p class="preview-note">
-            Esta vista previa no modifica ni guarda los datos de tu cuenta.
-          </p>
         </form>
       } @else {
         <button class="profile-action edit-action" type="button" (click)="openProfileEditor()">
@@ -151,15 +163,96 @@
         id="privacy-details"
         [hidden]="!privacyOpen()"
       >
-          <h3>Cuida tu cuenta</h3>
+          <h3>Datos asociados a tu cuenta</h3>
           <p>
-            La autenticación no está disponible en esta versión. No hay una
-            sesión de cuenta activa.
+            CONTIGO guarda tu perfil para identificar tu cuenta; tu historial
+            emocional para que puedas revisarlo; y tu plan de seguridad y
+            contactos de confianza para que puedas consultarlos.
           </p>
           <p>
-            La edición del perfil y las preferencias de esta pantalla son una vista
-            previa y no se guardan en una cuenta.
+            Estos datos se consultan con tu sesión y no se usan para generar
+            diagnósticos. Los controles de notificación actuales son una vista
+            previa: no se guardan ni programan avisos.
           </p>
+          <p>
+            Puedes descargar una copia de los datos persistidos o eliminar tu
+            cuenta y sus datos activos. Las copias de respaldo pueden conservar
+            datos durante su período operativo de retención.
+          </p>
+          <div class="privacy-actions">
+            <ion-button
+              type="button"
+              expand="block"
+              fill="outline"
+              [disabled]="isExportingData() || isDeletingAccount()"
+              (click)="exportPersonalData()"
+            >
+              {{ isExportingData() ? 'Preparando copia…' : 'Descargar mis datos' }}
+            </ion-button>
+            <ion-button
+              type="button"
+              expand="block"
+              fill="outline"
+              color="danger"
+              [disabled]="isExportingData() || isDeletingAccount()"
+              aria-controls="delete-account-form"
+              [attr.aria-expanded]="deleteAccountOpen()"
+              (click)="toggleDeleteAccount()"
+            >
+              Eliminar mi cuenta
+            </ion-button>
+          </div>
+          @if (privacyFeedback()) {
+            <p class="profile-feedback" role="status" aria-live="polite">
+              {{ privacyFeedback() }}
+            </p>
+          }
+          @if (privacyError()) {
+            <p class="form-error" role="alert">{{ privacyError() }}</p>
+          }
+          <form
+            class="delete-account-form"
+            id="delete-account-form"
+            role="group"
+            aria-labelledby="delete-account-heading"
+            [hidden]="!deleteAccountOpen()"
+            (submit)="$event.preventDefault(); deleteAccount()"
+          >
+            <h3 id="delete-account-heading">Confirmar eliminación</h3>
+            <p id="delete-account-instructions">
+              Esta acción es permanente y cerrará tu sesión. Escribe
+              <strong>ELIMINAR MI CUENTA</strong> para confirmar.
+            </p>
+            <label for="delete-account-confirmation">Confirmación</label>
+            <input
+              id="delete-account-confirmation"
+              type="text"
+              autocomplete="off"
+              aria-describedby="delete-account-instructions"
+              [value]="deleteAccountConfirmation()"
+              [disabled]="isDeletingAccount()"
+              (input)="updateDeleteAccountConfirmation($event)"
+            />
+            <div class="editor-actions">
+              <ion-button
+                type="submit"
+                expand="block"
+                color="danger"
+                [disabled]="isDeletingAccount() || deleteAccountConfirmation() !== 'ELIMINAR MI CUENTA'"
+              >
+                {{ isDeletingAccount() ? 'Eliminando…' : 'Confirmar eliminación' }}
+              </ion-button>
+              <ion-button
+                type="button"
+                expand="block"
+                fill="outline"
+                [disabled]="isDeletingAccount()"
+                (click)="toggleDeleteAccount()"
+              >
+                Cancelar
+              </ion-button>
+            </div>
+          </form>
       </div>
     </section>
 
@@ -169,10 +262,11 @@
         class="sign-out-button"
         expand="block"
         fill="outline"
+        [disabled]="isSigningOut()"
         (click)="signOut()"
       >
         <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
-        Cerrar sesión
+        {{ isSigningOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
       </ion-button>
     </section>
 

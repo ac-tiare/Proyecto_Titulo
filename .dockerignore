@@ -1,9 +1,12 @@
-.git
-.angular
-node_modules
+/backend
+/openspec
+/.git
+/.angular
+/node_modules
+**/node_modules
 www
-dist
-coverage
+**/dist
+**/coverage
 .env*
 **/.env*
 *.log

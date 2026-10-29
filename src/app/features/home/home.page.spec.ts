@@ -38,7 +38,7 @@ describe('HomePage', () => {
     expect(content).toContain('Mal');
     expect(content).toContain('Muy mal');
     expect(content).toContain(
-      'Selecciona una emoción para continuar. Tu registro se guardará solo al pulsar «Guardar registro».',
+      'Selecciona una emoción para continuar. Tu registro se guardará solo al pulsar «Registrar emoción».',
     );
     expect(content).toContain('Mi Plan de Seguridad');
     expect(content).toContain('Mi Red de Apoyo');

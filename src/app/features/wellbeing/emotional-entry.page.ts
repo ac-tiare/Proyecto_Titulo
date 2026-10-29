@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import {
   IonButton,
   IonContent,
@@ -16,6 +17,8 @@ import {
   moodOptions,
   MoodId,
 } from './emotional-session';
+import { apiErrorMessage } from '../../core/api/api-error';
+import { EmotionalRecordApiService } from '../../core/api/emotional-record-api.service';
 
 @Component({
   selector: 'app-emotional-entry',
@@ -26,6 +29,7 @@ import {
 export class EmotionalEntryPage {
   private readonly router = inject(Router);
   private readonly emotionalSession = inject(EmotionalSessionService);
+  private readonly emotionalRecordApi = inject(EmotionalRecordApiService);
 
   readonly moods = moodOptions;
   readonly emotions = emotionOptions;
@@ -33,6 +37,7 @@ export class EmotionalEntryPage {
   readonly selectedMood = this.emotionalSession.selectedMood;
   readonly draft = this.emotionalSession.draft;
   readonly saveMessage = signal('');
+  readonly isSaving = signal(false);
 
   constructor() {
     this.emotionalSession.ensureDraft();
@@ -56,7 +61,7 @@ export class EmotionalEntryPage {
 
   save(): void {
     const draft = this.draft();
-    if (draft?.saved) {
+    if (draft?.saved || this.isSaving()) {
       return;
     }
 
@@ -68,17 +73,32 @@ export class EmotionalEntryPage {
     if (!draft?.emotionIds.length) {
       errors.push('Selecciona al menos una emoción.');
     }
+    if (draft?.emotionIds.includes('otra') && !draft.otherEmotion.trim()) {
+      errors.push('Describe la otra emoción.');
+    }
     if (errors.length || !draft?.moodId || !draft.emotionIds.length) {
       this.saveMessage.set(errors.join(' '));
       return;
     }
 
     this.saveMessage.set('');
-    if (this.emotionalSession.saveDraft()) {
-      this.saveMessage.set(
-        'Tu registro se guardó en esta sesión; se perderá al cerrar o recargar la app.',
-      );
-    }
+    this.isSaving.set(true);
+    this.emotionalRecordApi
+      .create({
+        moodId: draft.moodId,
+        emotionIds: [...draft.emotionIds],
+        note: draft.note,
+        otherEmotion: draft.otherEmotion,
+      })
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.emotionalSession.markDraftSaved();
+          this.saveMessage.set('Tu registro emocional fue guardado.');
+        },
+        error: (error: unknown) =>
+          this.saveMessage.set(apiErrorMessage(error)),
+      });
   }
 
   async finish(): Promise<void> {

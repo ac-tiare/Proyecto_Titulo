@@ -9,87 +9,114 @@
       </p>
     </header>
 
-    <p class="demo-banner" role="note">
-      Los contactos y lugares sincronizados no están disponibles en esta versión
-      y no se han eliminado. Las demás secciones de este plan son una vista
-      previa temporal.
-    </p>
-
-    <ol class="plan-steps" aria-label="Etapas del plan de seguridad">
-      @for (section of sections; track section.id; let index = $index) {
-        <li class="plan-step">
-          <span class="step-number" aria-hidden="true">{{ index + 1 }}</span>
-          <section class="plan-card" [attr.aria-labelledby]="section.id + '-heading'">
-            <div class="card-heading">
-              <div>
-                <p class="step-label">ETAPA {{ index + 1 }}</p>
-                <h2 [id]="section.id + '-heading'">{{ section.title }}</h2>
-              </div>
-              @if (isSectionComplete(section.id)) {
-                <span class="complete-badge">Completada</span>
-              }
-            </div>
-            <p class="section-description">{{ section.description }}</p>
-
-            @if (section.id === 'support-places') {
-              <p class="empty-section" role="note">
-                La gestión de personas y lugares sincronizados está
-                temporalmente inactiva. Los registros remotos no se han
-                eliminado, pero esta versión no puede consultarlos ni
-                modificarlos.
-              </p>
-            } @else if (editingSection() === section.id) {
-              <div class="section-editor">
-                <label [for]="section.id + '-entries'">{{ section.prompt }}</label>
-                <textarea
-                  [id]="section.id + '-entries'"
-                  rows="4"
-                  maxlength="2000"
-                  [value]="draftText()"
-                  (input)="updateDraft($event)"
-                ></textarea>
-                <p class="editor-hint">Puedes escribir varios elementos, uno por línea.</p>
-                <div class="editor-actions">
-                  <ion-button
-                    type="button"
-                    expand="block"
-                    (click)="saveSection(section.id)"
-                  >
-                    Guardar en esta vista
-                  </ion-button>
-                  <ion-button
-                    type="button"
-                    expand="block"
-                    fill="outline"
-                    (click)="cancelEdit()"
-                  >
-                    Cancelar
-                  </ion-button>
-                </div>
-              </div>
-            } @else {
-              @if (sectionEntries(section.id).length) {
-                <ul class="entry-list">
-                  @for (entry of sectionEntries(section.id); track $index) {
-                    <li>{{ entry }}</li>
-                  }
-                </ul>
-              } @else {
-                <p class="empty-section">Aún no has agregado información.</p>
-              }
-              <ion-button
-                class="section-action"
-                type="button"
-                fill="outline"
-                (click)="openEditor(section.id)"
-              >
-                {{ sectionLabel(section.id) }}
-              </ion-button>
-            }
-          </section>
-        </li>
+    @if (loading()) {
+      <p class="support-status" role="status">Cargando tu plan de seguridad…</p>
+    } @else if (loadError()) {
+      <section class="plan-card" aria-labelledby="plan-error-heading">
+        <h2 id="plan-error-heading">No pudimos cargar tu plan</h2>
+        <p class="support-error" role="alert">{{ loadError() }}</p>
+        <ion-button expand="block" (click)="loadPlan()">Reintentar</ion-button>
+      </section>
+    } @else {
+      @if (saveMessage()) {
+        <p class="support-notice" role="status">{{ saveMessage() }}</p>
       }
-    </ol>
+
+      <ol class="plan-steps" aria-label="Etapas del plan de seguridad">
+        @for (section of sections; track section.id; let index = $index) {
+          <li class="plan-step">
+            <span class="step-number" aria-hidden="true">{{ index + 1 }}</span>
+            <section class="plan-card" [attr.aria-labelledby]="section.id + '-heading'">
+              <div class="card-heading">
+                <div>
+                  <p class="step-label">ETAPA {{ index + 1 }}</p>
+                  <h2 [id]="section.id + '-heading'">{{ section.title }}</h2>
+                </div>
+                @if (isSectionComplete(section.id)) {
+                  <span class="complete-badge">Completada</span>
+                }
+              </div>
+              <p class="section-description">{{ section.description }}</p>
+
+              @if (section.id === 'trusted-contacts') {
+                @if (sectionEntries(section.id).length) {
+                  <ul class="entry-list">
+                    @for (entry of sectionEntries(section.id); track $index) {
+                      <li>{{ entry }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="empty-section">
+                    Administra tus contactos desde una lista única en la red de apoyo.
+                  </p>
+                }
+                <ion-button
+                  class="section-action"
+                  type="button"
+                  fill="outline"
+                  routerLink="/red-apoyo"
+                >
+                  Gestionar contactos de confianza
+                </ion-button>
+              } @else if (editingSection() === section.id) {
+                <div class="section-editor">
+                  <label [for]="section.id + '-entries'">{{ section.prompt }}</label>
+                  <textarea
+                    [id]="section.id + '-entries'"
+                    rows="4"
+                    maxlength="2000"
+                    [value]="draftText()"
+                    (input)="updateDraft($event)"
+                  ></textarea>
+                  <p class="editor-hint">Puedes escribir varios elementos, uno por línea.</p>
+                  @if (saveError()) {
+                    <p class="support-error" role="alert">{{ saveError() }}</p>
+                  }
+                  <div class="editor-actions">
+                    <ion-button
+                      type="button"
+                      expand="block"
+                      [disabled]="saving()"
+                      (click)="saveSection(section.id)"
+                    >
+                      {{ saving() ? 'Guardando…' : 'Guardar cambios' }}
+                    </ion-button>
+                    <ion-button
+                      type="button"
+                      expand="block"
+                      fill="outline"
+                      [disabled]="saving()"
+                      (click)="cancelEdit()"
+                    >
+                      Cancelar
+                    </ion-button>
+                  </div>
+                </div>
+              } @else {
+                @if (sectionEntries(section.id).length) {
+                  <ul class="entry-list">
+                    @for (entry of sectionEntries(section.id); track $index) {
+                      <li>{{ entry }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="empty-section">Aún no has agregado información.</p>
+                }
+                <ion-button
+                  class="section-action"
+                  type="button"
+                  fill="outline"
+                  [disabled]="saving()"
+                  (click)="openEditor(section.id)"
+                >
+                  {{ sectionLabel(section.id) }}
+                </ion-button>
+              }
+            </section>
+          </li>
+        }
+      </ol>
+    }
 
     <section class="official-help" aria-labelledby="official-help-heading">
       <div class="help-icon" aria-hidden="true">i</div>
@@ -116,9 +143,8 @@
     </section>
 
     <p class="privacy-note" role="note">
-      Las demás secciones se guardan solo en esta vista y se perderán al salir.
-      La gestión de personas y lugares sincronizados está temporalmente inactiva.
-      No incluyas datos sensibles que no quieras registrar. Este plan no
+      Tu plan y tus contactos se guardan en tu cuenta. No incluyas datos sensibles
+      que no quieras registrar. Este plan no
       reemplaza ayuda profesional ni los servicios de emergencia.
     </p>
   </main>

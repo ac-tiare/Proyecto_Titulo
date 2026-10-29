@@ -42,6 +42,67 @@ h2 {
   margin-bottom: 0;
 }
 
+.page-actions,
+.form-actions,
+.contact-actions,
+.pagination-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.page-actions {
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.contact-form {
+  background: var(--ion-color-light);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  padding: 1rem;
+
+  h2 {
+    margin: 0 0 0.3rem;
+  }
+
+  label {
+    color: var(--ion-color-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.35rem;
+  }
+
+  input,
+  textarea {
+    background: #fff;
+    border: 1px solid var(--ion-color-step-250);
+    border-radius: 0.75rem;
+    color: var(--ion-color-dark);
+    font: inherit;
+    line-height: 1.45;
+    padding: 0.7rem;
+    width: 100%;
+
+    &:focus-visible {
+      outline: 2px solid var(--ion-color-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.form-actions {
+  margin-top: 0.5rem;
+}
+
 .contact-list {
   display: grid;
   gap: 0.65rem;
@@ -70,6 +131,39 @@ h2 {
   .contact-phone {
     font-weight: 700;
   }
+}
+
+.contact-actions {
+  margin-top: 0.75rem;
+}
+
+.delete-confirmation {
+  align-items: center;
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+
+  p {
+    color: var(--ion-color-danger);
+    flex: 1 0 100%;
+    margin: 0;
+  }
+}
+
+.pagination-controls {
+  justify-content: space-between;
+  margin-top: 0.75rem;
+
+  span {
+    color: var(--ion-color-step-700);
+    font-size: 0.85rem;
+  }
+}
+
+.support-notice {
+  color: var(--ion-color-success-shade);
+  line-height: 1.5;
 }
 
 .load-error {

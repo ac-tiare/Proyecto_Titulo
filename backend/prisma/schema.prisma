@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Mood {
+  VERY_GOOD
+  GOOD
+  NEUTRAL
+  BAD
+  VERY_BAD
+}
+
+enum Emotion {
+  SADNESS
+  ANXIETY
+  FEAR
+  ANGER
+  LONELINESS
+  CALM
+  HOPE
+  OTHER
+}
+
+enum PlanItemType {
+  WARNING_SIGN
+  COPING_ACTION
+  SAFE_PLACE
+}
+
+enum SessionClient {
+  WEB
+  NATIVE
+}
+
+model User {
+  id           String              @id @default(uuid()) @db.Uuid
+  name         String              @db.VarChar(100)
+  surname      String?             @db.VarChar(100)
+  email        String              @unique @db.VarChar(254)
+  passwordHash String              @map("password_hash") @db.Text
+  createdAt    DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  sessions     Session[]
+  emotions     EmotionalRecord[]
+  safetyPlan   SafetyPlan?
+  contacts     TrustedContact[]
+
+  @@map("users")
+}
+
+model Session {
+  id                 String        @id @default(uuid()) @db.Uuid
+  userId             String        @map("user_id") @db.Uuid
+  accessTokenHash    String        @unique @map("access_token_hash") @db.Char(64)
+  refreshTokenHash   String?       @unique @map("refresh_token_hash") @db.Char(64)
+  client             SessionClient
+  accessExpiresAt    DateTime      @map("access_expires_at") @db.Timestamptz(3)
+  refreshExpiresAt   DateTime?     @map("refresh_expires_at") @db.Timestamptz(3)
+  revokedAt          DateTime?     @map("revoked_at") @db.Timestamptz(3)
+  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastSeenAt         DateTime      @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  user               User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, accessExpiresAt])
+  @@index([userId, refreshExpiresAt])
+  @@map("sessions")
+}
+
+model EmotionalRecord {
+  id          String                    @id @default(uuid()) @db.Uuid
+  userId      String                    @map("user_id") @db.Uuid
+  mood        Mood
+  note        String?                   @db.VarChar(500)
+  otherEmotion String?                  @map("other_emotion") @db.VarChar(500)
+  recordedAt  DateTime                  @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  createdAt   DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user        User                      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  emotions    EmotionalRecordEmotion[]
+
+  @@index([userId, recordedAt(sort: Desc)])
+  @@map("emotional_records")
+}
+
+model EmotionalRecordEmotion {
+  recordId String          @map("record_id") @db.Uuid
+  emotion  Emotion
+  record   EmotionalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@id([recordId, emotion])
+  @@map("emotional_record_emotions")
+}
+
+model SafetyPlan {
+  id        String          @id @default(uuid()) @db.Uuid
+  userId    String          @unique @map("user_id") @db.Uuid
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items     SafetyPlanItem[]
+
+  @@map("safety_plans")
+}
+
+model SafetyPlanItem {
+  id        String       @id @default(uuid()) @db.Uuid
+  planId    String       @map("plan_id") @db.Uuid
+  type      PlanItemType
+  content   String       @db.VarChar(500)
+  position  Int          @default(0)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  plan      SafetyPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId, type, position])
+  @@map("safety_plan_items")
+}
+
+model TrustedContact {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  name         String   @db.VarChar(100)
+  phone        String   @db.VarChar(24)
+  relationship String?  @db.VarChar(100)
+  details      String?  @db.VarChar(300)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@map("trusted_contacts")
+}

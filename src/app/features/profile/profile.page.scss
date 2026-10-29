@@ -264,6 +264,13 @@
   margin: 0 0 0.35rem;
 }
 
+.privacy-actions {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+}
+
+.delete-account-form,
 .profile-editor {
   display: grid;
   gap: 0.45rem;

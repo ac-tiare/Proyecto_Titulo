@@ -1,5 +1,7 @@
 import { computed, Injectable, signal } from '@angular/core';
 
+import type { EmotionId, MoodId } from '../../core/api/api.models';
+
 export const moodOptions = [
   { id: 'muy-bien', label: 'Muy bien', emoji: '😄' },
   { id: 'bien', label: 'Bien', emoji: '🙂' },
@@ -8,7 +10,7 @@ export const moodOptions = [
   { id: 'muy-mal', label: 'Muy mal', emoji: '😣' },
 ] as const;
 
-export type MoodId = (typeof moodOptions)[number]['id'];
+export type { EmotionId, MoodId };
 
 export const moodLabels: Record<MoodId, string> = {
   'muy-bien': 'Muy bien',
@@ -28,8 +30,6 @@ export const emotionOptions = [
   { id: 'esperanza', label: 'Esperanza' },
   { id: 'otra', label: 'Otra' },
 ] as const;
-
-export type EmotionId = (typeof emotionOptions)[number]['id'];
 
 export const emotionLabels: Record<EmotionId, string> = {
   tristeza: 'Tristeza',
@@ -53,18 +53,12 @@ export interface EmotionalDraft {
   saved: boolean;
 }
 
-export interface EmotionalRecord extends Omit<EmotionalDraft, 'saved'> {
-  moodId: MoodId;
-}
-
 @Injectable({ providedIn: 'root' })
 export class EmotionalSessionService {
   private readonly currentDraft = signal<EmotionalDraft | null>(null);
-  private readonly currentRecords = signal<readonly EmotionalRecord[]>([]);
   private nextDraftId = 1;
 
   readonly draft = this.currentDraft.asReadonly();
-  readonly records = this.currentRecords.asReadonly();
   readonly selectedMood = computed(() => this.currentDraft()?.moodId ?? null);
 
   startDraft(moodId: MoodId): void {
@@ -111,32 +105,10 @@ export class EmotionalSessionService {
     );
   }
 
-  saveDraft(): EmotionalRecord | null {
-    const draft = this.currentDraft();
-    if (!draft || !draft.moodId || !draft.emotionIds.length || draft.saved) {
-      return null;
-    }
-
-    const record: EmotionalRecord = {
-      id: draft.id,
-      moodId: draft.moodId,
-      emotionIds: draft.emotionIds,
-      otherEmotion: draft.otherEmotion,
-      note: draft.note,
-      date: new Date(draft.dateTimestamp).toLocaleString('es-CL', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      dateTimestamp: draft.dateTimestamp,
-    };
-    this.currentRecords.update((records) =>
-      [...records, record].sort((a, b) => b.dateTimestamp - a.dateTimestamp),
+  markDraftSaved(): void {
+    this.currentDraft.update((draft) =>
+      draft ? { ...draft, saved: true } : draft,
     );
-    this.currentDraft.set({ ...draft, saved: true });
-    return record;
   }
 
   clear(): void {
