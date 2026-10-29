@@ -7,13 +7,190 @@
       difícil en soledad.
     </p>
 
-    <section class="empty-state" aria-labelledby="empty-heading">
-      <h2 id="empty-heading">Contactos no disponibles temporalmente</h2>
-      <p>
-        La sincronización de la red de apoyo está inactiva en esta versión.
-        Los datos guardados anteriormente no se han eliminado, pero la app ya
-        no puede consultarlos.
-      </p>
+    @if (notice()) {
+      <p class="support-notice" role="status">{{ notice() }}</p>
+    }
+
+    @if (loadError()) {
+      <section class="empty-state" aria-labelledby="error-heading">
+        <h2 id="error-heading">No pudimos cargar tus contactos</h2>
+        <p class="load-error" role="alert">{{ loadError() }}</p>
+        <ion-button type="button" fill="outline" (click)="loadContacts()">
+          Reintentar
+        </ion-button>
+      </section>
+    } @else if (loading() && !contacts().length) {
+      <p role="status">Cargando tus contactos de confianza…</p>
+    } @else {
+      <div class="page-actions">
+        <ion-button type="button" (click)="startCreate()" [disabled]="editorOpen()">
+          Agregar contacto
+        </ion-button>
+      </div>
+
+      @if (formError() && !editorOpen()) {
+        <p class="load-error" role="alert">{{ formError() }}</p>
+      }
+
+      @if (editorOpen()) {
+        <form class="contact-form" (submit)="$event.preventDefault(); saveContact()">
+          <h2>{{ editingContactId() ? 'Editar contacto' : 'Nuevo contacto' }}</h2>
+          <label for="contact-name">Nombre</label>
+          <input
+            id="contact-name"
+            type="text"
+            maxlength="100"
+            autocomplete="name"
+            required
+            [value]="name()"
+            (input)="updateName($event)"
+          />
+
+          <label for="contact-phone">Teléfono</label>
+          <input
+            id="contact-phone"
+            type="tel"
+            maxlength="16"
+            autocomplete="tel"
+            inputmode="tel"
+            pattern="\+?[0-9]{7,15}"
+            placeholder="+56912345678"
+            required
+            [value]="phone()"
+            (input)="updatePhone($event)"
+          />
+
+          <label for="contact-relationship">Relación (opcional)</label>
+          <input
+            id="contact-relationship"
+            type="text"
+            maxlength="100"
+            [value]="relationship()"
+            (input)="updateRelationship($event)"
+          />
+
+          <label for="contact-details">Nota para recordar cómo pedir apoyo (opcional)</label>
+          <textarea
+            id="contact-details"
+            rows="3"
+            maxlength="300"
+            [value]="details()"
+            (input)="updateDetails($event)"
+          ></textarea>
+
+          @if (formError()) {
+            <p class="load-error" role="alert">{{ formError() }}</p>
+          }
+
+          <div class="form-actions">
+            <ion-button type="submit" [disabled]="saving()">
+              {{ saving() ? 'Guardando…' : 'Guardar contacto' }}
+            </ion-button>
+            <ion-button
+              type="button"
+              fill="outline"
+              [disabled]="saving() || editorOpen()"
+              (click)="cancelEdit()"
+            >
+              Cancelar
+            </ion-button>
+          </div>
+        </form>
+      }
+
+      @if (!contacts().length && !editorOpen()) {
+        <section class="empty-state" aria-labelledby="empty-heading">
+          <h2 id="empty-heading">Aún no tienes contactos guardados</h2>
+          <p>
+            Agrega a alguien de confianza y elige cómo te gustaría pedirle apoyo.
+          </p>
+          <ion-button type="button" fill="outline" (click)="startCreate()">
+            Agregar primer contacto
+          </ion-button>
+        </section>
+      } @else {
+        <ul class="contact-list" aria-label="Contactos de confianza">
+          @for (contact of contacts(); track contact.id) {
+            <li class="contact-card">
+              <h2>{{ contact.name }}</h2>
+              @if (contact.relationship) {
+                <p>{{ contact.relationship }}</p>
+              }
+              <p class="contact-phone">{{ contact.phone }}</p>
+              @if (contact.details) {
+                <p>{{ contact.details }}</p>
+              }
+              <div class="contact-actions">
+                <ion-button
+                  type="button"
+                  fill="outline"
+                  [disabled]="saving()"
+                  (click)="startEdit(contact)"
+                >
+                  Editar
+                </ion-button>
+                @if (confirmDeleteId() === contact.id) {
+                  <div class="delete-confirmation">
+                    <p>¿Eliminar este contacto de tu red?</p>
+                    <ion-button
+                      type="button"
+                      color="danger"
+                      [disabled]="saving() || editorOpen()"
+                      (click)="deleteContact(contact.id)"
+                    >
+                      Confirmar eliminación
+                    </ion-button>
+                    <ion-button
+                      type="button"
+                      fill="clear"
+                      (click)="cancelDelete()"
+                    >
+                      Cancelar
+                    </ion-button>
+                  </div>
+                } @else {
+                  <ion-button
+                    type="button"
+                    fill="clear"
+                    color="danger"
+                    [disabled]="saving() || editorOpen()"
+                    (click)="confirmDelete(contact.id)"
+                  >
+                    Eliminar
+                  </ion-button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+
+        @if (pagination().totalPages > 1) {
+          <nav class="pagination-controls" aria-label="Paginación de contactos">
+            <ion-button
+              type="button"
+              fill="clear"
+              [disabled]="page() <= 1 || loading()"
+              (click)="selectPage(page() - 1)"
+            >
+              Anterior
+            </ion-button>
+            <span>Página {{ page() }} de {{ pagination().totalPages }}</span>
+            <ion-button
+              type="button"
+              fill="clear"
+              [disabled]="page() >= pagination().totalPages || loading()"
+              (click)="selectPage(page() + 1)"
+            >
+              Siguiente
+            </ion-button>
+          </nav>
+        }
+      }
+    }
+
+    <section class="empty-state" aria-labelledby="help-heading">
+      <h2 id="help-heading">¿Necesitas apoyo ahora?</h2>
+      <p>También puedes revisar opciones de ayuda y canales oficiales.</p>
       <ion-button type="button" fill="outline" routerLink="/necesito-ayuda">
         Ver opciones de ayuda
       </ion-button>

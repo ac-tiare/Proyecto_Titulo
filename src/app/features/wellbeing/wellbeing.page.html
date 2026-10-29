@@ -4,7 +4,7 @@
       <p class="eyebrow">BIENESTAR EMOCIONAL</p>
       <h1>Mi Bienestar</h1>
       <p class="intro">
-        Revisa tus registros de esta sesión. Se perderán al cerrar o recargar la app.
+        Tus registros se guardan en tu cuenta y están disponibles después de volver a ingresar.
       </p>
     </header>
 
@@ -27,7 +27,7 @@
             <p>Elige un período para revisar tus registros.</p>
           </div>
           <span class="record-count" aria-label="Registros en el período">
-            {{ filteredRecords().length }}
+            {{ pagination().total }}
           </span>
         </div>
 
@@ -58,7 +58,73 @@
           </button>
         </div>
 
-        @if (!records().length) {
+        <section class="patterns-section" aria-labelledby="patterns-heading">
+          <button
+            type="button"
+            class="patterns-toggle"
+            [attr.aria-expanded]="patternsOpen()"
+            aria-controls="emotional-patterns"
+            (click)="togglePatterns()"
+          >
+            <span>
+              <span class="patterns-title" id="patterns-heading">Patrones emocionales</span>
+              <span class="patterns-description">Tendencias descriptivas de tu historial</span>
+            </span>
+            <span aria-hidden="true">{{ patternsOpen() ? '−' : '+' }}</span>
+          </button>
+
+          @if (patternsOpen()) {
+            <div id="emotional-patterns" class="patterns-content">
+              @if (patternsLoading()) {
+                <p role="status">Revisando tus registros del período…</p>
+              } @else if (patternsError()) {
+                <p role="alert">{{ patternsError() }}</p>
+                <ion-button fill="outline" (click)="loadPatterns()">Reintentar</ion-button>
+              } @else if (patterns(); as summary) {
+                <p class="patterns-disclaimer">
+                  Este resumen solo describe frecuencias de tus registros. No es
+                  un diagnóstico ni una evaluación clínica.
+                </p>
+                @if (summary.recordCount === 0) {
+                  <p>Aún no hay registros suficientes para mostrar tendencias.</p>
+                } @else {
+                  <p>{{ summary.recordCount }} registros en este período.</p>
+                  @if (patternMoodCounts().length) {
+                    <h3>Estados registrados</h3>
+                    <ul>
+                      @for (item of patternMoodCounts(); track item.label) {
+                        <li>{{ item.label }}: {{ item.count }}</li>
+                      }
+                    </ul>
+                  }
+                  @if (patternEmotionCounts().length) {
+                    <h3>Emociones frecuentes</h3>
+                    <ul>
+                      @for (item of patternEmotionCounts(); track item.label) {
+                        <li>{{ item.label }}: {{ item.count }}</li>
+                      }
+                    </ul>
+                  }
+                  @if (summary.hasTemporalComparison) {
+                    <h3>Registros por tramo</h3>
+                    <ul>
+                      @for (bucket of patternBuckets(); track bucket.startDate) {
+                        <li>
+                          {{ bucket.startDate }}: {{ bucket.recordCount }} registros
+                          @if (bucket.moodSummary) { ({{ bucket.moodSummary }}) }
+                        </li>
+                      }
+                    </ul>
+                  } @else {
+                    <p>Aún no hay registros en distintos días para comparar períodos.</p>
+                  }
+                }
+              }
+            </div>
+          }
+        </section>
+
+        @if (!pagination().total) {
           <section class="empty-state" aria-labelledby="empty-heading">
             <span class="empty-icon" aria-hidden="true">♡</span>
             <h2 id="empty-heading">Tu historial comienza aquí</h2>
@@ -115,6 +181,26 @@
               </article>
             }
           </section>
+        }
+
+        @if (pagination().totalPages > 1) {
+          <nav class="pagination-controls" aria-label="Paginación del historial">
+            <ion-button
+              fill="clear"
+              [disabled]="page() <= 1 || loading()"
+              (click)="selectPage(page() - 1)"
+            >
+              Anterior
+            </ion-button>
+            <span>Página {{ page() }} de {{ pagination().totalPages }}</span>
+            <ion-button
+              fill="clear"
+              [disabled]="page() >= pagination().totalPages || loading()"
+              (click)="selectPage(page() + 1)"
+            >
+              Siguiente
+            </ion-button>
+          </nav>
         }
       </section>
     }

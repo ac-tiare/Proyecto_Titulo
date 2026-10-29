@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import {
   IonButton,
   IonContent,
@@ -15,6 +16,9 @@ import {
   mailOutline,
 } from 'ionicons/icons';
 
+import { apiErrorMessage } from '../../core/api/api-error';
+import { AuthSessionService } from '../../core/api/auth-session.service';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -23,6 +27,7 @@ import {
 })
 export class LoginPage {
   private readonly router = inject(Router);
+  private readonly session = inject(AuthSessionService);
 
   readonly brandIcon = heartOutline;
   readonly emailIcon = mailOutline;
@@ -35,18 +40,25 @@ export class LoginPage {
   readonly email = signal('');
   readonly password = signal('');
   readonly errorMessage = signal('');
+  readonly isSubmitting = signal(false);
 
   signIn(): void {
+    if (this.isSubmitting()) return;
     this.errorMessage.set('');
     if (!this.email().trim() || !this.password()) {
       this.errorMessage.set('Ingresa tu correo electrónico y contraseña.');
       return;
     }
 
-    this.noticeMessage.set(
-      'El inicio de sesión está temporalmente inactivo; no se ha iniciado ninguna sesión.',
-    );
-    this.noticeOpen.set(true);
+    this.isSubmitting.set(true);
+    this.session
+      .login({ email: this.email().trim(), password: this.password() })
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: () => void this.router.navigate(['/inicio']),
+        error: (error: unknown) =>
+          this.errorMessage.set(apiErrorMessage(error)),
+      });
   }
 
   goToRegistration(): Promise<boolean> {

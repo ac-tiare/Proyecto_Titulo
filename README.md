@@ -2,191 +2,166 @@
 
 Aplicación móvil preventiva de apoyo temprano para pasajeros y trabajadores de Metro de Santiago.
 
-## Resumen de avances
+## Arquitectura
 
-- Se construyó la interfaz móvil CONTIGO con Ionic y Angular: Login y Crear Cuenta, Inicio, Registro Emocional y secciones de bienestar y apoyo.
-- Se ajustó el desplazamiento vertical de Inicio para que el contenido se desplace entre el encabezado y la barra inferior, manteniendo ambas áreas visibles y permitiendo llegar a las secciones finales.
-- Se incorporó Docker para compilar la aplicación y servirla con Nginx. Compose ejecuta solo el frontend en `http://localhost:8080`; las rutas Angular se pueden abrir directamente y recargar. La aplicación no incluye backend ni servicios de datos conectados.
-- Se documentaron en este README los pasos de ejecución local y Docker, incluidos los comandos para clonar, iniciar, comprobar, ver logs y detener la aplicación.
+- **Frontend:** Angular 22, Ionic 9, TypeScript y Capacitor 8.
+- **Backend:** Node.js 24 LTS, Express 5 y TypeScript, en [`backend/`](./backend/).
+- **Datos:** PostgreSQL 17 y Prisma 6 con migraciones versionadas.
+- **Contenedores:** Docker Compose administra PostgreSQL, API y frontend.
+- **Web:** Nginx sirve Angular como SPA y reenvía `/api/` al backend en la red privada de Compose.
+
+El cliente no accede directamente a PostgreSQL. Las solicitudes pasan por la API REST; el backend deriva el propietario desde la sesión autenticada. El esquema y el ciclo de autenticación están documentados en [`backend/README.md`](./backend/README.md), y los contratos HTTP en [`backend/API.md`](./backend/API.md).
+
+## Datos y autenticación
+
+PostgreSQL contiene usuarios, sesiones revocables, registros emocionales, planes de seguridad, elementos del plan y contactos de confianza. Los registros emocionales, el plan y los contactos solo se consultan o modifican por su propietario.
+
+Las contraseñas se almacenan con Argon2id. En web, la sesión usa cookies `HttpOnly`, CSRF y `Secure` en producción. En Capacitor nativo, el plugin de almacenamiento seguro guarda la sesión en Keychain/Keystore; no se persisten credenciales en `localStorage` del navegador. La configuración de transporte se describe en [API.md](./backend/API.md).
+
+Los recursos oficiales de apoyo permanecen estáticos. Las preferencias de notificación de la pantalla Perfil siguen siendo locales y no se sincronizan con la cuenta.
 
 ## Requisitos
 
-- Node.js 24 LTS
-- npm (incluido con Node.js)
+- Node.js 24 LTS y npm para desarrollo local.
+- Docker Desktop con Docker Compose v2 en Windows/macOS, o Docker Engine con el complemento `docker compose` en Linux.
+- Git para clonar el repositorio.
 
-## Estado de almacenamiento y cuentas
+## Ejecutar todo con Docker Compose
 
-Firebase ya no forma parte del código ni de las dependencias de CONTIGO. El inicio de sesión, la creación de cuentas y la sincronización de contactos están temporalmente inactivos; la aplicación no crea cuentas ni modifica los datos que permanezcan en servicios remotos. Las rutas de las pantallas se pueden abrir directamente, sin autenticación.
+Compose levanta el frontend en el puerto 8080, la API en el puerto interno 3000 y PostgreSQL en una red privada. PostgreSQL no publica un puerto en el host. La migración versionada se aplica mediante el servicio de una sola ejecución `migrate` antes de iniciar la API.
 
-Los registros emocionales guardados y las secciones editables del Plan de Seguridad se mantienen únicamente en memoria mientras la aplicación está abierta. Se pierden al cerrar o recargar la app. Esta versión no ofrece almacenamiento persistente para datos personales.
+1. Copia el ejemplo y reemplaza la contraseña de ejemplo:
 
-## Ejecutar con Docker
+   ```powershell
+   Copy-Item .env.example .env
+   ```
 
-Docker solo necesita un contenedor para el frontend web: Angular se compila durante la construcción de la imagen y Nginx sirve los archivos resultantes. No se ejecutan contenedores de backend ni de base de datos.
+2. En `.env`, cambia `POSTGRES_PASSWORD` por un secreto local aleatorio y coloca la misma contraseña en `DATABASE_URL`. Mantén `database` como hostname de PostgreSQL dentro de Compose. Si la contraseña contiene caracteres reservados de URL, codifícalos en `DATABASE_URL`. No compartas ni agregues `.env` al repositorio.
 
-### Requisitos
+3. Inicia los servicios:
 
-- Docker Desktop con Docker Compose v2 en Windows o macOS, o Docker Engine con el complemento `docker compose` en Linux.
-- Docker debe estar iniciado. Node.js no es necesario en el computador anfitrión para construir o ejecutar la versión Docker.
-- Git, si vas a clonar el repositorio.
+   ```powershell
+   docker compose up -d --build
+   docker compose ps
+   ```
 
-Comprueba que Docker está disponible:
+4. Comprueba las respuestas:
 
-```powershell
-# En instalaciones por usuario donde `docker` no se reconoce, agrega el CLI a
-# esta ventana de PowerShell (el cambio no es permanente ni afecta al sistema).
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-  $dockerCli = "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin"
-  if (Test-Path "$dockerCli\docker.exe") {
-    $env:PATH = "$dockerCli;$env:PATH"
-  }
-}
+   ```powershell
+   Invoke-WebRequest http://localhost:8080/healthz
+   Invoke-WebRequest http://localhost:8080/api/ready
+   Invoke-WebRequest http://localhost:8080/inicio
+   ```
 
-docker version
-docker compose version
-```
+   La API también ofrece `GET /api/health` y `GET /api/ready`. El puerto web se cambia con `CONTIGO_PORT` en `.env`.
 
-### Clonar y levantar el proyecto
-
-En PowerShell, desde la carpeta donde quieras guardar el repositorio:
+Para ver logs:
 
 ```powershell
-git clone https://github.com/macacarreno/PROYECTO-CONTIGO.git
-cd PROYECTO-CONTIGO
-docker compose up --build -d
+docker compose logs -f web backend database migrate
 ```
 
-La primera vez, Docker descarga las imágenes base y compila Angular; puede tardar unos minutos. `-d` deja el servicio ejecutándose en segundo plano. Para ver si está saludable:
+Para reconstruir y actualizar:
 
 ```powershell
-docker compose ps
+docker compose up -d --build
 ```
 
-Abre **http://localhost:8080** en el navegador. Las rutas de la aplicación, por ejemplo `/inicio` o `/bienestar`, también deben funcionar al abrirlas o recargarlas directamente.
-
-### Comprobar, ver logs y administrar el servicio
-
-Para comprobar la respuesta HTTP del servidor:
-
-```powershell
-Invoke-WebRequest http://localhost:8080/healthz
-Invoke-WebRequest http://localhost:8080/inicio
-```
-
-Para seguir los logs o revisar el estado:
-
-```powershell
-docker compose logs -f web
-docker compose ps
-```
-
-Pulsa `Ctrl+C` para salir del seguimiento de logs; esto no detiene el servicio. Para detener y eliminar el contenedor:
+Para detener el sistema sin perder la base de datos:
 
 ```powershell
 docker compose down
 ```
 
-Para volver a levantarlo después de haberlo detenido:
+Los datos se guardan en el volumen nombrado `postgres-data`. `docker compose down` conserva el volumen; **no uses `docker compose down -v`** si necesitas mantener los datos.
 
-```powershell
-docker compose up -d
-```
-
-Si cambiaste el código o el Dockerfile y quieres reconstruir la imagen:
-
-```powershell
-docker compose up --build -d
-```
-
-El puerto del computador es configurable. Si el 8080 ya está ocupado, define otro antes de levantar el servicio:
-
-```powershell
-$env:CONTIGO_PORT = "8081"
-docker compose up --build -d
-```
-
-En ese caso abre **http://localhost:8081**. Para volver al puerto predeterminado en la misma ventana de PowerShell:
-
-```powershell
-Remove-Item Env:CONTIGO_PORT
-```
-
-En macOS o Linux, los mismos comandos `docker compose` funcionan desde una terminal; para cambiar el puerto se puede anteponer `CONTIGO_PORT=8081` al comando.
+En un entorno publicado, termina TLS en un proxy HTTPS confiable y configura `COOKIE_SECURE=true`; no publiques la API o PostgreSQL directamente ni desactives la validación TLS. Para desarrollo local, el origen web permitido por defecto es `http://localhost:8080`.
 
 ## Desarrollo local
 
-Desde PowerShell, en la raíz del repositorio:
+### Frontend
+
+Desde la raíz:
 
 ```powershell
 npm.cmd ci
 npm.cmd start
-```
-
-Abre la dirección local que indique Angular CLI para usar la aplicación en el navegador. Para comprobar una compilación de producción:
-
-```powershell
+npm.cmd test -- --watch=false
 npm.cmd run build
 ```
 
-En Git Bash puedes usar `npm` en lugar de `npm.cmd`.
+### Backend
 
-## Alcance actual
-
-La aplicación utiliza Ionic, Angular, TypeScript y Capacitor. No integra un servicio de autenticación ni una base de datos. Las secciones de apoyo incluyen contenido orientativo y no personalizado. No se implementan análisis emocional automático ni notificaciones push. La aplicación no diagnostica ni reemplaza la atención profesional.
-
-## Estructura OpenSpec
-
-Las propuestas, especificaciones, decisiones técnicas y tareas del proyecto se mantienen en `openspec/`.
-Los artefactos históricos que mencionan servicios retirados se conservan como documentación; no se usan durante la compilación ni la ejecución.
-
-## Funcionalidades implementadas
-
-CONTIGO cuenta con una interfaz visual y navegable para una aplicación móvil de apoyo temprano. La navegación conecta las siguientes pantallas:
-
-- **Login:** conserva el formulario y la opción de mostrar u ocultar la contraseña. El inicio de sesión está temporalmente inactivo y la pantalla informa que no se inició una sesión.
-- **Crear Cuenta:** conserva la validación del formulario, pero la creación de cuentas está temporalmente inactiva. No se crea ni se guarda ninguna cuenta.
-- **Inicio:** presenta el saludo «Hola 👋», la pregunta «¿Cómo te sientes hoy?» y cinco opciones emocionales: Muy bien, Bien, Regular, Mal y Muy mal. Elegir un estado abre Registro Emocional y precarga un borrador; no se guarda hasta completar y confirmar explícitamente el registro. Incluye una tarjeta ilustrada con un mensaje tranquilo, accesos a Mi Plan de Seguridad, Mi Red de Apoyo e Información y recursos, y un botón «Necesito ayuda».
-- **Registro emocional:** permite elegir un estado, seleccionar una o varias emociones (Tristeza, Ansiedad, Miedo, Enojo, Soledad, Calma, Esperanza y Otra) y añadir una nota opcional. Al pulsar «Guardar registro», valida los campos y conserva el registro en memoria durante la sesión actual.
-- **Mi Bienestar:** consulta los registros guardados en la sesión actual. Permite filtrar por los últimos siete días, el mes calendario actual y el año calendario actual; cada tarjeta muestra estado, emociones y fecha. Los registros se pierden al cerrar o recargar la app.
-- **Mi Plan de Seguridad:** presenta señales de alerta, acciones de autocuidado, personas y lugares de apoyo y contactos de confianza. La gestión sincronizada de personas y lugares está temporalmente inactiva; las otras secciones se editan en memoria y se pierden al cerrar o recargar la app. Incluye orientación para contactar al personal de Metro, los servicios locales de emergencia y el sitio oficial de Metro.
-- **Red de apoyo:** conserva la pantalla, pero muestra que los contactos sincronizados están temporalmente inactivos. Los datos remotos no se han eliminado, aunque esta versión no puede consultarlos.
-- **Necesito ayuda:** permite confirmar y abrir la llamada a *4141 y acceder a Red de Apoyo, Plan de Seguridad y Registro Emocional. La gestión de contactos y llamadas/SMS desde la lista están inactivas. La llamada a *4141 requiere confirmación y, en navegadores no compatibles, la app informa el número para marcar desde un teléfono.
-- **Información y recursos:** contiene un espacio para información de apoyo y prevención.
-- **Perfil:** conserva la interfaz y las preferencias de vista previa. La cuenta y la gestión de sesión no están disponibles sin autenticación.
-
-## Navegación y experiencia de uso
-
-La ruta inicial y las rutas desconocidas llevan al **Login**. Las demás pantallas conservan sus rutas y pueden abrirse directamente; no hay autenticación configurada. En Inicio, elegir un estado conduce a Registro Emocional; el registro se guarda en memoria únicamente al pulsar «Guardar registro». Las pantallas incluyen una barra inferior para acceder a **Inicio**, **Mi bienestar**, **Plan** y **Red de apoyo**.
-
-La cabecera compartida muestra el logotipo de **CONTIGO** con una hoja decorativa, el acceso a **Perfil** y un acceso a **Necesito ayuda**. En pantallas móviles estrechas, el botón de ayuda se compacta a un icono accesible para dejar visible el logotipo.
-
-La pantalla Inicio usa fondos claros, superficies redondeadas, acentos pastel y una ilustración decorativa hecha con SVG local. Se conservaron las rutas e interacciones existentes. La interfaz se adaptó y comprobó en anchos de 320 px y 375 px, sin desbordamiento horizontal.
-
-## Tecnologías y estructura
-
-- **Ionic y Angular** para la interfaz y sus componentes.
-- **TypeScript** para la lógica de la aplicación.
-- **Capacitor** como base para una posible integración con plataformas móviles.
-- **Vitest** para las pruebas automatizadas.
-
-Las pantallas están organizadas por áreas funcionales dentro de `src/app/features/`, y la navegación principal se define en `src/app/app.routes.ts`.
-
-## Privacidad y alcance actual
-
-El registro emocional y el plan se mantienen temporalmente en memoria de la sesión y no se envían a ningún backend. La autenticación, la creación de cuentas y la sincronización de contactos están inactivas. Los datos remotos que pudieran existir no se modifican ni se eliminan mediante esta versión.
-
-Las secciones de apoyo ofrecen contenido orientativo, no planes personalizados. La aplicación no diagnostica, no reemplaza la atención profesional y no debe interpretarse como un servicio de emergencia.
-
-## Verificar cambios
-
-Desde la raíz del proyecto, ejecuta las pruebas, el lint y la compilación de producción:
+Usa una instancia PostgreSQL local. Copia [`backend/.env.example`](./backend/.env.example) a `backend/.env`, configura `DATABASE_URL` con el hostname accesible desde el computador (`localhost` para PostgreSQL local) y no reutilices una base de producción para pruebas.
 
 ```powershell
-npm.cmd test -- --watch=false --configuration=ci
-npm.cmd run lint
-npm.cmd run build
+Set-Location backend
+npm.cmd ci
+npm.cmd run prisma:generate
+npm.cmd run prisma:migrate:deploy
+npm.cmd run dev
 ```
-- Validación OpenSpec: correcta para la especificación principal `home-screen`; los cambios de Login y los rediseños de Inicio están registrados en sus artefactos OpenSpec.
-- La compilación muestra avisos no bloqueantes porque los estilos de Inicio y Crear Cuenta superan el umbral de aviso de 3 kB; ambos permanecen por debajo del límite de error de 4 kB.
 
-La compilación y las pruebas se pueden ejecutar con los comandos descritos en **Desarrollo local**.
+La API local escucha por defecto en `http://localhost:3000`. Las migraciones nuevas se crean durante el desarrollo con `npm run prisma:migrate:dev` y se despliegan con `npm run prisma:migrate:deploy`; `prisma db push` no sustituye el historial de migraciones.
+
+### Pruebas de integración PostgreSQL
+
+La prueba HTTP de integración está desactivada por defecto. Solo ejecútala contra una base local aislada llamada `contigo_test`; el guard del test rechaza hosts remotos y otros nombres de base:
+
+```powershell
+Set-Location backend
+$env:DATABASE_URL = "postgresql://contigo_test:local-test-only@localhost:54329/contigo_test?schema=public"
+$env:RUN_DB_INTEGRATION_TESTS = "true"
+npm.cmd test
+Remove-Item Env:DATABASE_URL
+Remove-Item Env:RUN_DB_INTEGRATION_TESTS
+```
+
+No uses datos emocionales reales en pruebas.
+
+## Ejecución con Capacitor
+
+La app web usa `/api` como ruta relativa y funciona detrás del proxy Nginx de Compose. Un dispositivo Android o iOS no puede usar `localhost` para alcanzar el computador anfitrión. Antes de compilar/publicar una aplicación nativa, configura `apiBaseUrl` en [`src/assets/contigo-config.js`](./src/assets/contigo-config.js) con el dominio público HTTPS del backend. La dirección del entorno de desarrollo debe ser accesible desde el dispositivo; no codifiques una IP privada en la configuración de producción.
+
+El cliente nativo envía credenciales bearer y las conserva con Keychain/Keystore. No desactives TLS para resolver problemas de conexión. Configura los orígenes permitidos en `NATIVE_ORIGINS` y `WEB_ORIGINS` según el entorno.
+
+## Respaldos y restauración
+
+Los respaldos contienen información personal y emocional: guárdalos cifrados, con acceso limitado y fuera del repositorio. Estos comandos de PowerShell crean una copia SQL dentro del contenedor y luego la copian a un directorio privado del usuario:
+
+```powershell
+$backupDirectory = Join-Path $env:USERPROFILE "contigo-backups"
+New-Item -ItemType Directory -Force $backupDirectory | Out-Null
+$backupFile = Join-Path $backupDirectory "contigo-$(Get-Date -Format yyyyMMdd-HHmmss).sql"
+docker compose exec -T database sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" > /tmp/contigo-backup.sql'
+docker compose cp database:/tmp/contigo-backup.sql $backupFile
+docker compose exec -T database rm -f /tmp/contigo-backup.sql
+```
+
+Restaura primero a una base de datos vacía para no sobrescribir la base activa. Por ejemplo, crea `contigo_restore`, copia el archivo y cárgalo:
+
+```powershell
+$backupFile = Read-Host "Ruta absoluta del respaldo SQL"
+docker compose exec -T database createdb -U contigo contigo_restore
+docker compose cp $backupFile database:/tmp/contigo-restore.sql
+docker compose exec -T database sh -c 'psql -U "$POSTGRES_USER" -d contigo_restore -v ON_ERROR_STOP=1 -f /tmp/contigo-restore.sql'
+docker compose exec -T database rm -f /tmp/contigo-restore.sql
+```
+
+Verifica el contenido restaurado antes de cambiar `DATABASE_URL` para apuntar a `contigo_restore` y reiniciar la API. Ajusta el usuario si `POSTGRES_USER` no es `contigo`. Conserva también una copia protegida del archivo `.env`, porque el acceso a la base requiere sus credenciales.
+
+La eliminación de una cuenta borra sus datos activos en PostgreSQL, pero no puede purgar respaldos ya creados. Define y aplica una retención para esas copias antes de ofrecer el servicio en producción; almacénalas cifradas, con acceso limitado y fuera del repositorio.
+
+## Pantallas conectadas
+
+- Login y registro crean sesiones y cuentas reales en el backend.
+- Registro emocional e historial usan persistencia remota, filtro por semana/mes/año y paginación.
+- El plan guarda señales, acciones y lugares. Los contactos se administran en una lista única en Red de Apoyo y se enlazan desde el plan para evitar duplicarlos.
+- Perfil actualiza los datos de cuenta y el cierre de sesión revoca la sesión en el backend.
+- Los recursos oficiales de ayuda y las preferencias locales de notificación no se sincronizan.
+
+La aplicación ofrece apoyo temprano; no diagnostica, no reemplaza la atención profesional ni los servicios de emergencia.
+
+## OpenSpec
+
+Las propuestas, especificaciones, decisiones técnicas y tareas se conservan en [`openspec/`](./openspec/).

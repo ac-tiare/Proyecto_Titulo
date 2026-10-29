@@ -13,10 +13,6 @@
         <p class="welcome-copy">
           Un momento para ti, cuando lo necesites.
         </p>
-        <p class="field-hint" role="note">
-          El acceso a cuentas está temporalmente inactivo. Este formulario no
-          enviará tus datos.
-        </p>
       </header>
 
       <div class="login-fields">
@@ -29,6 +25,7 @@
             label-placement="floating"
             placeholder="nombre@ejemplo.cl"
             autocomplete="email"
+            maxlength="254"
             inputmode="email"
             name="email"
             [value]="email()"
@@ -53,6 +50,7 @@
               label-placement="floating"
               placeholder="Escribe tu contraseña"
               autocomplete="current-password"
+              maxlength="128"
               name="password"
               [value]="password()"
               (ionInput)="password.set($event.detail.value ?? '')"
@@ -78,7 +76,7 @@
               ></ion-icon>
             </ion-button>
           </div>
-          <p class="field-hint">La contraseña debe tener al menos 8 caracteres.</p>
+          <p class="field-hint">Ingresa la contraseña asociada a tu cuenta.</p>
         </div>
       </div>
 
@@ -97,9 +95,10 @@
         class="login-button"
         expand="block"
         type="button"
+        [disabled]="isSubmitting()"
         (click)="signIn()"
       >
-        Iniciar sesión
+        {{ isSubmitting() ? 'Ingresando…' : 'Iniciar sesión' }}
       </ion-button>
 
       @if (errorMessage()) {
