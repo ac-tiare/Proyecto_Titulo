@@ -128,10 +128,12 @@ export class RegisterPage {
     }
     if (!values.password) {
       errors.password = 'Ingresa una contraseña.';
-    } else if (values.password.length < 12) {
-      errors.password = 'La contraseña debe tener al menos 12 caracteres.';
+    } else if (values.password.length < 8) {
+      errors.password = 'La contraseña debe tener al menos 8 caracteres.';
     } else if (values.password.length > 128) {
       errors.password = 'La contraseña no puede superar 128 caracteres.';
+    } else if (!/\d/.test(values.password)) {
+      errors.password = 'La contraseña debe incluir al menos un número.';
     }
     if (!values.confirmPassword) {
       errors.confirmPassword = 'Confirma tu contraseña.';

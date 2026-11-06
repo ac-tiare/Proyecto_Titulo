@@ -1,12 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
   IonButton,
   IonContent,
   IonIcon,
   IonInput,
-  IonToast,
 } from '@ionic/angular';
 import {
   eyeOffOutline,
@@ -23,7 +22,7 @@ import { AuthSessionService } from '../../core/api/auth-session.service';
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
-  imports: [IonButton, IonContent, IonIcon, IonInput, IonToast],
+  imports: [IonButton, IonContent, IonIcon, IonInput, RouterLink],
 })
 export class LoginPage {
   private readonly router = inject(Router);
@@ -35,8 +34,6 @@ export class LoginPage {
   readonly showPasswordIcon = eyeOutline;
   readonly hidePasswordIcon = eyeOffOutline;
   readonly showPassword = signal(false);
-  readonly noticeOpen = signal(false);
-  readonly noticeMessage = signal('');
   readonly email = signal('');
   readonly password = signal('');
   readonly errorMessage = signal('');
@@ -69,10 +66,4 @@ export class LoginPage {
     this.showPassword.update((visible) => !visible);
   }
 
-  showRecoveryNotice(): void {
-    this.noticeMessage.set(
-      'La recuperación de contraseña aún no está disponible.',
-    );
-    this.noticeOpen.set(true);
-  }
 }

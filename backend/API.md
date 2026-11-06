@@ -5,7 +5,7 @@
 - Prefijo: `/api`. En local, el backend escucha en `http://localhost:3000`; mediante Docker, Nginx proxya `/api` desde el frontend.
 - Las respuestas exitosas con contenido usan `{ "data": ... }`. Los errores usan `{ "error": { "code": "...", "message": "...", "details"?: [...] } }`.
 - Las rutas privadas aceptan cookie de sesión en web o `Authorization: Bearer <accessToken>` en Capacitor nativo. El backend obtiene la cuenta desde la sesión; no se envía `userId`.
-- Las mutaciones web requieren un origen permitido, la cookie `XSRF-TOKEN` y el encabezado `X-XSRF-TOKEN` con el mismo valor. Las solicitudes nativas deben incluir `X-Contigo-Client: native` y un `Origin` nativo configurado. No se debe desactivar la validación TLS.
+- Las mutaciones web privadas requieren un origen permitido, la cookie `XSRF-TOKEN` y el encabezado `X-XSRF-TOKEN` con el mismo valor. Las rutas públicas de autenticación inicial requieren un `Origin` web permitido; no requieren una cookie CSRF preexistente. Las solicitudes nativas deben incluir `X-Contigo-Client: native` y un `Origin` nativo configurado. No se debe desactivar la validación TLS.
 - Registro, login y renovación están limitados a 8 solicitudes por ventana de 15 minutos. Al exceder el límite se responde `429 RATE_LIMITED`.
 
 ## Sesiones y autenticación
@@ -22,7 +22,9 @@ GET /api/auth/csrf
 { "data": { "csrfToken": "<csrf-token>" } }
 ```
 
-El cliente web debe enviar la cookie y copiar su valor al encabezado `X-XSRF-TOKEN` en cada mutación. El token CSRF no es una credencial de sesión.
+El cliente web puede obtener el token desde esta ruta. Las rutas públicas de registro, login y recuperación validan el `Origin` permitido y no requieren una cookie CSRF preexistente; las demás mutaciones web deben enviar la cookie y copiar su valor al encabezado `X-XSRF-TOKEN`. El token CSRF no es una credencial de sesión.
+
+En desarrollo HTTP, el backend usa `SameSite=Lax`, `Secure=false` y una cookie CSRF legible por el cliente (`HttpOnly=false`). CORS permite credenciales solo desde los orígenes enumerados en `WEB_ORIGINS`; para acceso local directo se pueden configurar `http://localhost:8080,http://localhost:3000`. El puerto no forma parte del alcance de una cookie: usa el mismo host (`localhost`) en frontend y API, y no mezcles `localhost` con `127.0.0.1`. En producción, las cookies requieren `Secure` y HTTPS.
 
 ### Registrar una cuenta
 
@@ -33,7 +35,7 @@ El cliente web debe enviar la cookie y copiar su valor al encabezado `X-XSRF-TOK
   "name": "Alex",
   "surname": "Pérez",
   "email": "alex@example.cl",
-  "password": "<mínimo 12 caracteres>"
+  "password": "<8-128 caracteres, al menos un número>"
 }
 ```
 
@@ -57,6 +59,12 @@ Responde `201`. `name` y `email` son obligatorios; `surname` es opcional. El cor
 ```
 
 Una cuenta con correo ya registrado responde `409 EMAIL_ALREADY_REGISTERED`. El hash de contraseña nunca se devuelve.
+
+### Recuperar contraseña
+
+La recuperación por correo requiere configurar `SMTP_HOST` y `SMTP_FROM`. `SMTP_PORT` usa 587 por defecto y `SMTP_SECURE` debe ser `true` para una conexión TLS implícita, como normalmente se configura en el puerto 465. Si el servidor requiere autenticación, configura `SMTP_USER` junto con `SMTP_PASSWORD` o su alias `SMTP_PASS`. `PUBLIC_APP_URL` determina el origen al que apunta el enlace `/reset-password`; también se acepta `FRONTEND_URL`. Si se definen ambos nombres de una pareja, el nombre existente (`SMTP_PASSWORD` o `PUBLIC_APP_URL`) tiene prioridad. Sin SMTP completo, la función responde con un error de servicio no disponible; no se deben incluir credenciales reales en archivos versionados.
+
+En un entorno configurado, la solicitud de recuperación envía un enlace de un solo uso con vigencia de 15 minutos. La respuesta pública es genérica para evitar revelar si el correo pertenece a una cuenta. Para comprobar el flujo en desarrollo, usa un buzón de pruebas SMTP y solicita el enlace desde la pantalla de recuperación; no compartas ni registres el token del enlace.
 
 ### Iniciar sesión
 
@@ -94,6 +102,39 @@ El navegador usa la cookie HttpOnly `contigo_refresh` y la prueba CSRF. La respu
 ### Cerrar sesión
 
 `POST /api/auth/logout` requiere sesión y CSRF en web. Revoca la sesión actual, limpia sus cookies cuando corresponda y responde `204` sin cuerpo. Las solicitudes posteriores con esa credencial responden `401 UNAUTHENTICATED`.
+
+### Solicitar recuperación de contraseña
+
+`POST /api/auth/forgot-password` requiere una dirección de correo válida y el control CSRF/origen correspondiente al cliente. Está limitado a 3 solicitudes por IP y 3 por correo normalizado cada 15 minutos. Responde `200` con el mismo mensaje para cuentas existentes y no existentes:
+
+```json
+{
+  "email": "persona@example.cl"
+}
+```
+
+```json
+{
+  "data": {
+    "message": "Si el correo está asociado a una cuenta, recibirás instrucciones para recuperar el acceso."
+  }
+}
+```
+
+La entrega requiere SMTP configurado como se describe arriba. Por privacidad, el mensaje no confirma si se envió un correo específico.
+
+### Restablecer contraseña
+
+`POST /api/auth/reset-password` recibe el token del enlace y una contraseña nueva de 8 a 128 caracteres que incluya al menos un número. Está limitado a 5 solicitudes por IP cada 15 minutos.
+
+```json
+{
+  "token": "<token-del-enlace>",
+  "newPassword": "<8-128 caracteres, al menos un número>"
+}
+```
+
+El éxito responde `200`; un token inválido, vencido, usado o consumido concurrentemente responde `400 INVALID_OR_EXPIRED_RESET_TOKEN`. La contraseña se almacena con Argon2id y las sesiones activas quedan revocadas. El token nunca se devuelve en la respuesta ni se almacena en texto plano.
 
 ## Registros emocionales
 
@@ -190,6 +231,16 @@ La respuesta incluye la cantidad de registros, conteos por estado y emoción, y 
 ```
 
 El resumen no consulta notas ni detalles de «Otra», no compara cuentas y no constituye una evaluación clínica, diagnóstico o predicción. Los parámetros no admitidos responden `400 VALIDATION_ERROR`; la ausencia de sesión responde `401 UNAUTHENTICATED`.
+
+### Consultar invitación preventiva de apoyo
+
+`GET /api/emociones/invitacion-prevencion` requiere sesión. Considera registros propios cuya fecha está entre ahora y hace exactamente siete días (7 × 24 horas). Cuenta una vez cada registro con estado `mal`/`muy-mal` o con una o más emociones tristeza, ansiedad, miedo, enojo o soledad. La respuesta contiene solo el booleano; no se consultan notas ni se exponen conteos:
+
+```json
+{ "data": { "showInvitation": true } }
+```
+
+La ausencia de registros no activa la invitación. El resultado es una regla descriptiva de apoyo y no representa un diagnóstico, evaluación clínica o predicción.
 
 ### Consultar, actualizar y eliminar uno
 

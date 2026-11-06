@@ -67,6 +67,32 @@ export const emotionRepository = {
       orderBy: { recordedAt: 'asc' },
     });
   },
+  listPreventionInvitationRecords(userId: string, from: Date, to: Date) {
+    return prisma.emotionalRecord.findMany({
+      where: {
+        userId,
+        recordedAt: { gte: from, lte: to },
+        OR: [
+          { mood: { in: ['BAD', 'VERY_BAD'] } },
+          {
+            emotions: {
+              some: {
+                emotion: {
+                  in: ['SADNESS', 'ANXIETY', 'FEAR', 'ANGER', 'LONELINESS'],
+                },
+              },
+            },
+          },
+        ],
+      },
+      select: {
+        mood: true,
+        recordedAt: true,
+        emotions: { select: { emotion: true } },
+      },
+      orderBy: { recordedAt: 'asc' },
+    });
+  },
   findById(userId: string, id: string) {
     return prisma.emotionalRecord.findFirst({
       where: { id, userId },

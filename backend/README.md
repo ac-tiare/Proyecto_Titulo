@@ -48,10 +48,18 @@ Las relaciones de sesiones, registros, planes y contactos hacia `users` usan `ON
 | `GET` | `/api/auth/me` | Consultar el perfil autenticado. |
 | `PATCH` | `/api/auth/me` | Actualizar nombre, apellido o correo propios. |
 | `POST` | `/api/auth/logout` | Revocar la sesión actual. |
+| `POST` | `/api/auth/forgot-password` | Solicitar un enlace de recuperación, con respuesta genérica. |
+| `POST` | `/api/auth/reset-password` | Restablecer la contraseña con un token temporal de un solo uso. |
 
 Las rutas de registro, inicio y renovación tienen límite de frecuencia. En web, los tokens no aparecen en los cuerpos de respuesta; en cliente nativo, el transporte los devuelve para que el adaptador seguro del dispositivo los persista.
 
 La referencia completa de endpoints, validación, transporte, ejemplos y errores está en [API.md](./API.md).
+
+### Recuperación de contraseña
+
+La aplicación ofrece las rutas públicas `/forgot-password` y `/reset-password`. La primera siempre muestra una confirmación genérica para no revelar si el correo está registrado; la segunda recibe el token mediante el parámetro `token` del enlace enviado por correo. El enlace vence a los 15 minutos y solo puede utilizarse una vez. Un token inválido o vencido requiere solicitar otro desde `/forgot-password`.
+
+Para habilitar el envío, configura `SMTP_HOST`, `SMTP_FROM` y la URL pública mediante `PUBLIC_APP_URL` o su alias `FRONTEND_URL`. Si el servidor exige autenticación, configura `SMTP_USER` junto con `SMTP_PASSWORD` o su alias `SMTP_PASS`; cuando se indiquen ambos nombres, prevalece el nombre existente. `SMTP_PORT` usa 587 por defecto; establece `SMTP_SECURE=true` para TLS implícito, normalmente en el puerto 465. Mantén las credenciales únicamente en el entorno de despliegue. Los enlaces de restablecimiento vencen en 15 minutos y solo pueden utilizarse una vez. La configuración detallada y los ejemplos HTTP están en [API.md](./API.md).
 
 ## Migraciones
 

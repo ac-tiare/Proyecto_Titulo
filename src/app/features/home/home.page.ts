@@ -1,11 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import {
   IonButton,
   IonContent,
   IonIcon,
 } from '@ionic/angular';
 import { EmotionalSessionService, MoodId } from '../wellbeing/emotional-session';
+import { apiErrorMessage } from '../../core/api/api-error';
+import { EmotionalRecordApiService } from '../../core/api/emotional-record-api.service';
 
 @Component({
   selector: 'app-home',
@@ -16,8 +19,12 @@ import { EmotionalSessionService, MoodId } from '../wellbeing/emotional-session'
 export class HomePage {
   private readonly router = inject(Router);
   private readonly emotionalSession = inject(EmotionalSessionService);
+  private readonly emotionalRecords = inject(EmotionalRecordApiService);
 
   readonly selectedMood = signal<MoodId | null>(null);
+  readonly showPreventionInvitation = signal(false);
+  readonly preventionInvitationError = signal('');
+  readonly preventionInvitationLoading = signal(false);
   readonly moods: readonly { id: MoodId; label: string; emoji: string }[] = [
     { id: 'muy-bien', label: 'Muy bien', emoji: '😄' },
     { id: 'bien', label: 'Bien', emoji: '🙂' },
@@ -76,5 +83,27 @@ export class HomePage {
   async openMoodEntry(moodId: MoodId): Promise<void> {
     this.emotionalSession.startDraft(moodId);
     await this.router.navigate(['/registro-emocional']);
+  }
+
+  ionViewWillEnter(): void {
+    this.loadPreventionInvitation();
+  }
+
+  loadPreventionInvitation(): void {
+    if (this.preventionInvitationLoading()) return;
+
+    this.preventionInvitationError.set('');
+    this.preventionInvitationLoading.set(true);
+    this.emotionalRecords
+      .preventionInvitation()
+      .pipe(
+        finalize(() => this.preventionInvitationLoading.set(false)),
+      )
+      .subscribe({
+        next: (showInvitation) =>
+          this.showPreventionInvitation.set(showInvitation),
+        error: (error: unknown) =>
+          this.preventionInvitationError.set(apiErrorMessage(error)),
+      });
   }
 }

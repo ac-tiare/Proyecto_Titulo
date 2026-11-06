@@ -54,6 +54,7 @@ export const personalDataRepository = {
 
   deleteAccount(userId: string) {
     return prisma.$transaction(async (transaction) => {
+      await transaction.passwordResetToken.deleteMany({ where: { userId } });
       await transaction.trustedContact.deleteMany({ where: { userId } });
       await transaction.emotionalRecord.deleteMany({ where: { userId } });
       await transaction.safetyPlan.deleteMany({ where: { userId } });

@@ -76,3 +76,10 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Persistencia local de Docker y Base de Datos
+postgres_data/
+.docker/
+
+# Archivos de respaldo o datos locales de Prisma
+backend/prisma/migrations/*.sql.bak

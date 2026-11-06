@@ -203,6 +203,16 @@ export const emotionService = {
     };
   },
 
+  async preventionInvitation(userId: string, now = new Date()) {
+    const from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const records = await emotionRepository.listPreventionInvitationRecords(
+      userId,
+      from,
+      now,
+    );
+    return records.length >= 3;
+  },
+
   async get(userId: string, id: string) {
     const record = await emotionRepository.findById(userId, id);
     if (!record) throw new AppError(404, 'NOT_FOUND', 'No se encontró el registro.');
