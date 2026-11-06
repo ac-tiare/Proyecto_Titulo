@@ -5,6 +5,7 @@ import {
   deleteEmotion,
   getEmotion,
   getEmotionPatterns,
+  getPreventionInvitation,
   listEmotions,
   updateEmotion,
 } from '../controllers/emotion.controller.js';
@@ -14,6 +15,7 @@ export const emotionRoutes = Router();
 
 emotionRoutes.use(requireAuth);
 emotionRoutes.get('/patrones', getEmotionPatterns);
+emotionRoutes.get('/invitacion-prevencion', getPreventionInvitation);
 emotionRoutes.get('/', listEmotions);
 emotionRoutes.post('/', createEmotion);
 emotionRoutes.get('/:id', getEmotion);

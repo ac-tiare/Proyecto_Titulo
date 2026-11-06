@@ -90,6 +90,9 @@
               ></ion-icon>
             </ion-button>
           </div>
+          <p class="field-hint">
+            Usa entre 8 y 128 caracteres e incluye al menos un número.
+          </p>
           @if (errors().password) {
             <p class="field-error" id="password-error">{{ errors().password }}</p>
           }

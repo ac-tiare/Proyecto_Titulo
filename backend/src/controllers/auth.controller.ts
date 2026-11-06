@@ -2,27 +2,30 @@ import type { Request, Response } from 'express';
 
 import { env } from '../config/env.js';
 import { authService } from '../services/auth.service.js';
+import { passwordRecoveryService } from '../services/password-recovery.service.js';
 import { AppError } from '../utils/app-error.js';
 import { createCsrfToken } from '../utils/session-token.js';
 import {
   loginSchema,
+  forgotPasswordSchema,
   refreshSchema,
   registerSchema,
+  resetPasswordSchema,
   updateProfileSchema,
 } from '../validators/auth.validators.js';
 
 const sessionCookieOptions = (expires: Date) => ({
   httpOnly: true,
-  secure: env.COOKIE_SECURE,
-  sameSite: env.COOKIE_SAME_SITE,
+  secure: env.cookieSecure,
+  sameSite: env.cookieSameSite,
   path: '/api',
   expires,
 });
 
 const csrfCookieOptions = (expires: Date) => ({
   httpOnly: false,
-  secure: env.COOKIE_SECURE,
-  sameSite: env.COOKIE_SAME_SITE,
+  secure: env.cookieSecure,
+  sameSite: env.cookieSameSite,
   path: '/',
   expires,
 });
@@ -130,4 +133,29 @@ export const updateMe = async (request: Request, response: Response): Promise<vo
   const input = updateProfileSchema.parse(request.body);
   const user = await authService.updateProfile(request.auth!.user.id, input);
   response.json({ data: user });
+};
+
+export const requestPasswordRecovery = async (
+  request: Request,
+  response: Response,
+): Promise<void> => {
+  const { email } = forgotPasswordSchema.parse(request.body);
+  await passwordRecoveryService.request(email);
+  response.status(200).json({
+    data: {
+      message:
+        'Si el correo está asociado a una cuenta, recibirás instrucciones para recuperar el acceso.',
+    },
+  });
+};
+
+export const resetPassword = async (
+  request: Request,
+  response: Response,
+): Promise<void> => {
+  const { token, newPassword } = resetPasswordSchema.parse(request.body);
+  await passwordRecoveryService.reset(token, newPassword);
+  response.json({
+    data: { message: 'Tu contraseña fue actualizada. Inicia sesión nuevamente.' },
+  });
 };
