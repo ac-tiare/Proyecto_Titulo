@@ -7,6 +7,8 @@ import { contactRepository } from '../src/repositories/contact.repository.js';
 import { emotionRepository } from '../src/repositories/emotion.repository.js';
 import { personalDataRepository } from '../src/repositories/personal-data.repository.js';
 import { safetyPlanRepository } from '../src/repositories/safety-plan.repository.js';
+import { passwordResetRepository } from '../src/repositories/password-reset.repository.js';
+import { hashSessionToken } from '../src/utils/session-token.js';
 import { assertIsolatedTestDatabase, cleanTestUsers } from './test-database.js';
 
 const enabled = process.env.RUN_DB_INTEGRATION_TESTS === 'true';
@@ -118,6 +120,143 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
     expect(inputs[0]).not.toHaveProperty('otherEmotion');
   });
 
+  it('selects only qualifying recent invitation records for the owner without notes', async () => {
+    const [ownerId, otherUserId] = testUserIds;
+    const now = new Date('2026-10-28T12:00:00.000Z');
+    const from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    await emotionRepository.create(ownerId, {
+      mood: 'BAD',
+      emotions: ['ANXIETY', 'SADNESS'],
+      note: 'Private note is not selected',
+      otherEmotion: '',
+      recordedAt: from,
+    });
+    await emotionRepository.create(ownerId, {
+      mood: 'GOOD',
+      emotions: ['LONELINESS'],
+      note: '',
+      otherEmotion: '',
+      recordedAt: now,
+    });
+    await emotionRepository.create(ownerId, {
+      mood: 'VERY_BAD',
+      emotions: ['CALM'],
+      note: '',
+      otherEmotion: '',
+      recordedAt: new Date(from.getTime() - 1),
+    });
+    await emotionRepository.create(ownerId, {
+      mood: 'BAD',
+      emotions: ['ANGER'],
+      note: '',
+      otherEmotion: '',
+      recordedAt: new Date(now.getTime() + 1),
+    });
+    await emotionRepository.create(ownerId, {
+      mood: 'GOOD',
+      emotions: ['CALM'],
+      note: '',
+      otherEmotion: '',
+      recordedAt: new Date(now.getTime() - 1_000),
+    });
+    await emotionRepository.create(otherUserId, {
+      mood: 'BAD',
+      emotions: ['ANXIETY'],
+      note: '',
+      otherEmotion: '',
+      recordedAt: now,
+    });
+
+    const records = await emotionRepository.listPreventionInvitationRecords(
+      ownerId,
+      from,
+      now,
+    );
+
+    expect(records).toHaveLength(2);
+    expect(records.map((record) => record.recordedAt)).toEqual([from, now]);
+    expect(records[0]).toMatchObject({
+      mood: 'BAD',
+      emotions: [{ emotion: 'ANXIETY' }, { emotion: 'SADNESS' }],
+    });
+    expect(records[0]).not.toHaveProperty('note');
+    expect(records[0]).not.toHaveProperty('otherEmotion');
+  });
+
+  it('expires reset tokens after 15 minutes and consumes valid tokens only once', async () => {
+    const [ownerId] = testUserIds;
+    const now = new Date();
+    const validHash = hashSessionToken(randomUUID());
+    const expiredHash = hashSessionToken(randomUUID());
+    const usedHash = hashSessionToken(randomUUID());
+    const [validToken, expiredToken, usedToken] = await Promise.all([
+      prisma.passwordResetToken.create({
+        data: {
+          userId: ownerId,
+          tokenHash: validHash,
+          expiresAt: new Date(now.getTime() + 15 * 60 * 1000),
+        },
+        select: { id: true },
+      }),
+      prisma.passwordResetToken.create({
+        data: {
+          userId: ownerId,
+          tokenHash: expiredHash,
+          expiresAt: now,
+        },
+        select: { id: true },
+      }),
+      prisma.passwordResetToken.create({
+        data: {
+          userId: ownerId,
+          tokenHash: usedHash,
+          expiresAt: new Date(now.getTime() + 15 * 60 * 1000),
+          usedAt: now,
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    expect(
+      await passwordResetRepository.findValidToken(validHash, now),
+    ).toMatchObject({ id: validToken.id, userId: ownerId });
+    expect(
+      await passwordResetRepository.findValidToken(expiredHash, now),
+    ).toBeNull();
+    expect(
+      await passwordResetRepository.findValidToken(usedHash, now),
+    ).toBeNull();
+
+    expect(
+      await passwordResetRepository.complete(
+        validToken.id,
+        ownerId,
+        'argon2id-test-hash',
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      await passwordResetRepository.complete(
+        validToken.id,
+        ownerId,
+        'different-hash',
+        now,
+      ),
+    ).toBe(false);
+    expect(
+      await prisma.passwordResetToken.findUniqueOrThrow({
+        where: { id: validToken.id },
+        select: { usedAt: true },
+      }),
+    ).toMatchObject({ usedAt: now });
+    expect(
+      await prisma.user.findUniqueOrThrow({
+        where: { id: ownerId },
+        select: { passwordHash: true },
+      }),
+    ).toMatchObject({ passwordHash: 'argon2id-test-hash' });
+  });
+
   it('exports only the owner data without authentication secrets', async () => {
     const [ownerId, otherUserId] = testUserIds;
     await emotionRepository.create(ownerId, {
@@ -143,6 +282,13 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
       name: 'Owner contact',
       phone: '+56912345678',
     });
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: ownerId,
+        tokenHash: randomUUID().replaceAll('-', '').padEnd(64, '0'),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      },
+    });
 
     const exported = await personalDataRepository.exportAccount(ownerId);
     const serialized = JSON.stringify(exported);
@@ -154,6 +300,8 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
     expect(serialized).not.toContain('passwordHash');
     expect(serialized).not.toContain('Foreign export note');
     expect(serialized).not.toContain('refreshTokenHash');
+    expect(serialized).not.toContain('passwordResetTokens');
+    expect(serialized).not.toContain('tokenHash');
   });
 
   it('deletes only the owner account and its restricted relations transactionally', async () => {
@@ -184,6 +332,13 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
         refreshExpiresAt: new Date(Date.now() + 120_000),
       },
     });
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: ownerId,
+        tokenHash: randomUUID().replaceAll('-', '').padEnd(64, '1'),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      },
+    });
 
     await personalDataRepository.deleteAccount(ownerId);
 
@@ -192,6 +347,9 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
     expect(await prisma.safetyPlan.count({ where: { userId: ownerId } })).toBe(0);
     expect(await prisma.trustedContact.count({ where: { userId: ownerId } })).toBe(0);
     expect(await prisma.session.count({ where: { userId: ownerId } })).toBe(0);
+    expect(
+      await prisma.passwordResetToken.count({ where: { userId: ownerId } }),
+    ).toBe(0);
     expect(await prisma.user.findUnique({ where: { id: otherUserId } })).not.toBeNull();
   });
 
@@ -216,6 +374,13 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
     await contactRepository.create(ownerId, {
       name: 'Must remain after rollback',
       phone: '+56912345678',
+    });
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: ownerId,
+        tokenHash: randomUUID().replaceAll('-', '').padEnd(64, '2'),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      },
     });
     await prisma.session.create({
       data: {
@@ -255,6 +420,9 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
       expect(await prisma.safetyPlan.count({ where: { userId: ownerId } })).toBe(1);
       expect(await prisma.trustedContact.count({ where: { userId: ownerId } })).toBe(1);
       expect(await prisma.session.count({ where: { userId: ownerId } })).toBe(1);
+      expect(
+        await prisma.passwordResetToken.count({ where: { userId: ownerId } }),
+      ).toBe(1);
     } finally {
       await prisma.$executeRawUnsafe(
         'DROP TRIGGER IF EXISTS test_contigo_account_delete_failure ON users',

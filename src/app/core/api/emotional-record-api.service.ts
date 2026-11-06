@@ -40,6 +40,14 @@ export class EmotionalRecordApiService {
       .pipe(map((response) => response.data));
   }
 
+  preventionInvitation(): Observable<boolean> {
+    return this.http
+      .get<ApiResponse<{ showInvitation: boolean }>>(
+        `${this.baseUrl}/invitacion-prevencion`,
+      )
+      .pipe(map((response) => response.data.showInvitation));
+  }
+
   get(id: string): Observable<EmotionalRecord> {
     return this.http
       .get<ApiResponse<EmotionalRecord>>(`${this.baseUrl}/${id}`)

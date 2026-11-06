@@ -1,7 +1,14 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import { concatMap, from, map, Observable, switchMap, throwError } from 'rxjs';
+import {
+  concatMap,
+  from,
+  map,
+  Observable,
+  switchMap,
+  throwError,
+} from 'rxjs';
 
 import {
   ApiResponse,
@@ -12,29 +19,47 @@ import {
   UpdateProfileRequest,
 } from './api.models';
 import { NativeSessionStore } from './native-session.store';
+import { CsrfTokenService } from './csrf-token.service';
 import { apiBaseUrl } from './api.config';
 
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
   private readonly http = inject(HttpClient);
   private readonly sessionStore = inject(NativeSessionStore);
+  private readonly csrfToken = inject(CsrfTokenService);
   private readonly baseUrl = `${apiBaseUrl}/auth`;
 
   register(input: RegisterRequest): Observable<AuthCredentials> {
-    return this.withNativeSession(
-      this.http.post<ApiResponse<AuthCredentials>>(
-        `${this.baseUrl}/register`,
-        input,
-      ),
-    );
+    return this.authenticate('/register', input);
   }
 
   login(input: LoginRequest): Observable<AuthCredentials> {
+    return this.authenticate('/login', input);
+  }
+
+  private authenticate(
+    path: '/login' | '/register',
+    input: LoginRequest | RegisterRequest,
+  ): Observable<AuthCredentials> {
+    const request = Capacitor.isNativePlatform()
+      ? this.http.post<ApiResponse<AuthCredentials>>(
+          `${this.baseUrl}${path}`,
+          input,
+        )
+      : this.csrfToken.getToken().pipe(
+          switchMap((token) =>
+            this.http.post<ApiResponse<AuthCredentials>>(
+              `${this.baseUrl}${path}`,
+              input,
+              {
+                headers: new HttpHeaders().set('X-XSRF-TOKEN', token),
+              },
+            ),
+          ),
+        );
+
     return this.withNativeSession(
-      this.http.post<ApiResponse<AuthCredentials>>(
-        `${this.baseUrl}/login`,
-        input,
-      ),
+      request,
     );
   }
 

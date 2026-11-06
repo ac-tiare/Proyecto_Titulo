@@ -48,9 +48,18 @@ describe('API services and interceptor', () => {
     const pending = firstValueFrom(
       auth.login({ email: 'alex@example.cl', password: 'a-strong-password' }),
     );
+    const csrfRequest = httpTesting.expectOne('/api/auth/csrf');
+    expect(csrfRequest.request.method).toBe('GET');
+    expect(csrfRequest.request.withCredentials).toBe(true);
+    csrfRequest.flush({ data: { csrfToken: 'auth-csrf-token' } });
+
     const request = httpTesting.expectOne('/api/auth/login');
 
     expect(request.request.method).toBe('POST');
+    expect(request.request.headers.get('X-XSRF-TOKEN')).toBe(
+      'auth-csrf-token',
+    );
+    expect(request.request.withCredentials).toBe(true);
     expect(request.request.body).toEqual({
       email: 'alex@example.cl',
       password: 'a-strong-password',
@@ -140,6 +149,19 @@ describe('API services and interceptor', () => {
       recordCount: 2,
       hasTemporalComparison: true,
     });
+  });
+
+  it('requests the private prevention invitation as a boolean', async () => {
+    const pending = firstValueFrom(
+      TestBed.inject(EmotionalRecordApiService).preventionInvitation(),
+    );
+    const request = httpTesting.expectOne(
+      '/api/emociones/invitacion-prevencion',
+    );
+
+    expect(request.request.method).toBe('GET');
+    request.flush({ data: { showInvitation: true } });
+    await expect(pending).resolves.toBe(true);
   });
 
   it('saves the structured safety plan and trusted contacts', async () => {

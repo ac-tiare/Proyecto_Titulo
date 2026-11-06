@@ -30,6 +30,20 @@ describe('application routes', () => {
     );
   });
 
+  it('provides public password recovery routes outside the authenticated shell', () => {
+    for (const path of ['forgot-password', 'reset-password']) {
+      expect(routes).toContainEqual(
+        expect.objectContaining({
+          path,
+          loadComponent: expect.any(Function),
+        }),
+      );
+    }
+    expect(shellRoute?.children?.map((route) => route.path)).not.toEqual(
+      expect.arrayContaining(['forgot-password', 'reset-password']),
+    );
+  });
+
   it('provides a route for every initial screen', () => {
     expect(childRoutes.map((route) => route.path)).toEqual(
       expect.arrayContaining([
