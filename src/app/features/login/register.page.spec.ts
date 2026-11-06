@@ -62,7 +62,7 @@ describe('RegisterPage', () => {
     expect(toggles[0].getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('validates required fields, email, password policy, and confirmation', async () => {
+  it('validates required fields, email, password length, and confirmation', async () => {
     await configure();
 
     const fixture = TestBed.createComponent(RegisterPage);
@@ -91,17 +91,7 @@ describe('RegisterPage', () => {
       'Ingresa un correo electrónico válido.',
     );
     expect(fixture.nativeElement.textContent).toContain(
-      'La contraseña debe tener al menos 8 caracteres.',
-    );
-    fixture.componentInstance.updateField('password', 'password-no-number');
-    fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain(
-      'La contraseña debe incluir al menos un número.',
-    );
-    fixture.componentInstance.updateField('password', 'password1');
-    fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).not.toContain(
-      'La contraseña debe incluir al menos un número.',
+      'La contraseña debe tener al menos 12 caracteres.',
     );
     expect(fixture.nativeElement.textContent).toContain(
       'Las contraseñas no coinciden.',
@@ -116,25 +106,16 @@ describe('RegisterPage', () => {
     const fixture = TestBed.createComponent(RegisterPage);
     fixture.componentInstance.updateField('name', ' Alex ');
     fixture.componentInstance.updateField('email', 'alex@example.cl');
-    fixture.componentInstance.updateField('password', 'secure-password1');
-    fixture.componentInstance.updateField('confirmPassword', 'secure-password1');
+    fixture.componentInstance.updateField('password', 'secure-password');
+    fixture.componentInstance.updateField('confirmPassword', 'secure-password');
 
     fixture.componentInstance.submit();
-    const csrfRequest = httpTesting.expectOne('/api/auth/csrf');
-    expect(csrfRequest.request.method).toBe('GET');
-    expect(csrfRequest.request.withCredentials).toBe(true);
-    csrfRequest.flush({ data: { csrfToken: 'register-csrf-token' } });
-
     const request = httpTesting.expectOne('/api/auth/register');
     expect(request.request.body).toEqual({
       name: 'Alex',
       email: 'alex@example.cl',
-      password: 'secure-password1',
+      password: 'secure-password',
     });
-    expect(request.request.headers.get('X-XSRF-TOKEN')).toBe(
-      'register-csrf-token',
-    );
-    expect(request.request.withCredentials).toBe(true);
     request.flush({
       data: {
         user: {
@@ -164,13 +145,10 @@ describe('RegisterPage', () => {
     const fixture = TestBed.createComponent(RegisterPage);
     fixture.componentInstance.updateField('name', 'Alex');
     fixture.componentInstance.updateField('email', 'alex@example.cl');
-    fixture.componentInstance.updateField('password', 'secure-password1');
-    fixture.componentInstance.updateField('confirmPassword', 'secure-password1');
+    fixture.componentInstance.updateField('password', 'secure-password');
+    fixture.componentInstance.updateField('confirmPassword', 'secure-password');
 
     fixture.componentInstance.submit();
-    httpTesting.expectOne('/api/auth/csrf').flush({
-      data: { csrfToken: 'register-csrf-token' },
-    });
     httpTesting.expectOne('/api/auth/register').flush(
       {
         error: {
@@ -190,9 +168,6 @@ describe('RegisterPage', () => {
     expect(navigate).not.toHaveBeenCalled();
 
     fixture.componentInstance.submit();
-    httpTesting.expectOne('/api/auth/csrf').flush({
-      data: { csrfToken: 'register-csrf-token' },
-    });
     httpTesting.expectOne('/api/auth/register').flush(
       {
         error: {

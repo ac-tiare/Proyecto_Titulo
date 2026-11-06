@@ -4,7 +4,6 @@ import request from 'supertest';
 const mocks = vi.hoisted(() => ({
   authenticate: vi.fn(),
   patterns: vi.fn(),
-  preventionInvitation: vi.fn(),
 }));
 
 vi.mock('../src/services/auth.service.js', () => ({
@@ -12,10 +11,7 @@ vi.mock('../src/services/auth.service.js', () => ({
 }));
 
 vi.mock('../src/services/emotion.service.js', () => ({
-  emotionService: {
-    patterns: mocks.patterns,
-    preventionInvitation: mocks.preventionInvitation,
-  },
+  emotionService: { patterns: mocks.patterns },
 }));
 
 import { app } from '../src/app.js';
@@ -41,7 +37,6 @@ describe('emotional patterns HTTP endpoint', () => {
       buckets: [],
       hasTemporalComparison: false,
     }));
-    mocks.preventionInvitation.mockResolvedValue(false);
   });
 
   it('requires authentication and scopes the request to its session user', async () => {
@@ -65,26 +60,5 @@ describe('emotional patterns HTTP endpoint', () => {
 
     expect(response.status).toBe(400);
     expect(mocks.patterns).not.toHaveBeenCalled();
-  });
-
-  it('returns only the authenticated user invitation boolean', async () => {
-    mocks.preventionInvitation.mockResolvedValue(true);
-
-    const response = await request(app)
-      .get('/api/emociones/invitacion-prevencion')
-      .set('Authorization', 'Bearer test-access-token');
-
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({ data: { showInvitation: true } });
-    expect(mocks.preventionInvitation).toHaveBeenCalledWith('owner-user');
-  });
-
-  it('rejects unauthenticated requests for the invitation', async () => {
-    const response = await request(app).get(
-      '/api/emociones/invitacion-prevencion',
-    );
-
-    expect(response.status).toBe(401);
-    expect(mocks.preventionInvitation).not.toHaveBeenCalled();
   });
 });

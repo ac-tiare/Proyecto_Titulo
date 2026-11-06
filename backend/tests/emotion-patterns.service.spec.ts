@@ -2,13 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   listPatternRecords: vi.fn(),
-  listPreventionInvitationRecords: vi.fn(),
 }));
 
 vi.mock('../src/repositories/emotion.repository.js', () => ({
   emotionRepository: {
     listPatternRecords: mocks.listPatternRecords,
-    listPreventionInvitationRecords: mocks.listPreventionInvitationRecords,
   },
 }));
 
@@ -20,7 +18,6 @@ describe('emotional pattern summaries', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-10-28T12:00:00.000Z'));
     mocks.listPatternRecords.mockResolvedValue([]);
-    mocks.listPreventionInvitationRecords.mockResolvedValue([]);
   });
 
   it('counts only the authenticated user records and groups them by period', async () => {
@@ -80,38 +77,6 @@ describe('emotional pattern summaries', () => {
     expect(Object.values(result.moodCounts).every((count) => count === 0)).toBe(true);
     expect(Object.values(result.emotionCounts).every((count) => count === 0)).toBe(true);
     expect(result.buckets).toEqual([]);
-  });
-
-  it('does not activate the invitation with fewer than three qualifying records', async () => {
-    mocks.listPreventionInvitationRecords.mockResolvedValue([
-      { mood: 'BAD', recordedAt: new Date(), emotions: [{ emotion: 'ANXIETY' }] },
-      { mood: 'GOOD', recordedAt: new Date(), emotions: [{ emotion: 'SADNESS' }] },
-    ]);
-
-    await expect(
-      emotionService.preventionInvitation('owner-user'),
-    ).resolves.toBe(false);
-    expect(mocks.listPreventionInvitationRecords).toHaveBeenCalledWith(
-      'owner-user',
-      new Date('2026-10-21T12:00:00.000Z'),
-      new Date('2026-10-28T12:00:00.000Z'),
-    );
-  });
-
-  it('activates the invitation at three records, counting each matching record once', async () => {
-    mocks.listPreventionInvitationRecords.mockResolvedValue([
-      {
-        mood: 'BAD',
-        recordedAt: new Date(),
-        emotions: [{ emotion: 'ANXIETY' }, { emotion: 'SADNESS' }],
-      },
-      { mood: 'VERY_BAD', recordedAt: new Date(), emotions: [] },
-      { mood: 'NEUTRAL', recordedAt: new Date(), emotions: [{ emotion: 'FEAR' }] },
-    ]);
-
-    await expect(
-      emotionService.preventionInvitation('owner-user'),
-    ).resolves.toBe(true);
   });
 
   afterEach(() => {

@@ -67,7 +67,7 @@ describe('LoginPage', () => {
     expect(visibilityButton.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('requires credentials before attempting authentication', async () => {
+  it('requires credentials before displaying the inactive-authentication notice', async () => {
     await configure();
 
     const fixture = TestBed.createComponent(LoginPage);
@@ -75,6 +75,7 @@ describe('LoginPage', () => {
     expect(fixture.componentInstance.errorMessage()).toContain(
       'Ingresa tu correo electrónico y contraseña.',
     );
+    expect(fixture.componentInstance.noticeOpen()).toBe(false);
   });
 
   it('authenticates with the backend and navigates only after success', async () => {
@@ -87,20 +88,11 @@ describe('LoginPage', () => {
     fixture.componentInstance.password.set('secure-password');
 
     fixture.componentInstance.signIn();
-    const csrfRequest = httpTesting.expectOne('/api/auth/csrf');
-    expect(csrfRequest.request.method).toBe('GET');
-    expect(csrfRequest.request.withCredentials).toBe(true);
-    csrfRequest.flush({ data: { csrfToken: 'login-csrf-token' } });
-
     const request = httpTesting.expectOne('/api/auth/login');
     expect(request.request.body).toEqual({
       email: 'alex@example.cl',
       password: 'secure-password',
     });
-    expect(request.request.headers.get('X-XSRF-TOKEN')).toBe(
-      'login-csrf-token',
-    );
-    expect(request.request.withCredentials).toBe(true);
     request.flush({
       data: {
         user: {
@@ -116,6 +108,7 @@ describe('LoginPage', () => {
 
     await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith(['/inicio']));
     expect(fixture.componentInstance.errorMessage()).toBe('');
+    expect(fixture.componentInstance.noticeOpen()).toBe(false);
   });
 
   it('shows an authentication error without navigating on server rejection', async () => {
@@ -126,9 +119,6 @@ describe('LoginPage', () => {
     fixture.componentInstance.password.set('wrong-password');
 
     fixture.componentInstance.signIn();
-    httpTesting.expectOne('/api/auth/csrf').flush({
-      data: { csrfToken: 'login-csrf-token' },
-    });
     httpTesting.expectOne('/api/auth/login').flush(
       {
         error: {
@@ -147,7 +137,7 @@ describe('LoginPage', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('links to the public password recovery form', async () => {
+  it('shows a local notice for unavailable recovery without navigation', async () => {
     await configure();
 
     const router = TestBed.inject(Router);
@@ -159,7 +149,12 @@ describe('LoginPage', () => {
       'ion-button.text-action',
     ) as NodeListOf<HTMLIonButtonElement>;
 
-    expect(actions[0].getAttribute('routerLink')).toBe('/forgot-password');
+    actions[0].click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.noticeOpen()).toBe(true);
+    expect(fixture.componentInstance.noticeMessage()).toContain(
+      'recuperación de contraseña aún no está disponible',
+    );
     expect(navigate).not.toHaveBeenCalled();
   });
 

@@ -8,8 +8,6 @@ const mocks = vi.hoisted(() => ({
   authenticate: vi.fn(),
   logout: vi.fn(),
   updateProfile: vi.fn(),
-  requestPasswordRecovery: vi.fn(),
-  resetPassword: vi.fn(),
 }));
 
 vi.mock('../src/services/auth.service.js', () => ({
@@ -20,13 +18,6 @@ vi.mock('../src/services/auth.service.js', () => ({
     authenticate: mocks.authenticate,
     logout: mocks.logout,
     updateProfile: mocks.updateProfile,
-  },
-}));
-
-vi.mock('../src/services/password-recovery.service.js', () => ({
-  passwordRecoveryService: {
-    request: mocks.requestPasswordRecovery,
-    reset: mocks.resetPassword,
   },
 }));
 
@@ -53,8 +44,6 @@ describe('web and native authentication transport', () => {
     mocks.register.mockResolvedValue(authResult);
     mocks.login.mockResolvedValue(authResult);
     mocks.refresh.mockResolvedValue(authResult);
-    mocks.requestPasswordRecovery.mockResolvedValue(undefined);
-    mocks.resetPassword.mockResolvedValue(undefined);
   });
 
   it('sets HttpOnly session cookies and omits credentials from web JSON', async () => {
@@ -66,7 +55,7 @@ describe('web and native authentication transport', () => {
       .send({
         name: 'Alex',
         email: 'alex@example.cl',
-        password: 'a-strong-password1',
+        password: 'a-strong-password',
       });
 
     expect(response.status).toBe(201);
@@ -87,81 +76,6 @@ describe('web and native authentication transport', () => {
     );
   });
 
-  it.each([
-    ['/register', { name: 'Alex', email: 'alex@example.cl', password: 'a-strong-password1' }],
-    ['/login', { email: 'alex@example.cl', password: 'a-strong-password1' }],
-  ])('allows local web %s after obtaining a CSRF token', async (path, body) => {
-    const client = request.agent(app);
-    const csrfResponse = await client
-      .get('/api/auth/csrf')
-      .set('Origin', 'http://localhost:8080');
-    const csrfToken = csrfResponse.body.data.csrfToken as string;
-
-    expect(csrfResponse.status).toBe(200);
-    expect(csrfResponse.headers['set-cookie']).toEqual(
-      expect.arrayContaining([expect.stringContaining('XSRF-TOKEN=')]),
-    );
-
-    const response = await client
-      .post(`/api/auth${path}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('X-XSRF-TOKEN', csrfToken)
-      .send(body);
-
-    expect(response.status).toBe(path === '/register' ? 201 : 200);
-    expect(
-      path === '/register' ? mocks.register : mocks.login,
-    ).toHaveBeenCalledOnce();
-  });
-
-  it.each([
-    ['/register', { name: 'Alex', email: 'alex@example.cl', password: 'a-strong-password1' }, 201],
-    ['/login', { email: 'alex@example.cl', password: 'a-strong-password1' }, 200],
-    ['/forgot-password', { email: 'alex@example.cl' }, 200],
-    ['/reset-password', { token: 'a-valid-test-reset-token-with-more-than-32-chars', newPassword: 'a-strong-password1' }, 200],
-  ])('allows public web %s from a trusted origin without a CSRF cookie', async (path, body, expectedStatus) => {
-    const response = await request(app)
-      .post(`/api/auth${path}`)
-      .set('Origin', 'http://localhost:8080')
-      .send(body);
-
-    expect(response.status).toBe(expectedStatus);
-    expect(response.body.error?.code).not.toBe('CSRF_REJECTED');
-  });
-
-  it.each(['http://localhost:8080', 'http://localhost:3000'])(
-    'sets a readable local CSRF cookie with credentialed CORS for %s',
-    async (origin) => {
-      const response = await request(app)
-        .get('/api/auth/csrf')
-        .set('Origin', origin);
-      const setCookie = response.headers['set-cookie'] as string[];
-      const csrfCookie = setCookie.find((cookie) =>
-        cookie.startsWith('XSRF-TOKEN='),
-      );
-
-      expect(response.status).toBe(200);
-      expect(response.headers['access-control-allow-origin']).toBe(origin);
-      expect(response.headers['access-control-allow-credentials']).toBe('true');
-      expect(csrfCookie).toContain('SameSite=Lax');
-      expect(csrfCookie).not.toContain('HttpOnly');
-      expect(csrfCookie).not.toContain('Secure');
-    },
-  );
-
-  it('rejects a mismatched CSRF cookie and header on private mutations', async () => {
-    const response = await request(app)
-      .post('/api/auth/logout')
-      .set('Origin', 'http://localhost:8080')
-      .set('Cookie', 'XSRF-TOKEN=cookie-token')
-      .set('X-XSRF-TOKEN', 'different-header-token')
-      .send({});
-
-    expect(response.status).toBe(403);
-    expect(response.body.error.code).toBe('CSRF_REJECTED');
-    expect(mocks.logout).not.toHaveBeenCalled();
-  });
-
   it('rejects web mutations without CSRF proof and does not call refresh', async () => {
     const response = await request(app)
       .post('/api/auth/refresh')
@@ -171,20 +85,6 @@ describe('web and native authentication transport', () => {
     expect(response.status).toBe(403);
     expect(response.body.error.code).toBe('CSRF_REJECTED');
     expect(mocks.refresh).not.toHaveBeenCalled();
-  });
-
-  it('rejects public authentication requests that omit Origin', async () => {
-    const response = await request(app)
-      .post('/api/auth/register')
-      .send({
-        name: 'Alex',
-        email: 'alex@example.cl',
-        password: 'a-strong-password1',
-      });
-
-    expect(response.status).toBe(403);
-    expect(response.body.error.code).toBe('CSRF_REJECTED');
-    expect(mocks.register).not.toHaveBeenCalled();
   });
 
   it('rejects disallowed origins as a safe forbidden response, not an internal error', async () => {

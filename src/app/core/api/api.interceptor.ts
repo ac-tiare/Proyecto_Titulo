@@ -23,9 +23,7 @@ import { NativeSessionStore } from './native-session.store';
 let refreshRequest: Observable<unknown> | null = null;
 
 const isAuthenticationEndpoint = (url: string): boolean =>
-  /\/auth\/(csrf|register|login|refresh|logout|forgot-password|reset-password)(?:\?|$)/.test(
-    url,
-  );
+  /\/auth\/(csrf|register|login|refresh|logout)(?:\?|$)/.test(url);
 
 export const apiInterceptor: HttpInterceptorFn = (request, next) => {
   const isApiRequest =

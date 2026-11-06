@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  forgotPasswordSchema,
-  loginSchema,
-  passwordSchema,
-  registerSchema,
-  resetPasswordSchema,
-} from '../src/validators/auth.validators.js';
+import { loginSchema, registerSchema } from '../src/validators/auth.validators.js';
 import {
   createEmotionSchema,
   listEmotionsSchema,
@@ -18,57 +12,22 @@ import {
 } from '../src/validators/safety.validators.js';
 
 describe('request validators', () => {
-  it('normalizes email and enforces the shared password policy', () => {
+  it('normalizes email and enforces a strong registration password', () => {
     expect(
       registerSchema.parse({
         name: 'Alex',
         email: ' ALEX@Example.CL ',
-        password: 'pass-word1',
+        password: 'a-strong-password',
       }).email,
     ).toBe('alex@example.cl');
-    expect(passwordSchema.safeParse('12345678').success).toBe(true);
-    expect(passwordSchema.safeParse('short1').success).toBe(false);
-    expect(passwordSchema.safeParse('password-without-number').success).toBe(
-      false,
-    );
-    expect(passwordSchema.safeParse(`password1${'a'.repeat(120)}`).success).toBe(
-      false,
-    );
     expect(
       registerSchema.safeParse({
         name: 'Alex',
         email: 'alex@example.cl',
-        password: 'password-without-number',
+        password: 'short',
       }).success,
     ).toBe(false);
     expect(loginSchema.safeParse({ email: 'bad', password: 'x' }).success).toBe(false);
-  });
-
-  it('validates password recovery input with the registration password policy', () => {
-    expect(
-      forgotPasswordSchema.parse({ email: ' PERSON@example.cl ' }).email,
-    ).toBe('person@example.cl');
-    expect(forgotPasswordSchema.safeParse({ email: 'invalid' }).success).toBe(
-      false,
-    );
-    expect(
-      resetPasswordSchema.safeParse({
-        token: 'a-valid-looking-reset-token-with-more-than-32-characters',
-        newPassword: 'a-new-valid-password1',
-      }).success,
-    ).toBe(true);
-    expect(
-      resetPasswordSchema.safeParse({
-        token: 'too-short',
-        newPassword: 'short',
-      }).success,
-    ).toBe(false);
-    expect(
-      resetPasswordSchema.safeParse({
-        token: 'a-valid-looking-reset-token-with-more-than-32-characters',
-        newPassword: 'password-without-number',
-      }).success,
-    ).toBe(false);
   });
 
   it('requires emotions and validates the optional Other detail', () => {

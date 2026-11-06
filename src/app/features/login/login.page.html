@@ -84,7 +84,8 @@
         <ion-button
           class="text-action"
           fill="clear"
-          routerLink="/forgot-password"
+          type="button"
+          (click)="showRecoveryNotice()"
         >
           ¿Olvidaste tu contraseña?
         </ion-button>
@@ -118,4 +119,11 @@
     </section>
   </main>
 
+  <ion-toast
+    [isOpen]="noticeOpen()"
+    [message]="noticeMessage()"
+    [duration]="3200"
+    position="bottom"
+    (didDismiss)="noticeOpen.set(false)"
+  ></ion-toast>
 </ion-content>

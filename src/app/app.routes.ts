@@ -16,20 +16,6 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'forgot-password',
-    loadComponent: () =>
-      import('./features/login/forgot-password.page').then(
-        (module) => module.ForgotPasswordPage,
-      ),
-  },
-  {
-    path: 'reset-password',
-    loadComponent: () =>
-      import('./features/login/reset-password.page').then(
-        (module) => module.ResetPasswordPage,
-      ),
-  },
-  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',

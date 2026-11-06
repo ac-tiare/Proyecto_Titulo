@@ -54,24 +54,6 @@ export const requireCsrf = (
   }
 
   const allowedOrigins = request.app.locals.webOrigins as string[];
-  const isPublicAuthEndpoint =
-    request.method === 'POST' &&
-    [
-      '/api/auth/register',
-      '/api/auth/login',
-      '/api/auth/forgot-password',
-      '/api/auth/reset-password',
-    ].includes(request.path);
-  if (isPublicAuthEndpoint) {
-    if (origin && allowedOrigins.includes(origin)) {
-      next();
-      return;
-    }
-
-    next(new AppError(403, 'CSRF_REJECTED', 'No se pudo validar la solicitud.'));
-    return;
-  }
-
   const csrfCookie = request.cookies?.['XSRF-TOKEN'] as string | undefined;
   const csrfHeader = request.header('x-xsrf-token');
   if (

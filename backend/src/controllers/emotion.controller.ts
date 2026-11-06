@@ -35,16 +35,6 @@ export const getEmotionPatterns = async (
   });
 };
 
-export const getPreventionInvitation = async (
-  request: Request,
-  response: Response,
-): Promise<void> => {
-  const showInvitation = await emotionService.preventionInvitation(
-    userId(request),
-  );
-  response.json({ data: { showInvitation } });
-};
-
 export const getEmotion = async (request: Request, response: Response): Promise<void> => {
   const { id } = idParamsSchema.parse(request.params);
   response.json({ data: await emotionService.get(userId(request), id) });

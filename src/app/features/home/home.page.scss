@@ -75,68 +75,6 @@ h2 {
   line-height: 1.4;
 }
 
-.prevention-invitation,
-.prevention-error {
-  border-radius: 1.2rem;
-  display: grid;
-  gap: 0.7rem;
-  padding: 1rem 1.1rem;
-}
-
-.prevention-invitation {
-  background: #f1eeff;
-  border: 1px solid #dcd4fa;
-}
-
-.prevention-invitation h2,
-.prevention-error h2 {
-  font-size: 1.05rem;
-}
-
-.prevention-invitation p,
-.prevention-error p {
-  color: var(--home-text);
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-.prevention-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.prevention-link {
-  background: #fff;
-  border: 1px solid #d7d0f0;
-  border-radius: 0.8rem;
-  color: #51448b;
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1.35;
-  padding: 0.6rem 0.75rem;
-  text-decoration: none;
-}
-
-.prevention-link:focus-visible,
-.prevention-retry:focus-visible,
-.prevention-retry.ion-focused {
-  outline: 3px solid var(--home-primary);
-  outline-offset: 2px;
-}
-
-.prevention-error {
-  background: #fff8e8;
-  border: 1px solid #eadcad;
-}
-
-.prevention-retry {
-  --border-radius: 0.85rem;
-  --color: #51448b;
-  justify-self: start;
-  margin: 0;
-}
-
 .mood-section {
   background: #fff;
   border: 1px solid #ece9f5;

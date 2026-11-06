@@ -7,15 +7,15 @@ import { deleteAccountSchema } from '../validators/personal-data.validators.js';
 
 const sessionCookieOptions = {
   httpOnly: true,
-  secure: env.cookieSecure,
-  sameSite: env.cookieSameSite,
+  secure: env.COOKIE_SECURE,
+  sameSite: env.COOKIE_SAME_SITE,
   path: '/api',
 };
 
 const csrfCookieOptions = {
   httpOnly: false,
-  secure: env.cookieSecure,
-  sameSite: env.cookieSameSite,
+  secure: env.COOKIE_SECURE,
+  sameSite: env.COOKIE_SAME_SITE,
   path: '/',
 };
 

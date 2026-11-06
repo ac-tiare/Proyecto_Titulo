@@ -12,43 +12,6 @@
       <p class="welcome-copy">¿Cómo te sientes hoy?</p>
     </section>
 
-    @if (showPreventionInvitation()) {
-      <section
-        class="prevention-invitation"
-        aria-labelledby="prevention-invitation-heading"
-      >
-        <h2 id="prevention-invitation-heading">Un espacio para acompañarte</h2>
-        <p>
-          Hemos notado que en los últimos días has registrado varias veces emociones de malestar. ¿Te gustaría revisar tu plan o hablar con alguien?
-        </p>
-        <nav class="prevention-links" aria-label="Opciones de apoyo">
-          <a class="prevention-link" routerLink="/bienestar">Revisar mi bienestar</a>
-          <a class="prevention-link" routerLink="/plan-seguridad">Revisar mi plan</a>
-          <a class="prevention-link" routerLink="/red-apoyo">Hablar con alguien de confianza</a>
-          <a class="prevention-link" routerLink="/necesito-ayuda">Necesito ayuda ahora</a>
-        </nav>
-      </section>
-    }
-
-    @if (preventionInvitationError()) {
-      <section
-        class="prevention-error"
-        aria-labelledby="prevention-error-heading"
-      >
-        <h2 id="prevention-error-heading">No pudimos cargar la sugerencia</h2>
-        <p role="alert">{{ preventionInvitationError() }}</p>
-        <ion-button
-          class="prevention-retry"
-          fill="outline"
-          type="button"
-          [disabled]="preventionInvitationLoading()"
-          (click)="loadPreventionInvitation()"
-        >
-          {{ preventionInvitationLoading() ? 'Consultando…' : 'Intentar nuevamente' }}
-        </ion-button>
-      </section>
-    }
-
     <section class="mood-section" aria-labelledby="mood-heading">
       <div class="section-heading">
         <h2 id="mood-heading">Elige cómo te sientes</h2>
