@@ -1,6 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonButton, IonContent } from '@ionic/angular';
+import {
+  IonButton,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonContent,
+} from '@ionic/angular';
 import { finalize, Observable } from 'rxjs';
 
 import { apiErrorMessage } from '../../core/api/api-error';
@@ -11,14 +18,62 @@ import {
 } from '../../core/api/api.models';
 import { TrustedContactApiService } from '../../core/api/trusted-contact-api.service';
 
+interface SupportOrganization {
+  name: string;
+  focus: string;
+  href: string;
+}
+
 @Component({
   selector: 'app-support-network',
   templateUrl: './support-network.page.html',
   styleUrl: './support-network.page.scss',
-  imports: [IonButton, IonContent, RouterLink],
+  imports: [
+    IonButton,
+    IonCard,
+    IonCardContent,
+    IonCardHeader,
+    IonCardTitle,
+    IonContent,
+    RouterLink,
+  ],
 })
 export class SupportNetworkPage {
   private readonly trustedContactApi = inject(TrustedContactApiService);
+
+  readonly organizations: SupportOrganization[] = [
+    {
+      name: 'Fundación Todo Mejora',
+      focus:
+        'Apoyo a personas LGBTIQA+ y prevención del suicidio en niñas, niños y jóvenes.',
+      href: 'https://todomejora.org/',
+    },
+    {
+      name: 'Fundación Círculo Polar',
+      focus: 'Apoyo en trastorno bipolar y otros trastornos del ánimo.',
+      href: 'https://circulopolar.cl/',
+    },
+    {
+      name: 'Fundación Katy Summer',
+      focus: 'Convivencia escolar y prevención del cyberbullying.',
+      href: 'https://www.facebook.com/FundacionKatySummer/',
+    },
+    {
+      name: 'Fundación Míranos',
+      focus: 'Prevención del suicidio y apoyo a personas mayores.',
+      href: 'https://www.fundacionmiranos.org/',
+    },
+    {
+      name: 'Fundación Para la Confianza',
+      focus: 'Prevención del abuso y acompañamiento frente a la violencia.',
+      href: 'https://www.paralaconfianza.org/',
+    },
+    {
+      name: 'SENDA',
+      focus: 'Prevención y tratamiento del consumo de alcohol y otras drogas.',
+      href: 'https://www.senda.gob.cl/',
+    },
+  ];
 
   readonly contacts = signal<TrustedContact[]>([]);
   readonly loading = signal(false);

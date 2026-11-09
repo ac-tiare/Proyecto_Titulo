@@ -25,7 +25,17 @@ export const apiErrorMessage = (error: unknown): string => {
     return 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo nuevamente.';
   }
   if (isApiErrorResponse(error.error)) {
-    return error.error.error.message;
+    const apiError = error.error.error;
+    if (apiError.code === 'VALIDATION_ERROR' && Array.isArray(apiError.details)) {
+      const detail = apiError.details.find(
+        (item) =>
+          typeof item?.message === 'string' && item.message.trim().length > 0,
+      );
+      if (detail) {
+        return `${apiError.message} ${detail.message}`;
+      }
+    }
+    return apiError.message;
   }
   if (error.status >= 500) {
     return 'El servidor no pudo completar la solicitud. Inténtalo nuevamente.';

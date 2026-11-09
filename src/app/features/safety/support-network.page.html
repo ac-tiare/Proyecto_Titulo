@@ -7,6 +7,42 @@
       difícil en soledad.
     </p>
 
+    <section class="organization-directory" aria-labelledby="organizations-heading">
+      <h2 id="organizations-heading">Instituciones de apoyo</h2>
+      <p class="directory-intro">
+        Conoce organizaciones que trabajan en distintas áreas de salud mental y
+        prevención. Cada enlace te llevará a su sitio oficial.
+      </p>
+      <div class="organization-list">
+        @for (organization of organizations; track organization.name) {
+          <ion-card class="organization-card">
+            <ion-card-header>
+              <ion-card-title>{{ organization.name }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p>{{ organization.focus }}</p>
+              <ion-button
+                type="button"
+                fill="outline"
+                [attr.href]="organization.href"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Información y contacto oficial
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        }
+      </div>
+    </section>
+
+    <section class="personal-network" aria-labelledby="personal-network-heading">
+      <h2 id="personal-network-heading">Mis personas de confianza</h2>
+      <p>
+        Administra aquí los contactos personales que quieras tener presentes.
+      </p>
+    </section>
+
     @if (notice()) {
       <p class="support-notice" role="status">{{ notice() }}</p>
     }
