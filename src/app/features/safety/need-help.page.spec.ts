@@ -49,6 +49,8 @@ describe('NeedHelpPage', () => {
 
     const content = fixture.nativeElement.textContent as string;
     expect(content).toContain('Línea nacional *4141');
+    expect(content).toContain('Salud Responde');
+    expect(content).toContain('Programa Quédate');
     expect(content).toContain('Si hay peligro inmediato');
     expect(content).toContain('no se envían automáticamente');
     expect(content).toContain('los datos remotos no se han eliminado');
@@ -112,5 +114,40 @@ describe('NeedHelpPage', () => {
     expect(clickedUris).toEqual(['tel:*4141']);
     expect(alert.present).toHaveBeenCalledOnce();
     expect(toastController.create).not.toHaveBeenCalled();
+  });
+
+  it('opens Salud Responde only after confirmation', async () => {
+    vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+    alert.onDidDismiss.mockResolvedValue({ role: 'confirm' });
+    const clickedUris: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(
+      function (this: HTMLAnchorElement) {
+        clickedUris.push(this.href);
+      },
+    );
+    const page = TestBed.createComponent(NeedHelpPage).componentInstance;
+
+    await page.callSaludResponde();
+
+    expect(clickedUris).toEqual(['tel:6003607777']);
+    expect(alertController.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('600 360 7777'),
+      }),
+    );
+  });
+
+  it('shows the manual Salud Responde number when phone intents are unavailable', async () => {
+    alert.onDidDismiss.mockResolvedValue({ role: 'confirm' });
+    const page = TestBed.createComponent(NeedHelpPage).componentInstance;
+
+    await page.callSaludResponde();
+
+    expect(toastController.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('600 360 7777'),
+      }),
+    );
+    expect(toast.present).toHaveBeenCalledOnce();
   });
 });

@@ -39,6 +39,15 @@ export class NeedHelpPage {
     );
   }
 
+  async callSaludResponde(): Promise<void> {
+    await this.confirmAndOpen(
+      'tel:6003607777',
+      '600 360 7777',
+      'call',
+      'Salud Responde',
+    );
+  }
+
   private async confirmAndOpen(
     uri: string,
     number: string,

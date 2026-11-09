@@ -47,6 +47,13 @@ h1 {
   --background: #e9f5f2;
 }
 
+.regional-card {
+  --background: #fff;
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 1rem;
+  margin: 0;
+}
+
 .contact-card {
   --background: #fff;
 }

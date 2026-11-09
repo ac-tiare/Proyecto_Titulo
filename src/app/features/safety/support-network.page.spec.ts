@@ -13,6 +13,41 @@ import { SupportNetworkPage } from './support-network.page';
 describe('SupportNetworkPage', () => {
   let httpTesting: HttpTestingController;
 
+  it('shows all institutional support organizations with official-site links', async () => {
+    await configure();
+
+    const fixture = TestBed.createComponent(SupportNetworkPage);
+    fixture.detectChanges();
+
+    const cards = Array.from(
+      fixture.nativeElement.querySelectorAll('.organization-card'),
+    ) as HTMLElement[];
+    expect(cards).toHaveLength(6);
+    expect(fixture.nativeElement.textContent).toContain('Fundación Todo Mejora');
+    expect(fixture.nativeElement.textContent).toContain('Fundación Círculo Polar');
+    expect(fixture.nativeElement.textContent).toContain('Fundación Katy Summer');
+    expect(fixture.nativeElement.textContent).toContain('Fundación Míranos');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Fundación Para la Confianza',
+    );
+    expect(fixture.nativeElement.textContent).toContain('SENDA');
+    expect(
+      Array.from(
+        fixture.nativeElement.querySelectorAll(
+          '.organization-card ion-button[href]',
+        ),
+        (button: Element) => button.getAttribute('href'),
+      ),
+    ).toEqual([
+      'https://todomejora.org/',
+      'https://circulopolar.cl/',
+      'https://www.facebook.com/FundacionKatySummer/',
+      'https://www.fundacionmiranos.org/',
+      'https://www.paralaconfianza.org/',
+      'https://www.senda.gob.cl/',
+    ]);
+  });
+
   const configure = async () =>
     TestBed.configureTestingModule({
       imports: [SupportNetworkPage],
