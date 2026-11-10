@@ -72,18 +72,7 @@ export const emotionRepository = {
       where: {
         userId,
         recordedAt: { gte: from, lte: to },
-        OR: [
-          { mood: { in: ['BAD', 'VERY_BAD'] } },
-          {
-            emotions: {
-              some: {
-                emotion: {
-                  in: ['SADNESS', 'ANXIETY', 'FEAR', 'ANGER', 'LONELINESS'],
-                },
-              },
-            },
-          },
-        ],
+        mood: { in: ['BAD', 'VERY_BAD'] },
       },
       select: {
         mood: true,

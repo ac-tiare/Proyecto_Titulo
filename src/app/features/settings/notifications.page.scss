@@ -1,0 +1,88 @@
+.notifications-content {
+  --background: #f8f7fc;
+}
+
+.notifications-page {
+  display: grid;
+  gap: 1rem;
+  margin-inline: auto;
+  max-width: 42rem;
+  padding: 1.25rem 1rem calc(2rem + env(safe-area-inset-bottom));
+}
+
+.page-heading .eyebrow {
+  color: #7c6bc4;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.4rem;
+}
+
+.page-heading h1 {
+  color: #30303d;
+  font-size: clamp(1.8rem, 7vw, 2.4rem);
+  line-height: 1.15;
+  margin: 0;
+}
+
+.page-heading > p:last-child,
+.permission-note,
+.independence-note {
+  color: #747480;
+  line-height: 1.5;
+}
+
+.page-heading > p:last-child {
+  margin: 0.4rem 0 0;
+}
+
+ion-list {
+  border: 1px solid #ece9f5;
+  border-radius: 1rem;
+  box-shadow: 0 0.35rem 1.1rem rgb(48 48 61 / 5%);
+  margin: 0;
+}
+
+ion-item {
+  --background: #fff;
+  --min-height: 5.8rem;
+}
+
+ion-label h2 {
+  color: #30303d;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+}
+
+ion-label p {
+  color: #747480;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.permission-note,
+.independence-note {
+  display: block;
+  font-size: 0.85rem;
+}
+
+.feedback {
+  border-radius: 0.8rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0.8rem;
+}
+
+.error {
+  background: #fff0f0;
+  color: #a43e48;
+}
+
+@media (max-width: 360px) {
+  .notifications-page {
+    padding-inline: 0.75rem;
+  }
+}

@@ -140,6 +140,20 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
     });
     await emotionRepository.create(ownerId, {
       mood: 'VERY_BAD',
+      emotions: ['FEAR'],
+      note: '',
+      otherEmotion: '',
+      recordedAt: new Date(now.getTime() - 2_000),
+    });
+    await emotionRepository.create(ownerId, {
+      mood: 'BAD',
+      emotions: ['ANGER'],
+      note: '',
+      otherEmotion: '',
+      recordedAt: new Date(now.getTime() - 3_000),
+    });
+    await emotionRepository.create(ownerId, {
+      mood: 'VERY_BAD',
       emotions: ['CALM'],
       note: '',
       otherEmotion: '',
@@ -173,8 +187,12 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
       now,
     );
 
-    expect(records).toHaveLength(2);
-    expect(records.map((record) => record.recordedAt)).toEqual([from, now]);
+    expect(records).toHaveLength(3);
+    expect(records.map((record) => record.recordedAt)).toEqual([
+      from,
+      new Date(now.getTime() - 3_000),
+      new Date(now.getTime() - 2_000),
+    ]);
     expect(records[0]).toMatchObject({
       mood: 'BAD',
       emotions: [{ emotion: 'ANXIETY' }, { emotion: 'SADNESS' }],

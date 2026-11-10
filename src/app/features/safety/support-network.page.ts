@@ -17,6 +17,7 @@ import {
   TrustedContactRequest,
 } from '../../core/api/api.models';
 import { TrustedContactApiService } from '../../core/api/trusted-contact-api.service';
+import { PhoneIntentService } from '../../core/phone-intent.service';
 
 interface SupportOrganization {
   name: string;
@@ -40,6 +41,7 @@ interface SupportOrganization {
 })
 export class SupportNetworkPage {
   private readonly trustedContactApi = inject(TrustedContactApiService);
+  private readonly phoneIntent = inject(PhoneIntentService);
 
   readonly organizations: SupportOrganization[] = [
     {
@@ -238,6 +240,21 @@ export class SupportNetworkPage {
     if (page < 1 || page > this.pagination().totalPages) return;
     this.page.set(page);
     this.loadContacts();
+  }
+
+  callContact(contact: TrustedContact): Promise<void> {
+    return this.confirmAndOpenPhoneAction(contact, 'call');
+  }
+
+  messageContact(contact: TrustedContact): Promise<void> {
+    return this.confirmAndOpenPhoneAction(contact, 'sms');
+  }
+
+  private confirmAndOpenPhoneAction(
+    contact: TrustedContact,
+    action: 'call' | 'sms',
+  ): Promise<void> {
+    return this.phoneIntent.confirmAndOpen(contact.phone, action, contact.name);
   }
 
   private clearForm(): void {

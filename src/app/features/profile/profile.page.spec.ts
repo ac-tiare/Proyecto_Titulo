@@ -135,17 +135,17 @@ describe('ProfilePage', () => {
     );
   });
 
-  it('opens notification and privacy settings and updates local preferences', async () => {
+  it('links to notification preferences and opens privacy settings', async () => {
     await configure();
 
-    const page = TestBed.createComponent(ProfilePage).componentInstance;
-    page.toggleNotifications();
-    expect(page.notificationsOpen()).toBe(true);
-    expect(page.remindersEnabled()).toBe(true);
-    page.toggleReminders();
-    expect(page.remindersEnabled()).toBe(false);
-    page.toggleWellbeingTips();
-    expect(page.wellbeingTipsEnabled()).toBe(true);
+    const fixture = TestBed.createComponent(ProfilePage);
+    const page = fixture.componentInstance;
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement
+        .querySelector('a[routerLink="/configuracion-notificaciones"]')
+        ?.textContent,
+    ).toContain('Notificaciones');
 
     page.togglePrivacy();
     expect(page.privacyOpen()).toBe(true);

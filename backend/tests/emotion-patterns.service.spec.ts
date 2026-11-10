@@ -98,6 +98,12 @@ describe('emotional pattern summaries', () => {
     );
   });
 
+  it('does not activate the invitation when there are no records', async () => {
+    await expect(
+      emotionService.preventionInvitation('owner-user'),
+    ).resolves.toBe(false);
+  });
+
   it('activates the invitation at three records, counting each matching record once', async () => {
     mocks.listPreventionInvitationRecords.mockResolvedValue([
       {
@@ -106,7 +112,7 @@ describe('emotional pattern summaries', () => {
         emotions: [{ emotion: 'ANXIETY' }, { emotion: 'SADNESS' }],
       },
       { mood: 'VERY_BAD', recordedAt: new Date(), emotions: [] },
-      { mood: 'NEUTRAL', recordedAt: new Date(), emotions: [{ emotion: 'FEAR' }] },
+      { mood: 'BAD', recordedAt: new Date(), emotions: [{ emotion: 'FEAR' }] },
     ]);
 
     await expect(

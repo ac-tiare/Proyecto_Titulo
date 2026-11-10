@@ -83,12 +83,9 @@
 
     <section class="settings-section" aria-labelledby="settings-heading">
       <h2 id="settings-heading">Configuración</h2>
-      <button
+      <a
         class="profile-action"
-        type="button"
-        aria-controls="notification-settings"
-        [attr.aria-expanded]="notificationsOpen()"
-        (click)="toggleNotifications()"
+        routerLink="/configuracion-notificaciones"
       >
         <span class="action-icon notification-icon" aria-hidden="true">
           <ion-icon name="notifications-outline"></ion-icon>
@@ -99,44 +96,10 @@
         </span>
         <ion-icon
           class="action-chevron"
-          [name]="notificationsOpen() ? 'chevron-down-outline' : 'chevron-forward-outline'"
+          name="chevron-forward-outline"
           aria-hidden="true"
         ></ion-icon>
-      </button>
-      <div
-        class="settings-detail"
-        id="notification-settings"
-        [hidden]="!notificationsOpen()"
-      >
-          <p>Elige qué avisos quieres recibir en esta vista previa.</p>
-          <button
-            class="switch-row"
-            type="button"
-            role="switch"
-            [attr.aria-checked]="remindersEnabled()"
-            (click)="toggleReminders()"
-          >
-            <span>
-              <span class="switch-title">Recordatorios</span>
-              <span class="switch-description">Pausas y cuidado personal</span>
-            </span>
-            <span class="switch" [class.switch-on]="remindersEnabled()" aria-hidden="true"></span>
-          </button>
-          <button
-            class="switch-row"
-            type="button"
-            role="switch"
-            [attr.aria-checked]="wellbeingTipsEnabled()"
-            (click)="toggleWellbeingTips()"
-          >
-            <span>
-              <span class="switch-title">Consejos de bienestar</span>
-              <span class="switch-description">Contenido de apoyo de CONTIGO</span>
-            </span>
-            <span class="switch" [class.switch-on]="wellbeingTipsEnabled()" aria-hidden="true"></span>
-          </button>
-          <p class="preview-note">Las preferencias aún no se guardan en el dispositivo.</p>
-      </div>
+      </a>
 
       <button
         class="profile-action"

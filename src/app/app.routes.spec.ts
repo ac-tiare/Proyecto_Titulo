@@ -55,6 +55,9 @@ describe('application routes', () => {
         'red-apoyo',
         'necesito-ayuda',
         'informacion-recursos',
+        'recursos',
+        'recursos-informacion',
+        'configuracion-notificaciones',
         'perfil',
       ]),
     );

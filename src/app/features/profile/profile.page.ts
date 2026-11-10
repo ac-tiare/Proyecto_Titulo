@@ -39,10 +39,7 @@ export class ProfilePage {
   readonly draftEmail = signal('');
   readonly editError = signal('');
   readonly feedback = signal('');
-  readonly notificationsOpen = signal(false);
   readonly privacyOpen = signal(false);
-  readonly remindersEnabled = signal(true);
-  readonly wellbeingTipsEnabled = signal(false);
   readonly errorMessage = signal('');
   readonly noticeOpen = signal(false);
   readonly isExportingData = signal(false);
@@ -139,10 +136,6 @@ export class ProfilePage {
     this.editError.set('');
   }
 
-  toggleNotifications(): void {
-    this.notificationsOpen.update((open) => !open);
-  }
-
   togglePrivacy(): void {
     this.privacyOpen.update((open) => !open);
   }
@@ -214,14 +207,6 @@ export class ProfilePage {
           );
         },
       });
-  }
-
-  toggleReminders(): void {
-    this.remindersEnabled.update((enabled) => !enabled);
-  }
-
-  toggleWellbeingTips(): void {
-    this.wellbeingTipsEnabled.update((enabled) => !enabled);
   }
 
   signOut(): void {

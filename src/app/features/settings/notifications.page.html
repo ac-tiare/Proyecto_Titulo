@@ -1,0 +1,86 @@
+<ion-content class="notifications-content">
+  <main class="notifications-page">
+    <header class="page-heading">
+      <p class="eyebrow">CONTIGO</p>
+      <h1>Configuración de notificaciones</h1>
+      <p>
+        Elige qué avisos quieres recibir. Tus preferencias se guardan para tu
+        cuenta en este dispositivo.
+      </p>
+    </header>
+
+    @if (loading()) {
+      <p role="status">Cargando tus preferencias…</p>
+    } @else if (errorMessage() && !hasUser()) {
+      <p class="feedback error" role="alert">{{ errorMessage() }}</p>
+    } @else {
+      <ion-note class="permission-note" color="medium">
+        Al activar una categoría por primera vez, el dispositivo solicitará
+        permiso para mostrar notificaciones. Si lo deniegas, esa categoría
+        seguirá desactivada.
+      </ion-note>
+
+      <ion-list inset>
+        <ion-item>
+          <ion-label class="ion-text-wrap">
+            <h2>Registro emocional</h2>
+            <p>
+              Recordatorios para hacer una pausa y registrar cómo te sientes;
+              puedes omitirlos cuando quieras.
+            </p>
+          </ion-label>
+          <ion-toggle
+            slot="end"
+            aria-label="Recordatorios de registro emocional"
+            [checked]="preferences().emotionalCheckIns"
+            [disabled]="updating()"
+            (ionChange)="setPreference('emotionalCheckIns', $event.detail.checked)"
+          ></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label class="ion-text-wrap">
+            <h2>Bienestar preventivo</h2>
+            <p>
+              Avisos de autocuidado y recursos preventivos relacionados con
+              Mi Bienestar (HU11).
+            </p>
+          </ion-label>
+          <ion-toggle
+            slot="end"
+            aria-label="Notificaciones de bienestar preventivo"
+            [checked]="preferences().preventiveWellbeing"
+            [disabled]="updating()"
+            (ionChange)="setPreference('preventiveWellbeing', $event.detail.checked)"
+          ></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label class="ion-text-wrap">
+            <h2>Plan de seguridad</h2>
+            <p>
+              Avisos para revisar tu plan y tener presentes tus estrategias y
+              personas de confianza.
+            </p>
+          </ion-label>
+          <ion-toggle
+            slot="end"
+            aria-label="Avisos del plan de seguridad"
+            [checked]="preferences().safetyPlanUpdates"
+            [disabled]="updating()"
+            (ionChange)="setPreference('safetyPlanUpdates', $event.detail.checked)"
+          ></ion-toggle>
+        </ion-item>
+      </ion-list>
+
+      @if (errorMessage()) {
+        <p class="feedback error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <ion-note class="independence-note" color="medium">
+        Desactivar avisos —incluso todos— no cambia tu registro emocional,
+        plan de seguridad, red de apoyo ni acceso a Necesito ayuda.
+      </ion-note>
+    }
+  </main>
+</ion-content>
