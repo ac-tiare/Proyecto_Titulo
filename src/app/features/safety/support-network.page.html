@@ -160,6 +160,22 @@
                 <ion-button
                   type="button"
                   fill="outline"
+                  [disabled]="saving() || editorOpen()"
+                  (click)="callContact(contact)"
+                >
+                  Llamar
+                </ion-button>
+                <ion-button
+                  type="button"
+                  fill="outline"
+                  [disabled]="saving() || editorOpen()"
+                  (click)="messageContact(contact)"
+                >
+                  Mensaje
+                </ion-button>
+                <ion-button
+                  type="button"
+                  fill="outline"
                   [disabled]="saving()"
                   (click)="startEdit(contact)"
                 >

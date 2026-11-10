@@ -3,36 +3,73 @@
     <p class="eyebrow">PREVENCIÓN Y APOYO</p>
     <h1>Información y recursos</h1>
     <p class="intro">
-      Algunas ideas generales pueden ayudarte a dar un primer paso para buscar
-      compañía y apoyo.
+      Explora ideas de autocuidado, señales para tener en cuenta y formas de
+      encontrar apoyo. Elige un tema para filtrar los artículos.
     </p>
 
-    <section class="resource-card">
-      <h2>Haz una pausa si puedes</h2>
-      <p>
-        Busca un lugar donde te sientas más acompañado y date un momento antes
-        de decidir qué necesitas hacer.
-      </p>
-    </section>
-    <section class="resource-card">
-      <h2>Acércate a alguien de confianza</h2>
-      <p>
-        Puedes contarle a una persona cómo te sientes y pedirle que te acompañe
-        a buscar apoyo.
-      </p>
-    </section>
-    <section class="resource-card">
-      <h2>Considera apoyo profesional</h2>
-      <p>
-        Si necesitas orientación sobre tu bienestar, puedes conversar con un
-        profesional de salud.
-      </p>
+    <nav class="category-filters" aria-label="Filtrar recursos por tema">
+      @for (category of categories; track category.id) {
+        <button
+          class="category-button"
+          [attr.aria-pressed]="selectedCategory() === category.id"
+          (click)="selectCategory(category.id)"
+        >
+          <ion-chip
+            [outline]="selectedCategory() !== category.id"
+            [color]="selectedCategory() === category.id ? 'primary' : 'medium'"
+          >
+            {{ category.label }}
+          </ion-chip>
+        </button>
+      }
+    </nav>
+
+    <section class="resource-list" aria-label="Artículos">
+      <ion-accordion-group [multiple]="true">
+        @for (resource of resources(); track resource.id) {
+          <ion-card class="resource-card">
+            <ion-card-header>
+              <ion-card-subtitle>{{ resource.categoryName }}</ion-card-subtitle>
+              <ion-card-title>{{ resource.title }}</ion-card-title>
+              <p class="resource-summary">{{ resource.summary }}</p>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-accordion [value]="resource.id">
+                <ion-item slot="header" lines="none">
+                  <ion-label>Leer contenido completo</ion-label>
+                </ion-item>
+                <div class="resource-detail" slot="content">
+                  @for (paragraph of resource.content; track $index) {
+                    <p>{{ paragraph }}</p>
+                  }
+                  @if (resource.links?.length) {
+                    <ul class="resource-links">
+                      @for (link of resource.links; track link.url) {
+                        <li>
+                          <a
+                            [href]="link.url"
+                            [target]="link.url.startsWith('https:') ? '_blank' : null"
+                            [rel]="link.url.startsWith('https:') ? 'noopener noreferrer' : null"
+                          >
+                            {{ link.label }}
+                          </a>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
+              </ion-accordion>
+            </ion-card-content>
+          </ion-card>
+        }
+      </ion-accordion-group>
     </section>
 
     <p class="verification-note" role="note">
-      Este contenido es información general, no una recomendación clínica. En
-      esta versión no se publican teléfonos ni servicios específicos; se
-      incorporarán cuando puedan verificarse en fuentes oficiales.
+      Este contenido es informativo y no reemplaza la orientación de un
+      profesional. Los horarios y servicios pueden cambiar; confírmalos en los
+      canales oficiales. Si tú o alguien más está en peligro inmediato, busca
+      atención de urgencia y procura que una persona de confianza acompañe.
     </p>
   </main>
 </ion-content>

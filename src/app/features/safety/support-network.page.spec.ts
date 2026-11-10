@@ -5,13 +5,34 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { AlertController, ToastController } from '@ionic/angular';
 
+import { Capacitor } from '@capacitor/core';
 import { apiInterceptor } from '../../core/api/api.interceptor';
 import { Page, TrustedContact } from '../../core/api/api.models';
 import { SupportNetworkPage } from './support-network.page';
 
+const capacitorMock = vi.hoisted(() => ({
+  isNativePlatform: vi.fn(),
+}));
+
+vi.mock('@capacitor/core', () => ({
+  Capacitor: { isNativePlatform: capacitorMock.isNativePlatform },
+}));
+
 describe('SupportNetworkPage', () => {
   let httpTesting: HttpTestingController;
+  const alert = {
+    present: vi.fn(),
+    onDidDismiss: vi.fn(),
+  };
+  const toast = { present: vi.fn() };
+  const alertController = {
+    create: vi.fn(),
+  };
+  const toastController = {
+    create: vi.fn(),
+  };
 
   it('shows all institutional support organizations with official-site links', async () => {
     await configure();
@@ -55,12 +76,22 @@ describe('SupportNetworkPage', () => {
         provideRouter([]),
         provideHttpClient(withInterceptors([apiInterceptor])),
         provideHttpClientTesting(),
+        { provide: AlertController, useValue: alertController },
+        { provide: ToastController, useValue: toastController },
       ],
     })
       .compileComponents()
       .then(() => {
         httpTesting = TestBed.inject(HttpTestingController);
       });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
+    alert.onDidDismiss.mockResolvedValue({ role: 'cancel' });
+    alertController.create.mockResolvedValue(alert);
+    toastController.create.mockResolvedValue(toast);
+  });
 
   const contact = (
     overrides: Partial<TrustedContact> = {},
@@ -143,6 +174,8 @@ describe('SupportNetworkPage', () => {
     expect(page.editorOpen()).toBe(false);
     expect(page.notice()).toBe('El contacto fue agregado.');
     expect(fixture.nativeElement.textContent).toContain('Persona de confianza');
+    expect(fixture.nativeElement.textContent).toContain('Llamar');
+    expect(fixture.nativeElement.textContent).toContain('Mensaje');
   });
 
   it('updates and deletes contacts only after successful API responses', async () => {
@@ -204,5 +237,76 @@ describe('SupportNetworkPage', () => {
     expect(page.editorOpen()).toBe(true);
     expect(page.formError()).toBe('Ingresa un teléfono válido.');
     expect(page.name()).toBe('Contacto');
+  });
+
+  it('requires explicit confirmation before opening a contact call intent', async () => {
+    await configure();
+    vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+    alert.onDidDismiss.mockResolvedValue({ role: 'confirm' });
+    const clickedUris: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(
+      function (this: HTMLAnchorElement) {
+        clickedUris.push(this.href);
+      },
+    );
+    const page = TestBed.createComponent(SupportNetworkPage).componentInstance;
+
+    await page.callContact(contact());
+
+    expect(alertController.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        header: '¿Iniciar llamada?',
+        message: expect.stringContaining('+56912345678'),
+      }),
+    );
+    expect(clickedUris).toEqual(['tel:+56912345678']);
+    expect(alert.present).toHaveBeenCalledOnce();
+  });
+
+  it('opens the registered number in messages only after confirmation', async () => {
+    await configure();
+    vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+    alert.onDidDismiss.mockResolvedValue({ role: 'confirm' });
+    const clickedUris: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(
+      function (this: HTMLAnchorElement) {
+        clickedUris.push(this.href);
+      },
+    );
+    const page = TestBed.createComponent(SupportNetworkPage).componentInstance;
+
+    await page.messageContact(contact({ phone: '+56 9 1234 5678' }));
+
+    expect(clickedUris).toEqual(['sms:+56912345678']);
+    expect(toastController.create).not.toHaveBeenCalled();
+  });
+
+  it('shows the registered number for manual dialing on desktop web', async () => {
+    await configure();
+    alert.onDidDismiss.mockResolvedValue({ role: 'confirm' });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click');
+    const page = TestBed.createComponent(SupportNetworkPage).componentInstance;
+
+    await page.callContact(contact());
+
+    expect(click).not.toHaveBeenCalled();
+    expect(toastController.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining('+56912345678'),
+      }),
+    );
+    expect(toast.present).toHaveBeenCalledOnce();
+  });
+
+  it('does not open a phone intent when the user cancels', async () => {
+    await configure();
+    vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click');
+    const page = TestBed.createComponent(SupportNetworkPage).componentInstance;
+
+    await page.callContact(contact());
+
+    expect(click).not.toHaveBeenCalled();
+    expect(toastController.create).not.toHaveBeenCalled();
   });
 });

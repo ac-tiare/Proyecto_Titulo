@@ -97,6 +97,27 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'recursos',
+        loadComponent: () =>
+          import('./features/safety/resources.page').then(
+            (module) => module.ResourcesPage,
+          ),
+      },
+      {
+        path: 'recursos-informacion',
+        loadComponent: () =>
+          import('./features/safety/resources.page').then(
+            (module) => module.ResourcesPage,
+          ),
+      },
+      {
+        path: 'configuracion-notificaciones',
+        loadComponent: () =>
+          import('./features/settings/notifications.page').then(
+            (module) => module.NotificationsPage,
+          ),
+      },
+      {
         path: 'perfil',
         loadComponent: () =>
           import('./features/profile/profile.page').then(

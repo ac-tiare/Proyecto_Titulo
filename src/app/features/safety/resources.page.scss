@@ -25,23 +25,82 @@ h2 {
 }
 
 .intro,
-.resource-card p,
+.resource-summary,
+.resource-detail p,
 .verification-note {
   color: var(--ion-color-step-700);
   font-size: 1rem;
   line-height: 1.6;
 }
 
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-block: 1rem;
+}
+
+.category-filters ion-chip {
+  margin: 0;
+}
+
+.category-button {
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  padding: 0;
+
+  &:focus-visible {
+    outline: 3px solid var(--ion-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.resource-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
 .resource-card {
   background: var(--ion-color-light);
   border: 1px solid var(--ion-color-step-150);
   border-radius: 1rem;
-  margin-top: 0.8rem;
-  padding: 1rem;
+  margin: 0;
 }
 
-.resource-card p {
+.resource-card ion-card-header {
+  padding-bottom: 0.5rem;
+}
+
+.resource-card ion-card-title {
+  color: var(--ion-color-dark);
+  font-size: 1.08rem;
+}
+
+.resource-summary {
+  margin-block: 0.5rem 0;
+}
+
+.resource-detail {
+  padding: 0.25rem 1rem 1rem;
+}
+
+.resource-detail p {
   margin-block: 0;
+  padding-top: 0.5rem;
+}
+
+.resource-links {
+  display: grid;
+  gap: 0.5rem;
+  margin-block: 0.75rem 0;
+  padding-inline-start: 1.25rem;
+}
+
+.resource-links a {
+  color: var(--ion-color-primary);
+  line-height: 1.45;
 }
 
 .verification-note {
