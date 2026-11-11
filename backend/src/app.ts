@@ -15,7 +15,9 @@ import { authRoutes } from './routes/auth.routes.js';
 import { contactRoutes } from './routes/contact.routes.js';
 import { emotionRoutes } from './routes/emotion.routes.js';
 import { personalDataRoutes } from './routes/personal-data.routes.js';
+import { resourceRoutes } from './routes/resource.routes.js';
 import { safetyPlanRoutes } from './routes/safety-plan.routes.js';
+import { userRoutes } from './routes/user.routes.js';
 
 export const app = express();
 const allowedOrigins = [...new Set([...env.webOrigins, ...env.nativeOrigins])];
@@ -94,5 +96,7 @@ app.use('/api/emociones', emotionRoutes);
 app.use('/api/privacy', personalDataRoutes);
 app.use('/api/plan-seguridad', safetyPlanRoutes);
 app.use('/api/contactos', contactRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api', notFoundHandler);
 app.use(errorHandler);

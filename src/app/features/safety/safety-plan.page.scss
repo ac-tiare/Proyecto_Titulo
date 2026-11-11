@@ -1,5 +1,5 @@
 .safety-plan-content {
-  --background: #f7faf9;
+  --background: #e0f7fa;
 }
 
 .page-content {
@@ -12,11 +12,41 @@
 
 .page-heading .eyebrow,
 .step-label {
-  color: #23685a;
-  font-size: 0.72rem;
+  color: #176b83;
+  font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.08em;
   margin: 0 0 0.35rem;
+}
+
+.page-heading .eyebrow {
+  background: #c8edf0;
+  border-radius: 999px;
+  margin: 0;
+  padding: 0.4rem 0.65rem;
+}
+
+.heading-label-row {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.65rem;
+}
+
+.heading-icon {
+  align-items: center;
+  background: #c8edf0;
+  border-radius: 50%;
+  color: #176b83;
+  display: inline-flex;
+  flex: 0 0 2.5rem;
+  height: 2.5rem;
+  justify-content: center;
+  width: 2.5rem;
+
+  ion-icon {
+    font-size: 1.3rem;
+  }
 }
 
 .page-heading h1 {
@@ -55,8 +85,8 @@
 
 .step-number {
   align-items: center;
-  background: #23685a;
-  border: 3px solid #dcebe5;
+  background: #176b83;
+  border: 3px solid #c8edf0;
   border-radius: 50%;
   color: #fff;
   display: flex;
@@ -71,9 +101,9 @@
 .plan-card,
 .official-help {
   background: #fff;
-  border: 1px solid #e1e9e6;
-  border-radius: 1.1rem;
-  box-shadow: 0 0.3rem 1rem rgb(32 48 44 / 5%);
+  border: 1px solid #d3e9eb;
+  border-radius: 1.2rem;
+  box-shadow: var(--app-card-shadow);
   min-width: 0;
   padding: 1rem;
 }
@@ -126,9 +156,12 @@
 }
 
 .section-action {
-  --border-color: #9dbbb0;
-  --border-radius: 0.8rem;
-  --color: #23685a;
+  --background: #e6f4ed;
+  --background-activated: #d6ebdf;
+  --border-color: #8db9a2;
+  --border-radius: 999px;
+  --border-width: 2px;
+  --color: #155e49;
   font-size: 0.82rem;
   font-weight: 700;
   margin: 0.25rem 0 0;
@@ -151,7 +184,7 @@
   select {
     background: #fbfdfc;
     border: 1px solid #cbdad4;
-    border-radius: 0.75rem;
+    border-radius: 12px;
     color: #20302c;
     font: inherit;
     line-height: 1.45;
@@ -160,15 +193,15 @@
     width: 100%;
 
     &:focus-visible {
-      border-color: #23685a;
-      outline: 3px solid rgb(35 104 90 / 22%);
+      border-color: #0284c7;
+      outline: 3px solid rgb(2 132 199 / 18%);
     }
   }
 
   textarea {
     background: #fbfdfc;
     border: 1px solid #cbdad4;
-    border-radius: 0.75rem;
+    border-radius: 12px;
     color: #20302c;
     font: inherit;
     line-height: 1.45;
@@ -178,8 +211,8 @@
     width: 100%;
 
     &:focus-visible {
-      border-color: #23685a;
-      outline: 3px solid rgb(35 104 90 / 22%);
+      border-color: #0284c7;
+      outline: 3px solid rgb(2 132 199 / 18%);
     }
   }
 
@@ -309,17 +342,17 @@
 
 .official-help {
   align-items: flex-start;
-  background: #edf5f0;
-  border-color: #d6e7dc;
+  background: #f0fafb;
+  border-color: #d3e9eb;
   display: flex;
   gap: 0.8rem;
 }
 
 .help-icon {
   align-items: center;
-  background: #d9ebe0;
+  background: #c8edf0;
   border-radius: 50%;
-  color: #23685a;
+  color: #176b83;
   display: flex;
   flex: 0 0 2.4rem;
   font-size: 1rem;

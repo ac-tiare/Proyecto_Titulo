@@ -1,10 +1,15 @@
-<ion-content class="ion-padding">
+<ion-content class="resources-content ion-padding">
   <main class="page-content">
-    <p class="eyebrow">PREVENCIÓN Y APOYO</p>
+    <div class="page-kicker">
+      <span class="page-icon" aria-hidden="true">
+        <ion-icon name="book-outline"></ion-icon>
+      </span>
+      <p class="eyebrow">PREVENCIÓN Y APOYO</p>
+    </div>
     <h1>Información y recursos</h1>
     <p class="intro">
-      Explora ideas de autocuidado, señales para tener en cuenta y formas de
-      encontrar apoyo. Elige un tema para filtrar los artículos.
+      Explora recursos sobre bienestar emocional, señales de alerta,
+      autocuidado y búsqueda de apoyo.
     </p>
 
     <nav class="category-filters" aria-label="Filtrar recursos por tema">
@@ -24,46 +29,85 @@
       }
     </nav>
 
-    <section class="resource-list" aria-label="Artículos">
-      <ion-accordion-group [multiple]="true">
-        @for (resource of resources(); track resource.id) {
-          <ion-card class="resource-card">
-            <ion-card-header>
-              <ion-card-subtitle>{{ resource.categoryName }}</ion-card-subtitle>
-              <ion-card-title>{{ resource.title }}</ion-card-title>
-              <p class="resource-summary">{{ resource.summary }}</p>
-            </ion-card-header>
-            <ion-card-content>
-              <ion-accordion [value]="resource.id">
-                <ion-item slot="header" lines="none">
-                  <ion-label>Leer contenido completo</ion-label>
-                </ion-item>
-                <div class="resource-detail" slot="content">
-                  @for (paragraph of resource.content; track $index) {
-                    <p>{{ paragraph }}</p>
-                  }
-                  @if (resource.links?.length) {
-                    <ul class="resource-links">
-                      @for (link of resource.links; track link.url) {
-                        <li>
-                          <a
-                            [href]="link.url"
-                            [target]="link.url.startsWith('https:') ? '_blank' : null"
-                            [rel]="link.url.startsWith('https:') ? 'noopener noreferrer' : null"
-                          >
-                            {{ link.label }}
-                          </a>
-                        </li>
+    @if (loading()) {
+      <div class="loading-state" role="status">
+        <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+        <span>Cargando recursos…</span>
+      </div>
+    } @else if (errorMessage()) {
+      <div role="alert">
+        <p>{{ errorMessage() }}</p>
+        <button type="button" class="retry-button" (click)="loadResources()">
+          Intentar nuevamente
+        </button>
+      </div>
+    } @else if (!resources().length) {
+      <p role="status">No hay recursos disponibles en esta categoría.</p>
+    }
+
+    @if (!loading() && !errorMessage() && resources().length) {
+      <section class="resource-list" aria-label="Artículos">
+        <ion-accordion-group [multiple]="true">
+          @for (resource of resources(); track resource.id) {
+            <ion-card class="resource-card">
+              <ion-card-header>
+                <ion-card-subtitle>
+                  {{ categoryName(resource.category) }}
+                </ion-card-subtitle>
+                <ion-card-title>{{ resource.title }}</ion-card-title>
+                <p class="resource-summary">{{ resource.summary }}</p>
+              </ion-card-header>
+              <ion-card-content>
+                <ion-accordion [value]="resource.id">
+                  <ion-item
+                    slot="header"
+                    lines="none"
+                    (click)="loadDetail(resource.id)"
+                  >
+                    <ion-label>Leer contenido completo</ion-label>
+                  </ion-item>
+                  <div class="resource-detail" slot="content">
+                    @if (detailLoading()[resource.id]) {
+                      <p role="status">Cargando contenido…</p>
+                    } @else if (detailErrors()[resource.id]) {
+                      <p role="alert">{{ detailErrors()[resource.id] }}</p>
+                      <button
+                        type="button"
+                        class="retry-button"
+                        (click)="retryDetail(resource.id)"
+                      >
+                        Intentar nuevamente
+                      </button>
+                    } @else if (details()[resource.id]; as detail) {
+                      @for (paragraph of detail.content; track $index) {
+                        <p>{{ paragraph }}</p>
                       }
-                    </ul>
-                  }
-                </div>
-              </ion-accordion>
-            </ion-card-content>
-          </ion-card>
-        }
-      </ion-accordion-group>
-    </section>
+                      @if (detail.links.length) {
+                        <ul class="resource-links">
+                          @for (link of detail.links; track link.url) {
+                            <li>
+                              <a
+                                [href]="link.url"
+                                [target]="link.url.startsWith('https:') ? '_blank' : null"
+                                [rel]="link.url.startsWith('https:') ? 'noopener noreferrer' : null"
+                              >
+                                {{ link.label }}
+                              </a>
+                            </li>
+                          }
+                        </ul>
+                      }
+                    } @else {
+                      <p role="status">Selecciona para cargar el contenido.</p>
+                    }
+                  </div>
+                </ion-accordion>
+              </ion-card-content>
+            </ion-card>
+          }
+        </ion-accordion-group>
+      </section>
+    }
 
     <p class="verification-note" role="note">
       Este contenido es informativo y no reemplaza la orientación de un

@@ -6,6 +6,8 @@ import { prisma } from '../src/config/prisma.js';
 import { contactRepository } from '../src/repositories/contact.repository.js';
 import { emotionRepository } from '../src/repositories/emotion.repository.js';
 import { personalDataRepository } from '../src/repositories/personal-data.repository.js';
+import { notificationPreferenceRepository } from '../src/repositories/notification-preference.repository.js';
+import { resourceRepository } from '../src/repositories/resource.repository.js';
 import { safetyPlanRepository } from '../src/repositories/safety-plan.repository.js';
 import { passwordResetRepository } from '../src/repositories/password-reset.repository.js';
 import { hashSessionToken } from '../src/utils/session-token.js';
@@ -118,6 +120,36 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
     });
     expect(inputs[0]).not.toHaveProperty('note');
     expect(inputs[0]).not.toHaveProperty('otherEmotion');
+  });
+
+  it('filters the persisted resource catalog and scopes preferences by account', async () => {
+    const [ownerId, otherUserId] = testUserIds;
+    const allResources = await resourceRepository.list();
+    const selfCareResources = await resourceRepository.list('SELF_CARE');
+    expect(allResources).toHaveLength(7);
+    expect(new Set(allResources.map((resource) => resource.category)).size).toBe(4);
+    expect(selfCareResources.length).toBeGreaterThan(0);
+    expect(
+      selfCareResources.every((resource) => resource.category === 'SELF_CARE'),
+    ).toBe(true);
+    expect(await resourceRepository.findById('canales-chile')).toMatchObject({
+      title: 'Canales de orientación en Chile',
+    });
+
+    expect(
+      await notificationPreferenceRepository.findByUserId(ownerId),
+    ).toBeNull();
+    await notificationPreferenceRepository.save(ownerId, {
+      emotionalCheckIns: true,
+      preventiveWellbeing: false,
+      safetyPlanUpdates: false,
+    });
+    expect(
+      await notificationPreferenceRepository.findByUserId(ownerId),
+    ).toMatchObject({ emotionalCheckIns: true });
+    expect(
+      await notificationPreferenceRepository.findByUserId(otherUserId),
+    ).toBeNull();
   });
 
   it('selects only qualifying recent invitation records for the owner without notes', async () => {
@@ -324,6 +356,12 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
 
   it('deletes only the owner account and its restricted relations transactionally', async () => {
     const [ownerId, otherUserId] = testUserIds;
+    await prisma.userNotificationPreference.create({
+      data: { userId: ownerId, emotionalCheckIns: true },
+    });
+    await prisma.userNotificationPreference.create({
+      data: { userId: otherUserId, preventiveWellbeing: true },
+    });
     await emotionRepository.create(ownerId, {
       mood: 'BAD',
       emotions: ['ANXIETY'],
@@ -368,11 +406,24 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
     expect(
       await prisma.passwordResetToken.count({ where: { userId: ownerId } }),
     ).toBe(0);
+    expect(
+      await prisma.userNotificationPreference.findUnique({
+        where: { userId: ownerId },
+      }),
+    ).toBeNull();
+    expect(
+      await prisma.userNotificationPreference.findUnique({
+        where: { userId: otherUserId },
+      }),
+    ).toMatchObject({ preventiveWellbeing: true });
     expect(await prisma.user.findUnique({ where: { id: otherUserId } })).not.toBeNull();
   });
 
   it('rolls back child deletions if the account deletion fails', async () => {
     const [ownerId] = testUserIds;
+    await prisma.userNotificationPreference.create({
+      data: { userId: ownerId, emotionalCheckIns: true },
+    });
     await prisma.user.update({
       where: { id: ownerId },
       data: { email: `delete-failure-${randomUUID()}@example.invalid` },
@@ -441,6 +492,11 @@ describe.skipIf(!enabled)('PostgreSQL repositories (isolated integration databas
       expect(
         await prisma.passwordResetToken.count({ where: { userId: ownerId } }),
       ).toBe(1);
+      expect(
+        await prisma.userNotificationPreference.findUnique({
+          where: { userId: ownerId },
+        }),
+      ).toMatchObject({ emotionalCheckIns: true });
     } finally {
       await prisma.$executeRawUnsafe(
         'DROP TRIGGER IF EXISTS test_contigo_account_delete_failure ON users',

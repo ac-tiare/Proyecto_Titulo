@@ -1,7 +1,14 @@
 <ion-content class="ion-padding">
   <main class="page-content">
-    <p class="eyebrow">PERSONAS DE CONFIANZA</p>
-    <h1>Mi red de apoyo</h1>
+    <header class="page-heading">
+      <div class="heading-label-row">
+        <span class="heading-icon" aria-hidden="true">
+          <ion-icon name="people-outline"></ion-icon>
+        </span>
+        <p class="eyebrow">PERSONAS DE CONFIANZA</p>
+      </div>
+      <h1>Mi red de apoyo</h1>
+    </header>
     <p class="intro">
       Contar con alguien de confianza puede ayudarte a no atravesar un momento
       difícil en soledad.
@@ -22,13 +29,15 @@
             <ion-card-content>
               <p>{{ organization.focus }}</p>
               <ion-button
+                class="organization-link-button"
                 type="button"
                 fill="outline"
                 [attr.href]="organization.href"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Información y contacto oficial
+                <ion-icon slot="start" name="open-outline" aria-hidden="true"></ion-icon>
+                Ver información oficial
               </ion-button>
             </ion-card-content>
           </ion-card>

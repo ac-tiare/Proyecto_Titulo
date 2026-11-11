@@ -1,6 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
-import { IonContent, IonItem, IonLabel, IonList, IonNote, IonToggle } from '@ionic/angular';
-import { finalize } from 'rxjs';
+import {
+  IonContent,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonNote,
+  IonToggle,
+} from '@ionic/angular';
 
 import { apiErrorMessage } from '../../core/api/api-error';
 import { AuthSessionService } from '../../core/api/auth-session.service';
@@ -16,7 +23,7 @@ import { NotificationPermissionService } from '../../core/notifications/notifica
   selector: 'app-settings-notifications',
   templateUrl: './notifications.page.html',
   styleUrl: './notifications.page.scss',
-  imports: [IonContent, IonItem, IonLabel, IonList, IonNote, IonToggle],
+  imports: [IonContent, IonIcon, IonItem, IonLabel, IonList, IonNote, IonToggle],
 })
 export class NotificationsPage {
   private readonly authSession = inject(AuthSessionService);
@@ -28,7 +35,9 @@ export class NotificationsPage {
   readonly loading = signal(true);
   readonly updating = signal(false);
   readonly hasUser = signal(false);
+  readonly preferencesLoaded = signal(false);
   readonly errorMessage = signal('');
+  readonly syncMessage = signal('');
   private userId: string | null = null;
 
   ionViewWillEnter(): void {
@@ -38,37 +47,57 @@ export class NotificationsPage {
   loadPreferences(): void {
     this.loading.set(true);
     this.errorMessage.set('');
+    this.syncMessage.set('');
     this.userId = null;
     this.hasUser.set(false);
+    this.preferencesLoaded.set(false);
     this.authSession
       .restore()
-      .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (user) => {
           if (!user) {
             this.userId = null;
             this.hasUser.set(false);
             this.errorMessage.set('Inicia sesión para administrar tus avisos.');
+            this.loading.set(false);
             return;
           }
 
-          try {
-            this.preferences.set(this.preferencesService.load(user.id));
-            this.userId = user.id;
-            this.hasUser.set(true);
-          } catch (error) {
-            this.userId = null;
-            this.hasUser.set(false);
-            this.errorMessage.set(
-              error instanceof Error
-                ? error.message
-                : 'No se pudieron cargar tus preferencias.',
-            );
-          }
+          this.userId = user.id;
+          this.hasUser.set(true);
+          void this.synchronizePreferences(user.id);
         },
-        error: (error: unknown) =>
-          this.errorMessage.set(apiErrorMessage(error)),
+        error: (error: unknown) => {
+          this.errorMessage.set(apiErrorMessage(error));
+          this.loading.set(false);
+        },
       });
+  }
+
+  private async synchronizePreferences(userId: string): Promise<void> {
+    try {
+      const result = await this.preferencesService.synchronize(userId);
+      this.preferences.set(result.preferences);
+      this.preferencesLoaded.set(true);
+      if (result.syncState === 'pending') {
+        this.syncMessage.set(
+          'Tus cambios están guardados en este dispositivo y pendientes de sincronización.',
+        );
+      } else if (result.syncState === 'stale') {
+        this.syncMessage.set(
+          'Se muestran tus últimas preferencias guardadas en este dispositivo; podrían estar desactualizadas.',
+        );
+      }
+    } catch (error) {
+      this.preferencesLoaded.set(false);
+      this.errorMessage.set(
+        error instanceof Error
+          ? error.message
+          : apiErrorMessage(error),
+      );
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   async setPreference(
@@ -93,9 +122,17 @@ export class NotificationsPage {
         return;
       }
 
-      const updated = { ...this.preferences(), [preference]: enabled };
-      this.preferencesService.save(userId, updated);
-      this.preferences.set(updated);
+      const result = await this.preferencesService.update(
+        userId,
+        preference,
+        enabled,
+      );
+      this.preferences.set(result.preferences);
+      this.syncMessage.set(
+        result.syncState === 'pending'
+          ? 'El cambio quedó guardado en este dispositivo y está pendiente de sincronización.'
+          : '',
+      );
     } catch (error) {
       this.errorMessage.set(
         error instanceof Error

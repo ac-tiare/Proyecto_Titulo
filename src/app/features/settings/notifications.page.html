@@ -1,17 +1,22 @@
 <ion-content class="notifications-content">
   <main class="notifications-page">
     <header class="page-heading">
-      <p class="eyebrow">CONTIGO</p>
+      <div class="page-kicker">
+        <span class="page-icon" aria-hidden="true">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </span>
+        <p class="eyebrow">AVISOS Y PREFERENCIAS</p>
+      </div>
       <h1>Configuración de notificaciones</h1>
       <p>
-        Elige qué avisos quieres recibir. Tus preferencias se guardan para tu
-        cuenta en este dispositivo.
+        Elige qué categorías de avisos prefieres habilitar. Tus opciones se
+        sincronizan con tu cuenta.
       </p>
     </header>
 
     @if (loading()) {
       <p role="status">Cargando tus preferencias…</p>
-    } @else if (errorMessage() && !hasUser()) {
+    } @else if (errorMessage() && (!hasUser() || !preferencesLoaded())) {
       <p class="feedback error" role="alert">{{ errorMessage() }}</p>
     } @else {
       <ion-note class="permission-note" color="medium">
@@ -19,6 +24,14 @@
         permiso para mostrar notificaciones. Si lo deniegas, esa categoría
         seguirá desactivada.
       </ion-note>
+      <ion-note class="permission-note" color="medium">
+        Esta configuración guarda tus preferencias y permisos; por ahora no
+        programa ni confirma el envío de notificaciones.
+      </ion-note>
+
+      @if (syncMessage()) {
+        <p class="feedback" role="status">{{ syncMessage() }}</p>
+      }
 
       <ion-list inset>
         <ion-item>

@@ -1,14 +1,49 @@
+.ion-padding {
+  --background: #fff5eb;
+}
+
 .page-content {
   margin-inline: auto;
   max-width: 42rem;
   padding-block: 1rem 2rem;
 }
 
+.page-heading {
+  margin-bottom: 0.5rem;
+}
+
+.heading-label-row {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.65rem;
+}
+
+.heading-icon {
+  align-items: center;
+  background: #f8dfc9;
+  border-radius: 50%;
+  color: #9a5c35;
+  display: inline-flex;
+  flex: 0 0 2.5rem;
+  height: 2.5rem;
+  justify-content: center;
+  width: 2.5rem;
+
+  ion-icon {
+    font-size: 1.3rem;
+  }
+}
+
 .eyebrow {
-  color: var(--ion-color-primary);
-  font-size: 0.75rem;
+  background: #f8dfc9;
+  border-radius: 999px;
+  color: #8d512d;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+  margin: 0;
+  padding: 0.4rem 0.65rem;
 }
 
 h1 {
@@ -54,8 +89,8 @@ h2 {
 
 .organization-card {
   --background: #fff;
-  border: 1px solid var(--ion-color-step-150);
-  border-radius: 1rem;
+  border: 1px solid #f0dfd0;
+  border-radius: 1.2rem;
   margin: 0;
 
   ion-card-title {
@@ -80,10 +115,23 @@ h2 {
   }
 }
 
+.organization-link-button {
+  --background: #fff5eb;
+  --background-activated: #f8e5d4;
+  --border-color: #c98d66;
+  --border-radius: 999px;
+  --border-width: 2px;
+  --color: #784323;
+  font-size: 0.84rem;
+  font-weight: 650;
+  min-height: 2.75rem;
+}
+
 .empty-state {
   background: var(--ion-color-light);
   border: 1px solid var(--ion-color-step-150);
   border-radius: 1.25rem;
+  box-shadow: var(--app-card-shadow);
   margin-top: 1.5rem;
   padding: 1.25rem;
 }
@@ -110,7 +158,8 @@ h2 {
 .contact-form {
   background: var(--ion-color-light);
   border: 1px solid var(--ion-color-step-150);
-  border-radius: 1rem;
+  border-radius: 1.2rem;
+  box-shadow: var(--app-card-shadow);
   display: grid;
   gap: 0.55rem;
   margin-top: 1rem;
@@ -131,7 +180,7 @@ h2 {
   textarea {
     background: #fff;
     border: 1px solid var(--ion-color-step-250);
-    border-radius: 0.75rem;
+    border-radius: 12px;
     color: var(--ion-color-dark);
     font: inherit;
     line-height: 1.45;
@@ -139,7 +188,8 @@ h2 {
     width: 100%;
 
     &:focus-visible {
-      outline: 2px solid var(--ion-color-primary);
+      border-color: #0284c7;
+      outline: 3px solid rgb(2 132 199 / 18%);
       outline-offset: 1px;
     }
   }
@@ -164,7 +214,8 @@ h2 {
 .contact-card {
   background: #fff;
   border: 1px solid var(--ion-color-step-150);
-  border-radius: 1rem;
+  border-radius: 1.2rem;
+  box-shadow: var(--app-card-shadow);
   padding: 1rem;
 
   h2 {

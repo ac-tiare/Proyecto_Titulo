@@ -55,6 +55,17 @@ Las rutas de registro, inicio y renovación tienen límite de frecuencia. En web
 
 La referencia completa de endpoints, validación, transporte, ejemplos y errores está en [API.md](./API.md).
 
+### Carga inicial del catálogo de recursos
+
+En Docker Compose, el servicio `migrate` carga o actualiza automáticamente y de forma idempotente los siete recursos informativos después de aplicar las migraciones. Fuera de Docker Compose, ejecuta:
+
+```powershell
+Set-Location backend
+npm.cmd run prisma:seed
+```
+
+La carga usa identificadores estables, solo crea recursos que falten y conserva cualquier contenido ya existente. Se puede repetir sin duplicar registros ni sobrescribir recursos editados. No inserta ni modifica preferencias de usuarios.
+
 ### Recuperación de contraseña
 
 La aplicación ofrece las rutas públicas `/forgot-password` y `/reset-password`. La primera siempre muestra una confirmación genérica para no revelar si el correo está registrado; la segunda recibe el token mediante el parámetro `token` del enlace enviado por correo. El enlace vence a los 15 minutos y solo puede utilizarse una vez. Un token inválido o vencido requiere solicitar otro desde `/forgot-password`.

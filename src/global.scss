@@ -32,3 +32,58 @@ ion-tabs > ion-router-outlet {
 ion-tabs > ion-router-outlet > .ion-page {
   pointer-events: auto;
 }
+
+html,
+body {
+  background: var(--app-background, #f7f9fb);
+}
+
+ion-content {
+  --background: var(--app-background, #f7f9fb);
+}
+
+ion-card {
+  --border-radius: 20px;
+  --box-shadow: var(--app-card-shadow);
+}
+
+ion-button {
+  font-weight: 600;
+  text-transform: none;
+
+  &::part(native) {
+    transition:
+      transform 160ms ease,
+      box-shadow 160ms ease,
+      background-color 160ms ease;
+  }
+
+  &:not([disabled]):hover::part(native) {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
+    transform: translateY(-2px);
+  }
+
+  &:not([disabled]):active::part(native) {
+    transform: translateY(0);
+  }
+}
+
+input,
+textarea,
+select {
+  border-radius: 12px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-color: #0284c7;
+  outline: 3px solid rgb(2 132 199 / 18%);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ion-button::part(native) {
+    transition-duration: 0.01ms;
+  }
+}

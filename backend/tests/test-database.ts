@@ -40,6 +40,9 @@ export const cleanTestUsers = async (userIds: readonly string[]): Promise<void> 
   await prisma.passwordResetToken.deleteMany({
     where: { userId: { in: [...userIds] } },
   });
+  await prisma.userNotificationPreference.deleteMany({
+    where: { userId: { in: [...userIds] } },
+  });
   await prisma.session.deleteMany({ where: { userId: { in: [...userIds] } } });
   await prisma.user.deleteMany({ where: { id: { in: [...userIds] } } });
 };

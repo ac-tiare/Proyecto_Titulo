@@ -67,7 +67,12 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: build
-    command: ["npm", "run", "prisma:migrate:deploy"]
+    command:
+      [
+        "sh",
+        "-c",
+        "npm run prisma:migrate:deploy && npm run prisma:seed",
+      ]
     environment:
       DATABASE_URL: ${DATABASE_URL:?Define DATABASE_URL en el archivo .env}
     restart: "no"
