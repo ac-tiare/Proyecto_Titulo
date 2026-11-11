@@ -1,14 +1,44 @@
+.resources-content {
+  --background: #fef3c7;
+}
+
 .page-content {
   margin-inline: auto;
   max-width: 42rem;
   padding-block: 1rem 2rem;
 }
 
+.page-kicker {
+  align-items: center;
+  display: flex;
+  gap: 0.65rem;
+}
+
+.page-icon {
+  align-items: center;
+  background: #dcebf8;
+  border-radius: 50%;
+  color: #426d91;
+  display: inline-flex;
+  flex: 0 0 2.5rem;
+  height: 2.5rem;
+  justify-content: center;
+  width: 2.5rem;
+
+  ion-icon {
+    font-size: 1.3rem;
+  }
+}
+
 .eyebrow {
+  background: #dcebf8;
+  border-radius: 999px;
   color: var(--ion-color-primary);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+  margin: 0;
+  padding: 0.4rem 0.65rem;
 }
 
 h1 {
@@ -57,9 +87,32 @@ h2 {
   }
 }
 
+.retry-button {
+  background: transparent;
+  border: 0;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.5rem 0;
+  text-decoration: underline;
+}
+
 .resource-list {
   display: grid;
   gap: 0.8rem;
+}
+
+.loading-state {
+  align-items: center;
+  color: var(--ion-color-step-700);
+  display: flex;
+  gap: 0.65rem;
+  min-height: 3rem;
+}
+
+.loading-state ion-spinner {
+  color: var(--ion-color-primary);
 }
 
 .resource-card {

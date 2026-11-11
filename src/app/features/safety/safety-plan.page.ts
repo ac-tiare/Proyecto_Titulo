@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonButton, IonContent } from '@ionic/angular';
+import { IonButton, IonContent, IonIcon } from '@ionic/angular';
 import { finalize } from 'rxjs';
 
 import { apiErrorMessage } from '../../core/api/api-error';
@@ -24,7 +24,7 @@ interface SafetyPlanSection {
   selector: 'app-safety-plan',
   templateUrl: './safety-plan.page.html',
   styleUrl: './safety-plan.page.scss',
-  imports: [IonButton, IonContent, RouterLink],
+  imports: [IonButton, IonContent, IonIcon, RouterLink],
 })
 export class SafetyPlanPage {
   private readonly safetyPlanApi = inject(SafetyPlanApiService);

@@ -7,6 +7,7 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonContent,
+  IonIcon,
 } from '@ionic/angular';
 import { finalize, Observable } from 'rxjs';
 
@@ -36,6 +37,7 @@ interface SupportOrganization {
     IonCardHeader,
     IonCardTitle,
     IonContent,
+    IonIcon,
     RouterLink,
   ],
 })

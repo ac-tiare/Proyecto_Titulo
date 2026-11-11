@@ -15,6 +15,8 @@ import { firstValueFrom } from 'rxjs';
 import { apiInterceptor } from './api.interceptor';
 import { AuthApiService } from './auth-api.service';
 import { EmotionalRecordApiService } from './emotional-record-api.service';
+import { NotificationPreferenceApiService } from './notification-preference-api.service';
+import { ResourceApiService } from './resource-api.service';
 import { SafetyPlanApiService } from './safety-plan-api.service';
 import { TrustedContactApiService } from './trusted-contact-api.service';
 
@@ -162,6 +164,85 @@ describe('API services and interceptor', () => {
     expect(request.request.method).toBe('GET');
     request.flush({ data: { showInvitation: true } });
     await expect(pending).resolves.toBe(true);
+  });
+
+  it('filters the public resource catalog and unwraps full resource details', async () => {
+    const resources = TestBed.inject(ResourceApiService);
+    const listPending = firstValueFrom(resources.list('autocuidado'));
+    const listRequest = httpTesting.expectOne(
+      '/api/resources?category=autocuidado',
+    );
+    expect(listRequest.request.method).toBe('GET');
+    listRequest.flush({
+      data: [
+        {
+          id: 'descanso',
+          title: 'Descansar',
+          summary: 'Una pausa.',
+          category: 'autocuidado',
+          imageUrl: null,
+          createdAt: '2026-11-10T00:00:00.000Z',
+        },
+      ],
+    });
+    await expect(listPending).resolves.toHaveLength(1);
+
+    const detailPending = firstValueFrom(resources.get('canales-chile'));
+    const detailRequest = httpTesting.expectOne(
+      '/api/resources/canales-chile',
+    );
+    expect(detailRequest.request.method).toBe('GET');
+    detailRequest.flush({
+      data: {
+        id: 'canales-chile',
+        title: 'Canales de apoyo',
+        summary: 'Orientación.',
+        content: ['Texto completo.'],
+        links: [{ label: 'Llamar', url: 'tel:1412' }],
+        category: 'busqueda-ayuda-prevencion',
+        imageUrl: null,
+        createdAt: '2026-11-10T00:00:00.000Z',
+      },
+    });
+    await expect(detailPending).resolves.toMatchObject({
+      content: ['Texto completo.'],
+      links: [{ url: 'tel:1412' }],
+    });
+  });
+
+  it('loads and saves authenticated notification preference sets', async () => {
+    const preferences = TestBed.inject(NotificationPreferenceApiService);
+    const getPending = firstValueFrom(preferences.get());
+    const getRequest = httpTesting.expectOne('/api/users/preferences');
+    expect(getRequest.request.method).toBe('GET');
+    getRequest.flush({
+      data: {
+        preferences: {
+          emotionalCheckIns: false,
+          preventiveWellbeing: false,
+          safetyPlanUpdates: false,
+        },
+        persisted: false,
+      },
+    });
+    await expect(getPending).resolves.toMatchObject({ persisted: false });
+
+    const values = {
+      emotionalCheckIns: true,
+      preventiveWellbeing: false,
+      safetyPlanUpdates: true,
+    };
+    const savePending = firstValueFrom(preferences.save(values));
+    const saveRequest = httpTesting.expectOne('/api/users/preferences');
+    expect(saveRequest.request.method).toBe('PUT');
+    expect(saveRequest.request.body).toEqual(values);
+    saveRequest.flush({
+      data: { preferences: values, persisted: true },
+    });
+    await expect(savePending).resolves.toMatchObject({
+      preferences: values,
+      persisted: true,
+    });
   });
 
   it('saves the structured safety plan and trusted contacts', async () => {

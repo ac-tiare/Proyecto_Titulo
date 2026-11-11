@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { finalize, Subscription } from 'rxjs';
-import { IonButton, IonContent } from '@ionic/angular';
+import { IonButton, IonContent, IonIcon } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
 
 import {
@@ -23,7 +23,7 @@ export type HistoryPeriod = 'week' | 'month' | 'year';
   selector: 'app-wellbeing',
   templateUrl: './wellbeing.page.html',
   styleUrl: './wellbeing.page.scss',
-  imports: [IonButton, IonContent, RouterLink],
+  imports: [IonButton, IonContent, IonIcon, RouterLink],
 })
 export class WellbeingPage {
   private readonly emotionalRecordApi = inject(EmotionalRecordApiService);

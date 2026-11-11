@@ -37,19 +37,27 @@ enum SessionClient {
   NATIVE
 }
 
+enum ResourceCategory {
+  WELLBEING
+  WARNING_SIGNS
+  SELF_CARE
+  HELP_AND_PREVENTION
+}
+
 model User {
-  id                  String               @id @default(uuid()) @db.Uuid
-  name                String               @db.VarChar(100)
-  surname             String?              @db.VarChar(100)
-  email               String               @unique @db.VarChar(254)
-  passwordHash        String               @map("password_hash") @db.Text
-  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt           DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
-  sessions            Session[]
-  passwordResetTokens PasswordResetToken[]
-  emotions            EmotionalRecord[]
-  safetyPlan          SafetyPlan?
-  contacts            TrustedContact[]
+  id                     String                      @id @default(uuid()) @db.Uuid
+  name                   String                      @db.VarChar(100)
+  surname                String?                     @db.VarChar(100)
+  email                  String                      @unique @db.VarChar(254)
+  passwordHash           String                      @map("password_hash") @db.Text
+  createdAt              DateTime                    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  sessions               Session[]
+  passwordResetTokens    PasswordResetToken[]
+  emotions               EmotionalRecord[]
+  safetyPlan             SafetyPlan?
+  contacts               TrustedContact[]
+  notificationPreference UserNotificationPreference?
 
   @@map("users")
 }
@@ -147,4 +155,29 @@ model TrustedContact {
 
   @@index([userId, createdAt])
   @@map("trusted_contacts")
+}
+
+model Resource {
+  id        String           @id @db.VarChar(100)
+  title     String           @db.VarChar(200)
+  summary   String           @db.Text
+  content   Json
+  links     Json             @default("[]")
+  category  ResourceCategory
+  imageUrl  String?          @map("image_url") @db.Text
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([category, title])
+  @@map("resources")
+}
+
+model UserNotificationPreference {
+  userId              String   @id @map("user_id") @db.Uuid
+  emotionalCheckIns   Boolean  @default(false) @map("emotional_check_ins")
+  preventiveWellbeing Boolean  @default(false) @map("preventive_wellbeing")
+  safetyPlanUpdates   Boolean  @default(false) @map("safety_plan_updates")
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("user_notification_preferences")
 }

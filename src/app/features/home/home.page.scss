@@ -1,5 +1,5 @@
 .home-content {
-  --background: #f8f7fc;
+  --background: #e8f5e9;
 }
 
 .home-scroll {
@@ -19,7 +19,7 @@
 }
 
 .home-page {
-  --home-primary: #7c6bc4;
+  --home-primary: #005c53;
   --home-text: #30303d;
   --home-muted: #747480;
 
@@ -59,12 +59,38 @@ h2 {
   gap: 0.25rem;
 }
 
+.welcome-label-row {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.module-icon {
+  align-items: center;
+  background: #d3ead8;
+  border-radius: 50%;
+  color: #23685a;
+  display: inline-flex;
+  flex: 0 0 2.5rem;
+  height: 2.5rem;
+  justify-content: center;
+  width: 2.5rem;
+
+  ion-icon {
+    font-size: 1.3rem;
+  }
+}
+
 .welcome-eyebrow,
 .wellbeing-kicker {
-  color: var(--home-primary);
-  font-size: 0.75rem;
+  background: #d3ead8;
+  border-radius: 999px;
+  color: #23685a;
+  display: inline-flex;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  padding: 0.4rem 0.65rem;
   text-transform: uppercase;
 }
 
@@ -84,8 +110,9 @@ h2 {
 }
 
 .prevention-invitation {
-  background: #f1eeff;
-  border: 1px solid #dcd4fa;
+  background: #fff;
+  border: 1px solid #d9e8dd;
+  box-shadow: var(--app-card-shadow);
 }
 
 .prevention-invitation h2,
@@ -139,9 +166,8 @@ h2 {
 
 .mood-section {
   background: #fff;
-  border: 1px solid #ece9f5;
   border-radius: 1.35rem;
-  box-shadow: 0 0.4rem 1.3rem rgb(48 48 61 / 5%);
+  box-shadow: var(--app-card-shadow);
   padding: 1rem 0.75rem;
 }
 
@@ -223,7 +249,7 @@ h2 {
 }
 
 .mood-advice {
-  background: #f8f7fc;
+  background: #f3f8f4;
   border-radius: 1rem;
   margin-top: 0.8rem;
   padding: 0.85rem;
@@ -247,8 +273,8 @@ h2 {
 }
 
 .mood-entry-button {
-  --background: #7c6bc4;
-  --background-activated: #6553ad;
+  --background: #005c53;
+  --background-activated: #005148;
   --border-radius: 0.85rem;
   --color: #fff;
   font-weight: 700;
@@ -257,9 +283,10 @@ h2 {
 
 .wellbeing-card {
   align-items: center;
-  background: linear-gradient(115deg, #eff7f1 0%, #e8f3eb 56%, #dceee2 100%);
+  background: #fff;
   border: 1px solid #dcebe1;
   border-radius: 1.35rem;
+  box-shadow: var(--app-card-shadow);
   display: grid;
   gap: 0.5rem;
   grid-template-columns: minmax(0, 1fr) 6.5rem;
@@ -277,8 +304,10 @@ h2 {
 }
 
 .wellbeing-kicker {
+  background: transparent;
   color: #5b8065;
   font-size: 0.68rem;
+  padding: 0;
 }
 
 .wellbeing-copy h2 {
@@ -308,8 +337,8 @@ h2 {
 
 .action-card {
   align-items: center;
-  border: 1px solid transparent;
   border-radius: 1.2rem;
+  box-shadow: var(--app-card-shadow);
   color: inherit;
   display: flex;
   gap: 0.8rem;
@@ -318,8 +347,7 @@ h2 {
   text-decoration: none;
 }
 
-.mood-option:hover,
-.action-card:hover {
+.mood-option:hover {
   border-color: var(--home-primary);
 }
 
@@ -342,7 +370,7 @@ h2 {
 }
 
 .plan-card {
-  background: #f1eeff;
+  background: #e0f7fa;
 }
 
 .network-icon {
@@ -351,7 +379,7 @@ h2 {
 }
 
 .network-card {
-  background: #fcf0f4;
+  background: #fff5eb;
 }
 
 .resources-icon {
@@ -360,7 +388,7 @@ h2 {
 }
 
 .resources-card {
-  background: #eef5fb;
+  background: #f7f9fb;
 }
 
 .action-copy {
@@ -388,9 +416,10 @@ h2 {
 }
 
 .help-section {
-  background: #f1eeff;
-  border: 1px solid #e7e1fa;
+  background: #fff5eb;
+  border: 1px solid #f1dfd0;
   border-radius: 1.2rem;
+  box-shadow: var(--app-card-shadow);
   padding: 1rem 1.1rem;
 }
 
@@ -401,8 +430,8 @@ h2 {
 }
 
 .home-help-button {
-  --background: #7c6bc4;
-  --background-activated: #6553ad;
+  --background: #b91c1c;
+  --background-activated: #a31818;
   --border-radius: 1rem;
   --color: #fff;
   font-weight: 700;

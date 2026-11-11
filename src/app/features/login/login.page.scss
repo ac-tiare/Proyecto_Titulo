@@ -1,8 +1,8 @@
 .login-content {
   --background:
-    radial-gradient(ellipse at 0% 0%, #e4f2f3 0, transparent 44%),
-    radial-gradient(ellipse at 100% 100%, #e9f1e8 0, transparent 42%),
-    #f6f8f6;
+    radial-gradient(ellipse at 0% 0%, #e0f7fa 0, transparent 44%),
+    radial-gradient(ellipse at 100% 100%, #e8f5e9 0, transparent 42%),
+    #f7f9fb;
 }
 
 .login-page {
@@ -16,9 +16,9 @@
 
 .login-card {
   background: #fff;
-  border: 1px solid #e5eceb;
+  border: 1px solid #e3e9ee;
   border-radius: 1.5rem;
-  box-shadow: 0 0.8rem 2.2rem rgb(33 62 72 / 8%);
+  box-shadow: var(--app-card-shadow);
   display: grid;
   gap: 1rem;
   max-width: 28rem;
@@ -108,11 +108,11 @@ h1 {
 .login-input {
   --background: #fbfcfc;
   --border-color: #d9e3e5;
-  --border-radius: 0.95rem;
+  --border-radius: 12px;
   --border-style: solid;
   --border-width: 1px;
   --color: #203a46;
-  --highlight-color-focused: #28728a;
+  --highlight-color-focused: #0284c7;
   --padding-end: 0.9rem;
   --padding-start: 0.9rem;
   --placeholder-color: #819197;
@@ -121,7 +121,7 @@ h1 {
 }
 
 .login-input ion-icon {
-  color: #568191;
+  color: #28728a;
   font-size: 1.15rem;
   margin-inline-end: 0.55rem;
 }
@@ -196,7 +196,7 @@ h1 {
 .text-action.ion-focused,
 .login-button:focus-visible,
 .login-button.ion-focused {
-  outline: 3px solid #4e91a3;
+  outline: 3px solid rgb(2 132 199 / 20%);
   outline-offset: 2px;
 }
 

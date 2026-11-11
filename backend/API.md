@@ -339,6 +339,66 @@ Una respuesta `204` confirma que se eliminó la cuenta autenticada y, en una tra
 
 Los respaldos SQL están fuera del control de esta API. Una eliminación en los datos activos no purga copias de seguridad existentes; el operador debe definir, documentar y aplicar un período de retención antes de publicar el servicio.
 
+## Recursos informativos
+
+Las rutas de recursos son públicas porque contienen información general y no datos de cuenta. Las categorías válidas son `bienestar-emocional`, `senales-alerta`, `autocuidado` y `busqueda-ayuda-prevencion`.
+
+### Listar recursos
+
+`GET /api/resources` devuelve una lista ordenada por categoría y título. Puede filtrarse con `?category=<categoria>`. Un filtro no admitido responde `400 VALIDATION_ERROR`.
+
+```json
+{
+  "data": [
+    {
+      "id": "respiracion",
+      "title": "Haz una pausa y respira a tu ritmo",
+      "summary": "Un ejercicio breve para volver la atención al momento presente.",
+      "category": "bienestar-emocional",
+      "imageUrl": null,
+      "createdAt": "2026-11-10T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Consultar detalle
+
+`GET /api/resources/:id` devuelve título, resumen, categoría, contenido, enlaces, URL de imagen opcional y fecha de creación. Un identificador inexistente responde `404 NOT_FOUND`. Ejecuta `npm run prisma:seed` desde `backend` para cargar o actualizar de forma idempotente los siete recursos iniciales; las instrucciones para Docker Compose están en `backend/README.md`.
+
+## Preferencias de notificaciones
+
+Las rutas requieren sesión y derivan el propietario de ella; no aceptan un `userId`. Las categorías son recordatorios del diario emocional (`emotionalCheckIns`), bienestar preventivo (`preventiveWellbeing`) y plan de seguridad (`safetyPlanUpdates`).
+
+### Consultar preferencias
+
+`GET /api/users/preferences` responde las preferencias propias y `persisted`, que indica si ya había una elección guardada. Si todavía no hay fila, las tres categorías aparecen desactivadas y `persisted` es `false`.
+
+```json
+{
+  "data": {
+    "preferences": {
+      "emotionalCheckIns": false,
+      "preventiveWellbeing": false,
+      "safetyPlanUpdates": false
+    },
+    "persisted": false
+  }
+}
+```
+
+### Actualizar preferencias
+
+`PUT /api/users/preferences` requiere un objeto completo con las tres propiedades booleanas. Valores ausentes, tipos inválidos o propiedades desconocidas responden `400 VALIDATION_ERROR`. El backend confirma los valores guardados con `persisted: true`. El permiso del dispositivo es una decisión del cliente y no se interpreta como entrega: estas rutas no programan ni envían notificaciones.
+
+```json
+{
+  "emotionalCheckIns": true,
+  "preventiveWellbeing": false,
+  "safetyPlanUpdates": false
+}
+```
+
 ## Salud
 
 - `GET /api/health`: liveness del proceso HTTP; responde `200 { "data": { "status": "ok" } }` sin consultar PostgreSQL.

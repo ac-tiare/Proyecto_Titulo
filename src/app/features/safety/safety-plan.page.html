@@ -1,7 +1,12 @@
 <ion-content class="safety-plan-content">
   <main class="page-content">
     <header class="page-heading">
-      <p class="eyebrow">HERRAMIENTAS DE APOYO</p>
+      <div class="heading-label-row">
+        <span class="heading-icon" aria-hidden="true">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+        </span>
+        <p class="eyebrow">HERRAMIENTAS DE APOYO</p>
+      </div>
       <h1>Mi Plan de Seguridad</h1>
       <p class="intro">
         Prepara ideas y apoyos que quieras tener a mano en un momento difícil.
@@ -56,6 +61,7 @@
                   fill="outline"
                   routerLink="/red-apoyo"
                 >
+                  <ion-icon slot="start" name="people-outline" aria-hidden="true"></ion-icon>
                   Gestionar contactos de confianza
                 </ion-button>
               } @else if (editingSection() === section.id) {
@@ -109,6 +115,7 @@
                   [disabled]="saving()"
                   (click)="openEditor(section.id)"
                 >
+                  <ion-icon slot="start" name="create-outline" aria-hidden="true"></ion-icon>
                   {{ sectionLabel(section.id) }}
                 </ion-button>
               }
