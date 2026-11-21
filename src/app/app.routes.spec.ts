@@ -98,8 +98,6 @@ describe('application routes', () => {
     ).toBeUndefined();
     for (const path of [
       'mi-bienestar',
-      'mi-plan',
-      'plan-seguridad',
       'red-apoyo',
       'configuracion-notificaciones',
       'perfil',
@@ -107,6 +105,10 @@ describe('application routes', () => {
       expect(childRoutes.find((route) => route.path === path)?.canActivate).toContain(
         authGuard,
       );
+    }
+    for (const path of ['mi-plan', 'plan-seguridad']) {
+      expect(childRoutes.find((route) => route.path === path)?.canActivate)
+        .toBeUndefined();
     }
   });
 

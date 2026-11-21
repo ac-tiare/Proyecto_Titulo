@@ -103,7 +103,6 @@ export const routes: Routes = [
       },
       {
         path: 'mi-plan',
-        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/safety/safety-plan.page').then(
             (module) => module.SafetyPlanPage,
@@ -111,7 +110,6 @@ export const routes: Routes = [
       },
       {
         path: 'plan-seguridad',
-        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/safety/safety-plan.page').then(
             (module) => module.SafetyPlanPage,

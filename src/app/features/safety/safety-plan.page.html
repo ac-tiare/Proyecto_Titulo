@@ -10,77 +10,87 @@
       <h1>Mi Plan de Seguridad</h1>
       <p class="intro">
         Prepara ideas y apoyos que quieras tener a mano en un momento difícil.
-        Puedes completar solo las secciones que te sirvan.
+        Puedes completar solo lo que te sirva, sin presión.
       </p>
-      <ion-button class="network-shortcut" routerLink="/red-apoyo" fill="outline">
-        <ion-icon slot="start" name="people-outline" aria-hidden="true"></ion-icon>
-        Mi Red de Apoyo y contactos
-      </ion-button>
     </header>
 
-    @if (loading()) {
+    @if (mode() === 'loading' || loading()) {
       <p class="support-status" role="status">Cargando tu plan de seguridad…</p>
-    } @else if (loadError()) {
+    } @else if (mode() === 'error' || loadError()) {
       <section class="plan-card" aria-labelledby="plan-error-heading">
         <h2 id="plan-error-heading">No pudimos cargar tu plan</h2>
         <p class="support-error" role="alert">{{ loadError() }}</p>
-        <ion-button expand="block" (click)="loadPlan()">Reintentar</ion-button>
+        <ion-button expand="block" (click)="ionViewWillEnter()">Reintentar</ion-button>
       </section>
     } @else {
+      @if (sessionWarning()) {
+        <p class="session-warning" role="status">{{ sessionWarning() }}</p>
+      }
+      @if (guestMode()) {
+        <aside class="guest-note" role="note">
+          <span>
+            Este plan se guarda solo en este dispositivo. Crea una cuenta para guardar tus próximos cambios en la nube.
+          </span>
+          <a routerLink="/crear-cuenta">Crear cuenta</a>
+        </aside>
+      }
+
+      <section class="progress-card" aria-labelledby="progress-heading">
+        <div class="progress-copy">
+          <div>
+            <p class="step-label">A TU RITMO</p>
+            <h2 id="progress-heading">
+              Has completado {{ completedCount() }} de 4 espacios
+            </h2>
+          </div>
+          <span class="progress-count" aria-label="Espacios completados">
+            {{ completedCount() }}/4
+          </span>
+        </div>
+        <div
+          class="progress-track"
+          role="progressbar"
+          aria-label="Avance del plan"
+          aria-valuemin="0"
+          aria-valuemax="4"
+          [attr.aria-valuenow]="completedCount()"
+        >
+          <span [style.width.%]="progressPercent()"></span>
+        </div>
+        <p>Puedes editar cuando quieras. No hay un orden obligatorio.</p>
+      </section>
+
       @if (saveMessage()) {
         <p class="support-notice" role="status">{{ saveMessage() }}</p>
       }
 
-      <section class="contacts-preview" aria-labelledby="contacts-preview-heading">
-        <div class="card-heading">
-          <div>
-            <p class="step-label">PERSONAS DE CONFIANZA</p>
-            <h2 id="contacts-preview-heading">Mi Red de Apoyo</h2>
-          </div>
-          <ion-button routerLink="/red-apoyo" fill="outline">
-            Administrar
-          </ion-button>
-        </div>
-        @if (contactsLoading()) {
-          <p class="empty-section" role="status">Cargando tus contactos…</p>
-        } @else if (contactsError()) {
-          <p class="support-error" role="alert">{{ contactsError() }}</p>
-          <ion-button fill="outline" (click)="loadContacts()">Reintentar</ion-button>
-        } @else if (trustedContacts().length) {
-          <ul class="trusted-contact-preview">
-            @for (contact of trustedContacts(); track contact.id) {
-              <li>
-                <span>
-                  <strong>{{ contact.name }}</strong>
-                  <small>{{ contact.phone }}</small>
-                </span>
-                <ion-button
-                  type="button"
-                  fill="outline"
-                  (click)="callContact(contact)"
-                >
-                  Llamar
-                </ion-button>
-              </li>
-            }
-          </ul>
-        } @else {
-          <p class="empty-section">
-            Aún no agregas contactos. Puedes sumar a alguien de confianza.
-          </p>
-          <ion-button routerLink="/red-apoyo" fill="outline">
-            Agregar un contacto
-          </ion-button>
-        }
-      </section>
+      <button
+        class="quick-view-button"
+        type="button"
+        [disabled]="!hasSavedContent()"
+        (click)="openQuickView()"
+      >
+        <span class="quick-view-icon" aria-hidden="true">
+          <ion-icon name="expand-outline"></ion-icon>
+        </span>
+        <span>
+          <strong>Abrir mi plan en pantalla completa</strong>
+          <small>
+            {{ hasSavedContent() ? 'Lee solo lo que ya guardaste, con letra grande.' : 'Primero guarda algo en tu plan para consultarlo aquí.' }}
+          </small>
+        </span>
+        <ion-icon class="quick-view-arrow" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+      </button>
 
       <ol class="plan-steps" aria-label="Etapas del plan de seguridad">
         @for (section of sections; track section.id; let index = $index) {
           <li class="plan-step">
-            <span class="step-number" aria-hidden="true">{{ index + 1 }}</span>
             <section class="plan-card" [attr.aria-labelledby]="section.id + '-heading'">
               <div class="card-heading">
-                <div>
+                <span class="stage-number" aria-label="Etapa {{ index + 1 }}">
+                  {{ index + 1 }}
+                </span>
+                <div class="heading-copy">
                   <p class="step-label">ETAPA {{ index + 1 }}</p>
                   <h2 [id]="section.id + '-heading'">{{ section.title }}</h2>
                 </div>
@@ -91,37 +101,305 @@
               <p class="section-description">{{ section.description }}</p>
 
               @if (section.id === 'trusted-contacts') {
-                @if (sectionEntries(section.id).length) {
-                  <ul class="entry-list">
-                    @for (entry of sectionEntries(section.id); track $index) {
-                      <li>{{ entry }}</li>
-                    }
-                  </ul>
-                } @else {
-                  <p class="empty-section">
-                    Administra tus contactos desde una lista única en la red de apoyo.
-                  </p>
+                @if (contactNotice()) {
+                  <p class="support-notice" role="status">{{ contactNotice() }}</p>
                 }
-                <ion-button
-                  class="section-action"
-                  type="button"
-                  fill="outline"
-                  routerLink="/red-apoyo"
-                >
-                  <ion-icon slot="start" name="people-outline" aria-hidden="true"></ion-icon>
-                  Gestionar contactos de confianza
-                </ion-button>
+                @if (contactsLoading()) {
+                  <p class="empty-section" role="status">Cargando tus contactos…</p>
+                } @else if (contactsError()) {
+                  <p class="support-error" role="alert">{{ contactsError() }}</p>
+                  <ion-button fill="outline" (click)="loadContacts()">Reintentar</ion-button>
+                } @else {
+                  @if (visibleContacts().length) {
+                    <ul class="trusted-contact-list" aria-label="Contactos de confianza">
+                      @for (contact of visibleContacts(); track contact.id) {
+                        <li class="trusted-contact">
+                          <div class="contact-copy">
+                            <h3>{{ contact.name }}</h3>
+                            @if (contact.relationship) {
+                              <p>{{ contact.relationship }}</p>
+                            }
+                            <p class="contact-phone">
+                              {{ contact.phone }}
+                            </p>
+                            @if (contact.details) {
+                              <p>{{ contact.details }}</p>
+                            }
+                          </div>
+                          <div class="contact-actions">
+                            <ion-button
+                              class="call-button"
+                              type="button"
+                              [attr.href]="'tel:' + contact.phone"
+                              [attr.aria-label]="'Llamar a ' + contact.name"
+                            >
+                              <ion-icon slot="start" name="call-outline" aria-hidden="true"></ion-icon>
+                              Llamar
+                            </ion-button>
+                            <ion-button
+                              type="button"
+                              fill="clear"
+                              [disabled]="contactSaving() || contactEditorOpen()"
+                              (click)="startContactEdit(contact)"
+                            >
+                              Editar
+                            </ion-button>
+                            @if (confirmDeleteId() === contact.id) {
+                              <div class="delete-confirmation">
+                                <span>¿Eliminar este contacto?</span>
+                                <ion-button
+                                  type="button"
+                                  color="danger"
+                                  fill="clear"
+                                  [disabled]="contactSaving()"
+                                  (click)="deleteContact(contact.id)"
+                                >
+                                  Confirmar
+                                </ion-button>
+                                <ion-button
+                                  type="button"
+                                  fill="clear"
+                                  [disabled]="contactSaving()"
+                                  (click)="cancelDeleteContact()"
+                                >
+                                  Cancelar
+                                </ion-button>
+                              </div>
+                            } @else {
+                              <ion-button
+                                type="button"
+                                fill="clear"
+                                color="danger"
+                                [disabled]="contactSaving() || contactEditorOpen()"
+                                (click)="confirmDeleteContact(contact.id)"
+                              >
+                                Eliminar
+                              </ion-button>
+                            }
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                    @if (contactTotalPages() > 1) {
+                      <nav class="pagination-controls" aria-label="Páginas de contactos">
+                        <ion-button
+                          type="button"
+                          fill="clear"
+                          [disabled]="contactPage() <= 1 || contactsLoading()"
+                          (click)="selectContactPage(contactPage() - 1)"
+                        >
+                          Anterior
+                        </ion-button>
+                        <span>Página {{ contactPage() }} de {{ contactTotalPages() }}</span>
+                        <ion-button
+                          type="button"
+                          fill="clear"
+                          [disabled]="contactPage() >= contactTotalPages() || contactsLoading()"
+                          (click)="selectContactPage(contactPage() + 1)"
+                        >
+                          Siguiente
+                        </ion-button>
+                      </nav>
+                    }
+                  } @else {
+                    <p class="empty-section">
+                      Aún no agregas a alguien. Puedes guardar un contacto para tener su número a mano.
+                    </p>
+                  }
+                }
+
+                @if (contactEditorOpen()) {
+                  <form class="contact-editor" novalidate (submit)="$event.preventDefault(); saveContact()">
+                    <div class="form-heading">
+                      <span class="form-icon" aria-hidden="true">
+                        <ion-icon [name]="editingContactId() ? 'create-outline' : 'person-add-outline'"></ion-icon>
+                      </span>
+                      <div>
+                        <h3>{{ editingContactId() ? 'Editar contacto' : 'Agregar contacto' }}</h3>
+                        <p>Completa solo lo necesario para tener a esta persona a mano.</p>
+                      </div>
+                    </div>
+
+                    <div class="field-group">
+                      <div class="field-label-row">
+                        <label for="plan-contact-name">Nombre</label>
+                        <span class="field-count">{{ contactName().length }}/100</span>
+                      </div>
+                      <input
+                        id="plan-contact-name"
+                        type="text"
+                        maxlength="100"
+                        autocomplete="name"
+                        [attr.aria-invalid]="contactNameError() ? 'true' : null"
+                        [attr.aria-describedby]="contactNameError() ? 'plan-contact-name-error' : 'plan-contact-name-hint'"
+                        [value]="contactName()"
+                        (input)="updateContactName($event)"
+                        (blur)="touchContactName()"
+                      />
+                      @if (contactNameError()) {
+                        <p class="field-error" id="plan-contact-name-error" role="alert">
+                          {{ contactNameError() }}
+                        </p>
+                      } @else {
+                        <p class="field-hint" id="plan-contact-name-hint">
+                          Puede ser un nombre o apodo que reconozcas.
+                        </p>
+                      }
+                    </div>
+
+                    <div class="field-group">
+                      <div class="field-label-row">
+                        <label for="plan-contact-phone">Teléfono</label>
+                      </div>
+                      <input
+                        id="plan-contact-phone"
+                        type="tel"
+                        maxlength="24"
+                        autocomplete="tel"
+                        inputmode="tel"
+                        placeholder="+56 9 1234 5678"
+                        [attr.aria-invalid]="contactPhoneError() ? 'true' : null"
+                        [attr.aria-describedby]="contactPhoneError() ? 'plan-contact-phone-error' : 'plan-contact-phone-hint'"
+                        [value]="contactPhone()"
+                        (input)="updateContactPhone($event)"
+                        (blur)="touchContactPhone()"
+                      />
+                      @if (contactPhoneError()) {
+                        <p class="field-error" id="plan-contact-phone-error" role="alert">
+                          {{ contactPhoneError() }}
+                        </p>
+                      } @else {
+                        <p class="field-hint" id="plan-contact-phone-hint">
+                          Puedes escribir espacios o guiones; se quitarán al guardar.
+                        </p>
+                      }
+                    </div>
+
+                    <div class="field-group">
+                      <label for="plan-contact-relationship">Relación <span>(opcional)</span></label>
+                      <input
+                        id="plan-contact-relationship"
+                        type="text"
+                        maxlength="100"
+                        placeholder="Por ejemplo, hermana o amistad"
+                        [value]="contactRelationship()"
+                        (input)="updateContactRelationship($event)"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <div class="field-label-row">
+                        <label for="plan-contact-details">Cómo puede apoyarme <span>(opcional)</span></label>
+                        <span class="field-count">{{ contactDetails().length }}/300</span>
+                      </div>
+                      <textarea
+                        id="plan-contact-details"
+                        rows="2"
+                        maxlength="300"
+                        placeholder="Una frase que te ayude a pedir compañía"
+                        [value]="contactDetails()"
+                        (input)="updateContactDetails($event)"
+                      ></textarea>
+                    </div>
+                    @if (contactFormError()) {
+                      <p class="support-error" role="alert">{{ contactFormError() }}</p>
+                    }
+                    <div class="editor-actions">
+                      <ion-button type="submit" [disabled]="contactSaving()">
+                        {{ contactSaving() ? 'Guardando…' : 'Guardar contacto' }}
+                      </ion-button>
+                      <ion-button
+                        type="button"
+                        fill="outline"
+                        [disabled]="contactSaving()"
+                        (click)="cancelContactEdit()"
+                      >
+                        Cancelar
+                      </ion-button>
+                    </div>
+                  </form>
+                } @else {
+                  <ion-button
+                    class="section-action"
+                    type="button"
+                    fill="outline"
+                    (click)="startContactCreate()"
+                  >
+                    <ion-icon slot="start" name="person-add-outline" aria-hidden="true"></ion-icon>
+                    {{ trustedContacts().length ? 'Agregar otra persona' : 'Agregar contacto de confianza' }}
+                  </ion-button>
+                }
               } @else if (editingSection() === section.id) {
                 <div class="section-editor">
-                  <label [for]="section.id + '-entries'">{{ section.prompt }}</label>
-                  <textarea
-                    [id]="section.id + '-entries'"
-                    rows="4"
-                    maxlength="2000"
-                    [value]="draftText()"
-                    (input)="updateDraft($event)"
-                  ></textarea>
-                  <p class="editor-hint">Puedes escribir varios elementos, uno por línea.</p>
+                  <p class="suggestion-label">Toca una o varias ideas para agregarlas o quitarlas</p>
+                  <div class="suggestion-list" [attr.aria-label]="'Sugerencias para ' + section.title">
+                    @for (suggestion of suggestions[section.id]; track suggestion) {
+                      <button
+                        class="suggestion-chip"
+                        type="button"
+                        [attr.aria-pressed]="isSuggestionSelected(suggestion)"
+                        [attr.aria-label]="(isSuggestionSelected(suggestion) ? 'Quitar: ' : 'Agregar: ') + suggestion"
+                        (click)="addSuggestion(section.id, suggestion)"
+                      >
+                        <span>{{ suggestion }}</span>
+                        <ion-icon
+                          [name]="isSuggestionSelected(suggestion) ? 'checkmark-circle' : 'add-circle-outline'"
+                          aria-hidden="true"
+                        ></ion-icon>
+                      </button>
+                    }
+                  </div>
+                  <div class="field-group">
+                    <label [for]="section.id + '-custom-entry'">Agrega una idea propia <span>(opcional)</span></label>
+                    <p class="field-hint">{{ section.prompt }}</p>
+                    <form
+                      class="entry-add-form"
+                      (submit)="$event.preventDefault(); addDraftEntry()"
+                    >
+                      <input
+                        [id]="section.id + '-custom-entry'"
+                        type="text"
+                        maxlength="200"
+                        autocomplete="off"
+                        placeholder="Escribe una idea breve"
+                        [value]="draftEntry()"
+                        (input)="updateDraftEntry($event)"
+                      />
+                      <ion-button
+                        class="add-entry-button"
+                        type="submit"
+                        fill="outline"
+                        [disabled]="!draftEntry().trim()"
+                      >
+                        Agregar
+                      </ion-button>
+                    </form>
+                  </div>
+                  @if (draftEntries().length) {
+                    <div class="selected-entries">
+                      <p class="suggestion-label">
+                        En tu lista <span>{{ draftEntries().length }}</span>
+                      </p>
+                      <ul class="selected-entry-list">
+                        @for (entry of draftEntries(); track entry) {
+                          <li>
+                            <span>{{ entry }}</span>
+                            <button
+                              type="button"
+                              [attr.aria-label]="'Quitar ' + entry"
+                              (click)="removeDraftEntry(entry)"
+                            >
+                              <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  } @else {
+                    <p class="editor-hint">
+                      No tienes que escribir nada si las sugerencias ya te sirven.
+                    </p>
+                  }
                   @if (saveError()) {
                     <p class="support-error" role="alert">{{ saveError() }}</p>
                   }
@@ -197,9 +475,58 @@
     </section>
 
     <p class="privacy-note" role="note">
-      Tu plan y tus contactos se guardan en tu cuenta. No incluyas datos sensibles
-      que no quieras registrar. Este plan no
-      reemplaza ayuda profesional ni los servicios de emergencia.
+      Tu plan y tus contactos son privados. En modo invitado permanecen solo en
+      este dispositivo; en una cuenta se guardan en la nube. No incluyas datos
+      sensibles que no quieras registrar. Este plan no reemplaza ayuda
+      profesional ni los servicios de emergencia.
     </p>
   </main>
+
+  @if (quickViewOpen()) {
+    <section
+      class="quick-view"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="quick-view-heading"
+    >
+      <header class="quick-view-header">
+        <div>
+          <p class="step-label">A TU RITMO</p>
+          <h2 id="quick-view-heading">Mi plan, a mano</h2>
+        </div>
+        <ion-button
+          class="quick-view-close"
+          type="button"
+          fill="clear"
+          aria-label="Cerrar pantalla completa"
+          (click)="closeQuickView()"
+        >
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </ion-button>
+      </header>
+      <p class="quick-view-intro">
+        Aquí está solo lo que guardaste. Puedes leerlo a tu ritmo.
+      </p>
+      <div class="quick-view-sections">
+        @for (section of quickViewSections(); track section.title) {
+          <section class="quick-view-card">
+            <h3>{{ section.title }}</h3>
+            <ul>
+              @for (item of section.items; track item.text) {
+                <li>
+                  <span>{{ item.text }}</span>
+                  @if (item.phone) {
+                    <a class="quick-contact-call" [href]="'tel:' + item.phone">
+                      <ion-icon name="call-outline" aria-hidden="true"></ion-icon>
+                      Llamar · {{ item.phone }}
+                    </a>
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+    </section>
+  }
 </ion-content>
