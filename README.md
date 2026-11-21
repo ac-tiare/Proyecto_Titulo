@@ -18,7 +18,7 @@ PostgreSQL contiene usuarios, sesiones revocables, registros emocionales, planes
 
 Las contraseñas se almacenan con Argon2id. En web, la sesión usa cookies `HttpOnly`, CSRF y `Secure` en producción. En Capacitor nativo, el plugin de almacenamiento seguro guarda la sesión en Keychain/Keystore; no se persisten credenciales en `localStorage` del navegador. La configuración de transporte se describe en [API.md](./backend/API.md).
 
-Los recursos oficiales de apoyo permanecen estáticos. Las preferencias de notificación de la pantalla Perfil siguen siendo locales y no se sincronizan con la cuenta.
+El catálogo de siete recursos informativos se carga en PostgreSQL mediante la semilla de Prisma. Las preferencias de notificación se guardan en la cuenta y se conservan también localmente para poder reintentar su sincronización; la app todavía no programa ni envía notificaciones.
 
 ## Requisitos
 
@@ -54,6 +54,47 @@ Compose levanta el frontend en el puerto 8080, la API en el puerto interno 3000 
    ```
 
    La API también ofrece `GET /api/health` y `GET /api/ready`. El puerto web se cambia con `CONTIGO_PORT` en `.env`.
+
+### Ver la aplicación desde otro computador de la misma red
+
+El computador que ejecuta Docker debe permanecer encendido y conectado a la red para que la app esté disponible. Estos pasos sirven para una demostración de desarrollo en una red privada y confiable; no publiques el puerto HTTP en Internet ni ingreses datos personales o reales en este modo.
+
+1. Conecta ambos computadores a la misma red privada (Wi-Fi o Ethernet). Evita redes de invitados que aíslen sus dispositivos.
+2. En el computador anfitrión, ejecuta `ipconfig` en PowerShell y anota la dirección IPv4 del adaptador conectado a esa red, por ejemplo `192.168.1.50`.
+3. En el `.env` del anfitrión, agrega el origen exacto que usará el navegador del otro computador, reemplazando el ejemplo por la IP y el puerto reales:
+
+   ```dotenv
+   WEB_ORIGINS=http://localhost:8080,http://localhost:3000,http://192.168.1.50:8080
+   ```
+
+   Si también probarás recuperación por correo, configura `PUBLIC_APP_URL` con la misma dirección de la app para que el enlace no apunte al `localhost` del otro computador:
+
+   ```dotenv
+   PUBLIC_APP_URL=http://192.168.1.50:8080
+   ```
+
+   Para que el inicio de sesión funcione en esta demostración HTTP, configura además:
+
+   ```dotenv
+   NODE_ENV=development
+   COOKIE_SECURE=false
+   ```
+
+   Esta excepción es solo para pruebas con cuentas y datos ficticios en una red de confianza: HTTP no cifra el tráfico. No uses esos valores en una publicación ni los copies a un entorno con datos reales. En producción, conserva `NODE_ENV=production` y `COOKIE_SECURE=true`, y sirve la aplicación exclusivamente detrás de HTTPS.
+
+4. Desde la raíz del proyecto, inicia o recrea los servicios para aplicar la configuración:
+
+   ```powershell
+   docker compose up -d --build
+   docker compose ps
+   ```
+
+5. Si Windows Firewall pregunta, permite el acceso al puerto TCP `8080` solo en redes privadas. Si no aparece el aviso y no hay conexión, comprueba que el perfil de red sea Privado y que la regla de entrada esté limitada a ese puerto y perfil; no desactives el firewall.
+6. En el otro computador, abre `http://192.168.1.50:8080` usando la IP anotada. El frontend y la API viajan por el mismo origen; PostgreSQL y el puerto interno de la API no se publican al otro computador.
+
+Si la IP del anfitrión cambia, actualiza `WEB_ORIGINS` y repite el paso 4. Para detener la app sin borrar sus datos, ejecuta `docker compose down`; el volumen `postgres-data` se conserva.
+
+Para compartir la app fuera de una red privada o trabajar con datos reales, configura un dominio o proxy HTTPS confiable, permite en `WEB_ORIGINS` el origen `https://` que usarán los navegadores y mantén `COOKIE_SECURE=true`. No configures reenvío del puerto del router hacia el servicio HTTP.
 
 Para ver logs:
 
@@ -155,17 +196,29 @@ Verifica el contenido restaurado antes de cambiar `DATABASE_URL` para apuntar a 
 
 La eliminación de una cuenta borra sus datos activos en PostgreSQL, pero no puede purgar respaldos ya creados. Define y aplica una retención para esas copias antes de ofrecer el servicio en producción; almacénalas cifradas, con acceso limitado y fuera del repositorio.
 
-## Pantallas conectadas
+## Vistas y rutas implementadas
 
-- Login y registro crean sesiones y cuentas reales en el backend.
-- Inicio registra un check-in emocional con un toque. Las personas invitadas lo conservan solo durante la sesión; las cuentas autenticadas lo sincronizan con la API cuando hay conexión.
-- Explorar reúne prácticas visuales y lecturas breves que no necesitan conexión. Los enlaces a sitios oficiales requieren internet.
-- Bienestar ofrece historial autenticado por semana/mes/año, paginación, patrones emocionales y acceso a avisos. Los check-ins de invitado se muestran durante la sesión.
-- Mi Plan reúne el plan de seguridad con una vista accionable de los contactos de confianza, que también se pueden administrar desde Red de Apoyo.
-- Perfil actualiza los datos de cuenta y el cierre de sesión revoca la sesión en el backend.
-- Los recursos oficiales de ayuda y las preferencias locales de notificación no se sincronizan.
+La navegación principal tiene cuatro pestañas —Inicio, Explorar, Mi Plan y Bienestar—, además de accesos superiores a Perfil y Necesito ayuda. Las rutas marcadas como **requieren sesión** están protegidas; las demás pueden abrirse como invitado.
 
-Inicio (`/inicio`), Explorar (`/explorar`), las prácticas de `/apoyo/...` y la ayuda urgente (`/necesito-ayuda`) no requieren iniciar sesión. Las prácticas, el check-in y la lista de microprácticas funcionan localmente. En Capacitor, las vistas y sus recursos estáticos forman parte del paquete instalado. En web, el service worker guarda los recursos estáticos y el router precarga las vistas después de una primera visita con conexión. Los enlaces a sitios oficiales y las operaciones de cuenta, historial y sincronización requieren conectividad.
+| Vista | Ruta(s) | Qué incluye y acceso |
+|---|---|---|
+| Inicio | `/inicio` | Check-in de ánimo, selección de emociones y nota opcional; recomendaciones de prácticas, accesos a Explorar y ayuda. Invitados conservan los check-ins solo en esa sesión/dispositivo; usuarios autenticados los sincronizan con la API. |
+| Explorar | `/explorar` | Filtros para calma, sobrecarga, sonidos y lecturas; práctica destacada, catálogo de ejercicios y enlaces a recursos oficiales. |
+| Mi Bienestar | `/bienestar` | Resumen con estados y emociones frecuentes, gráfico de áreas de bienestar y períodos semana/mes/año; incluye la vista Historial, paginada en bloques de 20. Invitados ven solo sus registros de la sesión. |
+| Registro emocional | `/registro-emocional`, `/mi-bienestar` | Formulario para registrar estado, emociones y nota opcional. `/mi-bienestar` requiere sesión; el formulario también conserva registros temporales de invitado. |
+| Mi Plan | `/mi-plan`, `/plan-seguridad` | **Requiere sesión.** Edita señales de alerta, acciones de afrontamiento y lugares seguros; muestra contactos de confianza y permite iniciar una llamada tras confirmar. |
+| Red de Apoyo | `/red-apoyo` | **Requiere sesión.** Crea, edita, elimina y pagina contactos; ofrece accesos confirmados para llamar o enviar SMS, además de organizaciones de apoyo. |
+| Información y recursos | `/recursos`, `/informacion-recursos`, `/recursos-informacion` | Filtra el catálogo informativo por tema y expande el contenido de cada recurso. Incluye canales oficiales de apoyo. |
+| Necesito ayuda | `/necesito-ayuda` | Canales oficiales, orientación ante peligro inmediato y accesos al plan, la red y el registro. Disponible sin iniciar sesión. |
+| Prácticas breves | `/apoyo/:activity` | Experiencias sin cuenta: `calmarme` (pausa de calma), `respirar` (duración y ritmo elegibles), `enraizar` (enfoque sensorial 5-4-3-2-1), `despejar` (lectura guiada), `sobrecarga` (anclaje visual y corporal, con audio de lluvia opcional), `sonidos`, `pensamientos`, `cuerpo` y `herramientas`. Sonidos, pensamientos y cuerpo son componentes reutilizables; herramientas reúne accesos a ejercicios. |
+| Iniciar sesión | `/login` | Autentica una cuenta existente y permite ir al registro o a la recuperación de contraseña. |
+| Crear cuenta | `/crear-cuenta` | Valida nombre, correo y contraseña; crea la cuenta y su sesión en el backend. |
+| Recuperar contraseña | `/forgot-password`, `/reset-password` | Solicita instrucciones y restablece la contraseña con el token de un solo uso del correo. El envío requiere configurar SMTP. |
+| Bienvenida | `/bienvenida` | Pantalla de bienvenida con accesos a las funciones de la app; permanece disponible como ruta de entrada alternativa. |
+| Perfil | `/perfil` | **Requiere sesión.** Consulta y edita nombre/correo, administra notificaciones, exporta datos, elimina la cuenta y cierra la sesión. |
+| Configuración de notificaciones | `/configuracion-notificaciones` | **Requiere sesión.** Preferencias para check-in emocional, bienestar preventivo y plan de seguridad; las preferencias se sincronizan con la cuenta y el dispositivo solicita permiso cuando corresponda. Aún no se programan ni envían avisos. |
+
+Las rutas agrupadas en una misma fila son alias de la misma vista. La lista de recursos oficiales de apoyo y las prácticas principales están disponibles localmente en la app web; la carga del catálogo y los detalles de recursos, los enlaces externos, el inicio de sesión, el historial de cuenta y la sincronización necesitan conexión. En Capacitor, las vistas y recursos estáticos forman parte del paquete instalado; en web, el service worker guarda recursos estáticos y el router precarga vistas después de una primera visita con conexión.
 
 La aplicación ofrece apoyo temprano; no diagnostica, no reemplaza la atención profesional ni los servicios de emergencia.
 
