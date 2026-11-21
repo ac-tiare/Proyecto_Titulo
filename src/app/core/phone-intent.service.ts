@@ -30,6 +30,19 @@ export class PhoneIntentService {
     const { role } = await alert.onDidDismiss();
     if (role !== 'confirm') return;
 
+    await this.openIntent(number, action, name);
+  }
+
+  async openCall(number: string, name: string): Promise<void> {
+    await this.openIntent(number, 'call', name);
+  }
+
+  private async openIntent(
+    number: string,
+    action: 'call' | 'sms',
+    name: string,
+  ): Promise<void> {
+    const isCall = action === 'call';
     if (!this.supportsPhoneIntents()) {
       const toast = await this.toastController.create({
         message: isCall

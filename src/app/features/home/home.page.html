@@ -1,166 +1,127 @@
-<ion-content class="home-content" scroll-y="false">
-  <div
-    class="home-scroll"
-    role="region"
-    aria-label="Contenido de inicio"
-    tabindex="0"
-  >
-    <main class="home-page">
-    <section class="welcome" aria-labelledby="welcome-heading">
-      <div class="welcome-label-row">
-        <span class="module-icon" aria-hidden="true">
-          <ion-icon name="heart-outline"></ion-icon>
-        </span>
-        <p class="welcome-eyebrow">Bienestar emocional</p>
-      </div>
-      <h1 id="welcome-heading">Hola 👋</h1>
-      <p class="welcome-copy">¿Cómo te sientes hoy?</p>
-    </section>
-
-    @if (showPreventionInvitation()) {
-      <section
-        class="prevention-invitation"
-        aria-labelledby="prevention-invitation-heading"
-      >
-        <h2 id="prevention-invitation-heading">Un espacio para acompañarte</h2>
-        <p>
-          Hemos notado que en los últimos días has registrado varias veces emociones de malestar. ¿Te gustaría revisar tu plan o hablar con alguien?
-        </p>
-        <nav class="prevention-links" aria-label="Opciones de apoyo">
-          <a class="prevention-link" routerLink="/bienestar">Revisar mi bienestar</a>
-          <a class="prevention-link" routerLink="/plan-seguridad">Revisar mi plan</a>
-          <a class="prevention-link" routerLink="/red-apoyo">Hablar con alguien de confianza</a>
-          <a class="prevention-link" routerLink="/necesito-ayuda">Necesito ayuda ahora</a>
-        </nav>
-      </section>
-    }
-
-    @if (preventionInvitationError()) {
-      <section
-        class="prevention-error"
-        aria-labelledby="prevention-error-heading"
-      >
-        <h2 id="prevention-error-heading">No pudimos cargar la sugerencia</h2>
-        <p role="alert">{{ preventionInvitationError() }}</p>
-        <ion-button
-          class="prevention-retry"
-          fill="outline"
-          type="button"
-          [disabled]="preventionInvitationLoading()"
-          (click)="loadPreventionInvitation()"
+<ion-content class="home-content">
+  <div class="home-scroll" role="region" aria-label="Inicio CONTIGO" tabindex="0">
+    <main class="home-page" [class.reduce-motion]="guestSession.reduceMotion()">
+      <header class="home-header">
+        <a class="brand" routerLink="/bienvenida" aria-label="CONTIGO, bienvenida">
+          <svg class="brand-mark" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+            <path
+              d="M17.6 30.7C9.2 28.9 4.8 22.1 5.9 13.4c.4-3.2 1.8-6.1 4.3-8.1 7.6 3.2 11.3 9.1 10.2 17.1-.4 3-1.3 5.8-2.8 8.3Z"
+              fill="#35a8ae"
+            ></path>
+            <path
+              d="M18.5 27.7c-1.7-8.8 2.7-16.4 12-20.2 1.8 7.8-.5 15.2-7.1 19.1-1.5.9-3.2 1.3-4.9 1.1Z"
+              fill="#176b83"
+            ></path>
+            <path
+              d="M18 31.5c.2-8.1 1.1-14.8 4.5-20.3"
+              fill="none"
+              stroke="#fff"
+              stroke-linecap="round"
+              stroke-width="1.8"
+            ></path>
+          </svg>
+          <span>CONTIGO</span>
+        </a>
+        <a
+          class="login-link"
+          routerLink="/login"
+          aria-label="Iniciar sesión para ver mi perfil personal"
         >
-          {{ preventionInvitationLoading() ? 'Consultando…' : 'Intentar nuevamente' }}
-        </ion-button>
+          Mi perfil
+          <small>Iniciar sesión</small>
+        </a>
+      </header>
+
+      <section class="welcome" aria-labelledby="welcome-heading">
+        <p class="welcome-eyebrow">Un momento para ti</p>
+        <h1 id="welcome-heading">¿Cómo te sientes en este viaje?</h1>
+        <p class="privacy-note">
+          <strong>100% anónimo.</strong> No guardamos tus datos personales.
+        </p>
+        <p class="welcome-reassurance">
+          No necesitas explicar nada. Puedes ir a tu ritmo.
+        </p>
       </section>
-    }
 
-    <section class="mood-section" aria-labelledby="mood-heading">
-      <div class="section-heading">
-        <h2 id="mood-heading">Elige cómo te sientes</h2>
-      </div>
-
-      <div class="mood-options">
-        @for (mood of moods; track mood.id) {
-          <button
-            class="mood-option"
-            type="button"
-            [attr.aria-label]="'Ver consejos para: ' + mood.label"
-            [attr.aria-expanded]="selectedMood() === mood.id"
-            [attr.aria-controls]="selectedMood() === mood.id ? 'mood-advice' : null"
-            [attr.aria-pressed]="selectedMood() === mood.id"
-            [class.is-selected]="selectedMood() === mood.id"
-            (click)="selectMood(mood.id)"
-          >
-            <span class="mood-emoji" aria-hidden="true">{{ mood.emoji }}</span>
-            <span class="mood-label">{{ mood.label }}</span>
-          </button>
-        }
-      </div>
-      <p class="demo-note">
-        Selecciona una emoción para continuar. Tu registro se guardará solo al
-        pulsar «Registrar emoción».
-      </p>
-      @if (selectedMood(); as moodId) {
-        <section class="mood-advice" id="mood-advice" aria-live="polite">
-          <h3>{{ moodAdvice[moodId].title }}</h3>
-          <ul>
-            @for (tip of moodAdvice[moodId].tips; track tip) {
-              <li>{{ tip }}</li>
-            }
-          </ul>
-          <ion-button
-            class="mood-entry-button"
-            expand="block"
-            type="button"
-            (click)="openMoodEntry(moodId)"
-          >
-            Guardar registro
-          </ion-button>
-        </section>
+      @if (guestSession.persistenceWarning()) {
+        <p class="storage-warning" role="status">
+          El acceso invitado sigue disponible, pero no se pudieron guardar tus
+          preferencias en este dispositivo.
+        </p>
       }
-    </section>
 
-    <section class="wellbeing-card" aria-labelledby="wellbeing-heading">
-      <div class="wellbeing-copy">
-        <span class="wellbeing-kicker">Un momento para ti</span>
-        <h2 id="wellbeing-heading">Está bien hacer una pausa</h2>
-        <p>Respira con calma y recuerda que puedes avanzar a tu propio ritmo.</p>
-      </div>
-      <svg class="wellbeing-art" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
-        <circle cx="60" cy="60" r="54" fill="#ffffff" fill-opacity=".45"></circle>
-        <circle cx="82" cy="34" r="17" fill="#f8d996"></circle>
-        <path d="M5 91c20-13 43-11 63-1 17 8 30 7 47-3v33H5z" fill="#b9d6c0"></path>
-        <path d="M62 92c3-13 2-25-1-38" fill="none" stroke="#72977a" stroke-linecap="round" stroke-width="4"></path>
-        <path d="M61 72c-17 0-24-10-22-20 14-2 23 4 22 20m1-7c2-17 13-23 24-20-1 14-8 22-24 20" fill="#84a98a"></path>
-      </svg>
-    </section>
-
-    <section class="quick-links" aria-label="Herramientas de apoyo">
-      <a class="action-card plan-card" routerLink="/plan-seguridad">
-        <span class="action-icon plan-icon" aria-hidden="true">
-          <ion-icon name="shield-checkmark-outline"></ion-icon>
-        </span>
-        <span class="action-copy">
-          <span class="action-title">Mi Plan de Seguridad</span>
-          <span class="action-description">Revisa herramientas de apoyo.</span>
-        </span>
-        <ion-icon class="action-arrow" name="arrow-forward-outline" aria-hidden="true"></ion-icon>
-      </a>
-
-      <a class="action-card network-card" routerLink="/red-apoyo">
-        <span class="action-icon network-icon" aria-hidden="true">
-          <ion-icon name="people-outline"></ion-icon>
-        </span>
-        <span class="action-copy">
-          <span class="action-title">Mi Red de Apoyo</span>
-          <span class="action-description">Piensa en personas de confianza.</span>
-        </span>
-        <ion-icon class="action-arrow" name="arrow-forward-outline" aria-hidden="true"></ion-icon>
-      </a>
-
-      <a class="action-card resources-card" routerLink="/informacion-recursos">
-        <span class="action-icon resources-icon" aria-hidden="true">
-          <ion-icon name="information-circle-outline"></ion-icon>
-        </span>
-        <span class="action-copy">
-          <span class="action-title">Información y recursos</span>
-          <span class="action-description">Explora contenido preventivo.</span>
-        </span>
-        <ion-icon class="action-arrow" name="arrow-forward-outline" aria-hidden="true"></ion-icon>
-      </a>
-    </section>
-
-    <section class="help-section" aria-label="Acceso a ayuda">
-      <p>Si necesitas apoyo ahora, puedes buscar ayuda de una persona.</p>
-      <ion-button
-        class="home-help-button"
-        expand="block"
-        routerLink="/necesito-ayuda"
+      <a
+        class="hero-action"
+        routerLink="/apoyo/calmarme"
+        [queryParams]="welcomeReturnQueryParams"
       >
-        <ion-icon slot="start" name="alert-circle-outline" aria-hidden="true"></ion-icon>
-        Necesito ayuda
-      </ion-button>
-    </section>
+        <span class="hero-ring" aria-hidden="true"><span></span></span>
+        <span class="hero-copy">
+          <span class="hero-title">Necesito calmarme ahora</span>
+          <span class="hero-subtitle">Guía visual de 60 segundos · Sin audífonos</span>
+        </span>
+        <span class="hero-arrow" aria-hidden="true">›</span>
+      </a>
+
+      <section class="home-options" aria-label="Preferencias">
+        <button
+          class="motion-toggle"
+          type="button"
+          [attr.aria-pressed]="guestSession.reduceMotion()"
+          (click)="guestSession.toggleReducedMotion()"
+        >
+          {{ guestSession.reduceMotion() ? 'Activar animaciones' : 'Reducir movimiento' }}
+        </button>
+      </section>
+
+      <nav class="quick-actions" aria-label="Otras herramientas silenciosas">
+        <a
+          class="quick-action ground-action"
+          routerLink="/apoyo/sobrecarga"
+          [queryParams]="welcomeReturnQueryParams"
+        >
+          <span class="action-copy">
+            <span class="action-title">Mucho ruido o gente</span>
+            <span class="action-description">2 min · Refugio visual y corporal</span>
+          </span>
+          <span class="action-arrow" aria-hidden="true">›</span>
+        </a>
+
+        <a
+          class="quick-action focus-action"
+          routerLink="/apoyo/despejar"
+          [queryParams]="welcomeReturnQueryParams"
+        >
+          <span class="action-copy">
+            <span class="action-title">Quiero despejar mi mente</span>
+            <span class="action-description">3 min · Lectura breve</span>
+          </span>
+          <span class="action-arrow" aria-hidden="true">›</span>
+        </a>
+
+        <a
+          class="quick-action breathe-action"
+          routerLink="/apoyo/respirar"
+          [queryParams]="welcomeReturnQueryParams"
+        >
+          <span class="action-copy">
+            <span class="action-title">Solo quiero respirar</span>
+            <span class="action-description">1 min · Háptico / visual</span>
+          </span>
+          <span class="action-arrow" aria-hidden="true">›</span>
+        </a>
+      </nav>
+
+      <footer class="home-footer">
+        <p>Apoyo complementario, disponible sin escribir ni usar audífonos.</p>
+      </footer>
     </main>
+  </div>
+
+  <div class="emergency-dock" slot="fixed">
+    <a class="emergency-button" routerLink="/necesito-ayuda">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      Necesito hablar con alguien ahora
+    </a>
   </div>
 </ion-content>

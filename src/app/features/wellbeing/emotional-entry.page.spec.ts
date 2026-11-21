@@ -5,19 +5,38 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { of } from 'rxjs';
 
 import { apiInterceptor } from '../../core/api/api.interceptor';
+import { AuthSessionService } from '../../core/api/auth-session.service';
 import { EmotionalSessionService } from './emotional-session';
+import { QuickCheckInService } from '../../core/quick-check-in.service';
 import { EmotionalEntryPage } from './emotional-entry.page';
 
 describe('EmotionalEntryPage', () => {
   let httpTesting: HttpTestingController;
 
-  const configure = async () =>
+  const configure = async (guestMode = false) =>
     TestBed.configureTestingModule({
       imports: [EmotionalEntryPage],
       providers: [
         provideRouter([]),
+        {
+          provide: AuthSessionService,
+          useValue: {
+            restore: () =>
+              of(
+                guestMode
+                  ? null
+                  : {
+                      id: 'user-id',
+                      name: 'Alex',
+                      surname: null,
+                      email: 'alex@example.cl',
+                    },
+              ),
+          },
+        },
         provideHttpClient(withInterceptors([apiInterceptor])),
         provideHttpClientTesting(),
       ],
@@ -227,6 +246,33 @@ describe('EmotionalEntryPage', () => {
     });
   });
 
+  it('saves guest registrations to the local session without calling the API', async () => {
+    await configure(true);
+
+    const checkIns = TestBed.inject(QuickCheckInService);
+    const session = TestBed.inject(EmotionalSessionService);
+    session.startDraft('bien');
+    const fixture = TestBed.createComponent(EmotionalEntryPage);
+    fixture.detectChanges();
+    fixture.componentInstance.toggleEmotion('calma');
+    fixture.componentInstance.updateNote('Tomé una pausa.');
+    fixture.componentInstance.save();
+    fixture.detectChanges();
+
+    expect(checkIns.records()).toHaveLength(1);
+    expect(checkIns.records()[0]).toMatchObject({
+      moodId: 'bien',
+      emotionIds: ['calma'],
+      note: 'Tomé una pausa.',
+    });
+    expect(session.draft()?.saved).toBe(true);
+    expect(fixture.componentInstance.saveMessage()).toContain(
+      'solo durante esta sesión',
+    );
+    httpTesting.expectNone('/api/emociones');
+    fixture.destroy();
+  });
+
   it('discards an unconfirmed draft when closing the registration', async () => {
     await configure();
 
@@ -241,6 +287,6 @@ describe('EmotionalEntryPage', () => {
     expect(session.selectedMood()).toBeNull();
     expect(session.draft()).toBeNull();
     expect(session.draft()).toBeNull();
-    expect(navigate).toHaveBeenCalledWith(['/inicio']);
+    expect(navigate).toHaveBeenCalledWith(['/bienestar']);
   });
 });

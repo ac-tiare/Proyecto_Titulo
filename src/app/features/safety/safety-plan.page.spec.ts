@@ -7,7 +7,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { apiInterceptor } from '../../core/api/api.interceptor';
-import { SafetyPlan } from '../../core/api/api.models';
+import { SafetyPlan, TrustedContact } from '../../core/api/api.models';
 import { SafetyPlanPage } from './safety-plan.page';
 
 describe('SafetyPlanPage', () => {
@@ -50,6 +50,7 @@ describe('SafetyPlanPage', () => {
         safePlaces: ['Plaza cercana'],
       }),
     });
+
     fixture.detectChanges();
 
     const content = fixture.nativeElement.textContent as string;
@@ -65,6 +66,43 @@ describe('SafetyPlanPage', () => {
       ),
     ).not.toBeNull();
     expect(page.sectionEntries('trusted-contacts')).toEqual([]);
+  });
+
+  it('shows actionable trusted contacts alongside the plan', async () => {
+    await configure();
+
+    const fixture = TestBed.createComponent(SafetyPlanPage);
+    fixture.componentInstance.loadContacts();
+    const contact: TrustedContact = {
+      id: 'contact-id',
+      userId: 'user-id',
+      name: 'Alex',
+      phone: '+56912345678',
+      relationship: 'Amistad',
+      details: null,
+      createdAt: '2026-10-28T12:00:00.000Z',
+      updatedAt: '2026-10-28T12:00:00.000Z',
+    };
+    httpTesting.expectOne('/api/contactos?page=1&pageSize=3').flush({
+      data: {
+        items: [contact],
+        pagination: {
+          page: 1,
+          pageSize: 3,
+          total: 1,
+          totalPages: 1,
+        },
+      },
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Mi Red de Apoyo');
+    expect(fixture.nativeElement.textContent).toContain('Alex');
+    expect(fixture.nativeElement.textContent).toContain('+56912345678');
+    expect(
+      fixture.nativeElement.querySelector('.trusted-contact-preview ion-button')
+        ?.textContent,
+    ).toContain('Llamar');
   });
 
   it('saves a section remotely and reports success only after confirmation', async () => {

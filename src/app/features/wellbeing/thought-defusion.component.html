@@ -1,0 +1,102 @@
+<section class="exercise-card thought-tool" aria-labelledby="thought-heading">
+  <p class="eyebrow">UNA PAUSA PARA TU MENTE · 3 PASOS</p>
+  <h1 id="thought-heading">Soltar pensamientos intrusivos</h1>
+  <p class="thought-intro">
+    No tienes que borrar ni discutir con un pensamiento. Puedes mirarlo con un poco más de distancia.
+  </p>
+
+  <div
+    class="thought-progress"
+    role="progressbar"
+    aria-label="Progreso del ejercicio"
+    aria-valuemin="1"
+    aria-valuemax="3"
+    [attr.aria-valuenow]="step()"
+  >
+    <span [style.width.%]="(step() / 3) * 100"></span>
+  </div>
+  <p class="step-label" aria-live="polite">Paso {{ step() }} de 3</p>
+
+  @switch (step()) {
+    @case (1) {
+      <div class="thought-step" aria-labelledby="choose-thought-heading">
+        <h2 id="choose-thought-heading">¿Qué frase se parece más a lo que aparece?</h2>
+        <div class="thought-choices" role="group" aria-label="Elige un pensamiento">
+          @for (thought of thoughts; track thought) {
+            <button
+              type="button"
+              [class.selected]="selectedThought() === thought"
+              [attr.aria-pressed]="selectedThought() === thought"
+              (click)="selectThought(thought)"
+            >
+              {{ thought }}
+            </button>
+          }
+        </div>
+        <p class="gentle-note">No necesitas explicarlo ni escribir nada.</p>
+      </div>
+    }
+    @case (2) {
+      <div class="thought-step" aria-labelledby="distance-heading">
+        <h2 id="distance-heading">Nota que es un pensamiento, no una instrucción</h2>
+        <div class="thought-cloud" aria-live="polite" aria-atomic="true">
+          <span>Estoy notando el pensamiento:</span>
+          <strong>“{{ selectedThought() }}”</strong>
+        </div>
+        <p class="gentle-note">
+          Imagina que la frase flota unos pasos más lejos. No tienes que empujarla.
+        </p>
+      </div>
+    }
+    @case (3) {
+      <div class="thought-step" aria-labelledby="reframe-heading">
+        <h2 id="reframe-heading">Elige una frase amable para acompañarte</h2>
+        <div class="reframe-choices" role="group" aria-label="Elige una frase amable">
+          @for (reframe of reframes; track reframe) {
+            <button
+              type="button"
+              [class.selected]="selectedReframe() === reframe"
+              [attr.aria-pressed]="selectedReframe() === reframe"
+              (click)="selectReframe(reframe)"
+            >
+              {{ reframe }}
+            </button>
+          }
+        </div>
+        @if (selectedReframe()) {
+          <p class="reframe-message" role="status">{{ selectedReframe() }}</p>
+        }
+      </div>
+    }
+  }
+
+  <nav class="thought-navigation" aria-label="Navegación del ejercicio">
+    <button
+      class="thought-secondary"
+      type="button"
+      [disabled]="step() === 1"
+      (click)="previousStep()"
+    >
+      Anterior
+    </button>
+    @if (step() < 3) {
+      <button
+        class="thought-primary"
+        type="button"
+        [disabled]="!canContinue()"
+        (click)="nextStep()"
+      >
+        Continuar
+      </button>
+    } @else {
+      <button
+        class="thought-primary"
+        type="button"
+        [disabled]="!canContinue()"
+        (click)="restart()"
+      >
+        Empezar de nuevo
+      </button>
+    }
+  </nav>
+</section>

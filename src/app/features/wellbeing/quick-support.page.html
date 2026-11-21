@@ -1,0 +1,457 @@
+<ion-content
+  class="support-content"
+  [class.crisis-content]="activity() === 'calmarme'"
+  [class.personal-breath-content]="activity() === 'respirar'"
+  [class.overload-content]="activity() === 'sobrecarga'"
+>
+  <main
+    class="support-page"
+    [class.reduce-motion]="guestSession.reduceMotion()"
+    [class.calm-page]="activity() === 'calmarme'"
+    [class.personal-breath-page]="activity() === 'respirar'"
+    [class.overload-page]="activity() === 'sobrecarga'"
+  >
+    <header class="support-header">
+      @if (!closing()) {
+        <a
+          [routerLink]="returnRoute()"
+          class="back-link"
+          [attr.aria-label]="
+            returnRoute() === '/bienvenida'
+              ? 'Volver a bienvenida'
+              : returnRoute() === '/explorar'
+                ? 'Volver a Explorar'
+                : 'Volver al inicio'
+          "
+        >
+          ‹ <span>{{ returnRoute() === '/bienvenida' ? 'Volver' : 'Salir' }}</span>
+        </a>
+      } @else {
+        <a [routerLink]="returnRoute()" class="back-link">
+          ‹ <span>
+            {{
+              returnRoute() === '/bienvenida'
+                ? 'Bienvenida'
+                : returnRoute() === '/explorar'
+                  ? 'Explorar'
+                  : 'CONTIGO'
+            }}
+          </span>
+        </a>
+      }
+      <a routerLink="/necesito-ayuda" class="help-link">Necesito ayuda</a>
+    </header>
+
+    @if (closing()) {
+      <section
+        class="exercise-card exit-card"
+        [class.calm-exit-card]="activity() === 'calmarme'"
+        role="status"
+      >
+        <p class="eyebrow">A TU RITMO</p>
+        <h1>Qué bueno que te tomaste este momento. Buen viaje.</h1>
+        <p class="intro">No tienes que terminar nada. Puedes volver cuando quieras.</p>
+        <a class="secondary-button" [routerLink]="returnRoute()">
+          {{
+            returnRoute() === '/bienvenida'
+              ? 'Volver a bienvenida'
+              : returnRoute() === '/explorar'
+                ? 'Volver a Explorar'
+                : 'Volver a CONTIGO'
+          }}
+        </a>
+      </section>
+    } @else {
+      @switch (activity()) {
+        @case ('calmarme') {
+          <section class="calm-experience" aria-labelledby="breathing-heading">
+            <p class="calm-kicker">UNA PAUSA DE UN MINUTO</p>
+            <h1 id="breathing-heading">Vamos paso a paso</h1>
+            <div
+              class="calm-orbit"
+              [class.first-inhale]="breathingPhase() === 'first-inhale'"
+              [class.second-inhale]="breathingPhase() === 'second-inhale'"
+              [class.exhaling]="isExhaling()"
+              aria-hidden="true"
+            >
+              <span class="calm-ring calm-ring-outer"></span>
+              <span class="calm-ring calm-ring-middle"></span>
+              <span class="calm-ring calm-ring-inner"></span>
+              <span class="calm-phase">{{ breathingCue() }}</span>
+            </div>
+            <p class="calm-anchor" aria-live="polite" aria-atomic="true">
+              {{ breathingAnchor() }}
+            </p>
+            <button
+              class="haptics-toggle"
+              [class.is-enabled]="guestSession.vibrationEnabled()"
+              type="button"
+              [attr.aria-pressed]="guestSession.vibrationEnabled()"
+              (click)="toggleHaptics()"
+            >
+              {{ guestSession.vibrationEnabled() ? 'Desactivar vibración' : 'Activar vibración opcional' }}
+            </button>
+            <button class="better-button" type="button" (click)="closeExercise()">
+              Me siento un poco mejor
+            </button>
+          </section>
+        }
+        @case ('respirar') {
+          <section class="exercise-card breathing-card personal-breath-card" aria-labelledby="breathing-heading">
+            <p class="eyebrow">UNA PAUSA A TU MEDIDA</p>
+            <h1 id="breathing-heading">Respira a tu manera</h1>
+            <fieldset class="selector-group">
+              <legend>¿Cuánto tiempo tienes?</legend>
+              <div class="selector-options" role="group" aria-label="Duración de la pausa">
+                @for (minutes of durationOptions; track minutes) {
+                  <button
+                    class="selector-chip"
+                    type="button"
+                    [class.selected]="breathingDurationMinutes() === minutes"
+                    [attr.aria-pressed]="breathingDurationMinutes() === minutes"
+                    (click)="selectBreathingDuration(minutes)"
+                  >
+                    {{ minutes }} min
+                  </button>
+                }
+              </div>
+            </fieldset>
+            <fieldset class="selector-group rhythm-selector">
+              <legend>Elige un ritmo</legend>
+              <div class="selector-options" role="group" aria-label="Ritmo de respiración">
+                @for (rhythm of breathingRhythms; track rhythm.id) {
+                  <button
+                    class="selector-chip"
+                    type="button"
+                    [class.selected]="breathingRhythm() === rhythm.id"
+                    [attr.aria-pressed]="breathingRhythm() === rhythm.id"
+                    (click)="selectBreathingRhythm(rhythm.id)"
+                  >
+                    {{ rhythm.label }}
+                  </button>
+                }
+              </div>
+            </fieldset>
+            <div class="breathing-guide">
+              <div
+                class="petal-visualizer"
+                [class.inhaling]="breathingPhase() === 'inhale'"
+                [class.holding]="breathingPhase() === 'hold'"
+                [class.exhaling]="isExhaling()"
+                [attr.data-rhythm]="breathingRhythm()"
+                aria-hidden="true"
+              >
+                @for (petal of petals; track petal) {
+                  <span class="breathing-petal" [style.--petal-angle]="petal * 45 + 'deg'"></span>
+                }
+                <span class="petal-center"></span>
+              </div>
+              <div class="breathing-guidance">
+                <p class="breathing-cue" aria-live="polite" aria-atomic="true">
+                  {{ breathingCue() }}
+                </p>
+                @if (remainingSeconds() > 0) {
+                  <p class="timer" role="timer">
+                    {{ breathingTimerLabel() }}
+                  </p>
+                } @else {
+                  <p class="completion" role="status">
+                    Terminaste por ahora. Quédate el tiempo que necesites.
+                  </p>
+                  <button class="secondary-button" type="button" (click)="startBreathing()">
+                    Repetir la pausa
+                  </button>
+                }
+              </div>
+            </div>
+            @if (breathingRhythm() === 'deep') {
+              <p class="gentle-note">
+                Si sostener el aire no se siente cómodo, elige otro ritmo.
+              </p>
+            }
+            <button
+              class="haptics-toggle"
+              type="button"
+              [attr.aria-pressed]="guestSession.vibrationEnabled()"
+              (click)="toggleHaptics()"
+            >
+              {{ guestSession.vibrationEnabled() ? 'Desactivar vibración' : 'Activar vibración opcional' }}
+            </button>
+          </section>
+        }
+        @case ('enraizar') {
+          <section class="exercise-card" aria-labelledby="grounding-heading">
+            <p class="eyebrow">2 MIN · ATENCIÓN PLENA</p>
+            <h1 id="grounding-heading">Enfoque sensorial en el vagón</h1>
+            <p class="intro">
+              Recorre cada sentido a tu ritmo, sin escribir. Puedes saltar cualquier paso.
+            </p>
+            <ol class="grounding-list">
+              @for (step of groundingSteps; track step.count) {
+                <li>
+                  <div class="grounding-row">
+                    <button
+                      class="grounding-step"
+                      type="button"
+                      [class.is-active]="activeGroundingStep() === step.count"
+                      [class.is-selected]="isGroundingStepComplete(step.count)"
+                      [attr.aria-expanded]="activeGroundingStep() === step.count"
+                      [attr.aria-controls]="activeGroundingStep() === step.count ? 'grounding-bubbles-' + step.count : null"
+                      (click)="toggleGroundingStep(step.count)"
+                    >
+                      <span class="step-count">{{ step.count }}</span>
+                      <span>{{ step.prompt }}</span>
+                      <span class="step-check" aria-hidden="true">
+                        {{ isGroundingStepComplete(step.count) ? '✓' : activeGroundingStep() === step.count ? '−' : '+' }}
+                      </span>
+                    </button>
+                    @if (activeGroundingStep() === step.count) {
+                      <div
+                        class="grounding-bubbles"
+                        [id]="'grounding-bubbles-' + step.count"
+                        role="group"
+                        [attr.aria-label]="'Marca hasta ' + step.count + ' elementos identificados'"
+                      >
+                        @for (bubble of groundingBubbles(step.count); track bubble) {
+                          <button
+                            class="grounding-bubble"
+                            type="button"
+                            [class.is-marked]="isGroundingBubbleMarked(step.count, bubble)"
+                            [attr.aria-pressed]="isGroundingBubbleMarked(step.count, bubble)"
+                            [attr.aria-label]="'Elemento ' + bubble + ' de ' + step.count"
+                            (click)="toggleGroundingBubble(step.count, bubble)"
+                          >
+                            {{ isGroundingBubbleMarked(step.count, bubble) ? '✓' : '' }}
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                </li>
+              }
+            </ol>
+            <p class="gentle-note">
+              No hay una meta que alcanzar. Puedes parar en cualquier momento.
+            </p>
+          </section>
+        }
+        @case ('sobrecarga') {
+          <section class="exercise-card overload-card" aria-labelledby="overload-heading">
+            <p class="eyebrow">REFUGIO VISUAL Y CORPORAL</p>
+            <h1 id="overload-heading">Mucho ruido en el metro</h1>
+            <p class="overload-progress" aria-live="polite">
+              Paso {{ overloadStep() }} de 3
+            </p>
+            @switch (overloadStep()) {
+              @case (1) {
+                <div class="overload-step" aria-labelledby="contact-heading">
+                  <h2 id="contact-heading">Encuentra un apoyo</h2>
+                  <p class="overload-copy">
+                    Baja los hombros y apoya firme ambos pies en el piso del vagón.
+                    Siente el soporte debajo de ti.
+                  </p>
+                  <button
+                    class="overload-primary"
+                    type="button"
+                    (click)="confirmOverloadAnchor()"
+                  >
+                    Listo, lo siento
+                  </button>
+                </div>
+              }
+              @case (2) {
+                <div class="overload-step" aria-labelledby="focus-heading">
+                  <h2 id="focus-heading">Deja descansar la mirada</h2>
+                  <p class="overload-copy">
+                    Elige un solo punto quieto frente a ti (un borde de ventana,
+                    tus manos o este círculo) y deja descansar tu mirada ahí por
+                    15 segundos.
+                  </p>
+                  <div
+                    class="overload-focus-orb"
+                    [class.counting]="focusPointSeconds() > 0"
+                    aria-hidden="true"
+                  >
+                    <span></span>
+                  </div>
+                  <p class="overload-countdown" role="timer" aria-live="off">
+                    {{ focusPointSeconds() }} segundos
+                  </p>
+                  <button
+                    class="overload-primary"
+                    type="button"
+                    (click)="nextOverloadStep()"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              }
+              @case (3) {
+                <div class="overload-step" aria-labelledby="release-heading">
+                  <h2 id="release-heading">Suelta un poco de tensión</h2>
+                  <p class="overload-copy">
+                    Aprieta suavemente tus manos o dedos durante 3 segundos y
+                    suéltalos dejando salir el aire.
+                  </p>
+                  @if (!tensionReleaseStarted()) {
+                    <button
+                      class="overload-primary"
+                      type="button"
+                      (click)="startTensionRelease()"
+                    >
+                      Empezar 3 segundos
+                    </button>
+                  } @else if (tensionReleaseSeconds() > 0) {
+                    <p class="overload-countdown" role="timer" aria-live="polite">
+                      Aprieta suavemente · {{ tensionReleaseSeconds() }}
+                    </p>
+                  } @else {
+                    <p class="overload-complete" role="status">
+                      Suelta las manos y deja salir el aire.
+                    </p>
+                  }
+                </div>
+              }
+            }
+            <div class="rain-audio">
+              <p class="eyebrow">¿Llevas audífonos?</p>
+              <button
+                class="rain-audio-button overload-primary"
+                type="button"
+                [class.is-playing]="rainAudioEnabled()"
+                [disabled]="rainAudioStarting()"
+                [attr.aria-pressed]="rainAudioEnabled()"
+                aria-describedby="rain-audio-note"
+                (click)="toggleRainAudio()"
+              >
+                @if (rainAudioStarting()) {
+                  Preparando sonido…
+                } @else {
+                  {{ rainAudioEnabled() ? 'Detener sonido de lluvia' : 'Activar sonido de lluvia suave' }}
+                }
+              </button>
+              <p
+                id="rain-audio-note"
+                class="gentle-note"
+                [attr.role]="rainAudioError() ? 'alert' : 'status'"
+              >
+                {{
+                  rainAudioError() ||
+                    (rainAudioEnabled()
+                      ? 'La lluvia está sonando suavemente.'
+                      : 'Sonido opcional y suave; puedes continuar en silencio.')
+                }}
+              </p>
+            </div>
+          </section>
+        }
+        @case ('despejar') {
+          <article class="exercise-card reading-card" aria-labelledby="focus-heading">
+            <p class="eyebrow">3 MIN · LECTURA BREVE</p>
+            <h1 id="focus-heading">Un pequeño espacio para tu mente</h1>
+            <p class="reading-intro">
+              Una idea a la vez. Quédate con lo que te sirva y avanza a tu ritmo.
+            </p>
+            <p class="reading-step" aria-live="polite" aria-atomic="true">
+              {{ readingSteps[readingStep()] }}
+            </p>
+            <div class="reading-progress" aria-live="polite" aria-atomic="true">
+              <span>Tu recorrido</span>
+              <strong>Paso {{ readingStep() + 1 }} de {{ readingSteps.length }}</strong>
+            </div>
+            <div
+              class="reading-progress-track"
+              role="progressbar"
+              aria-label="Progreso de la lectura"
+              [attr.aria-valuemin]="1"
+              [attr.aria-valuemax]="readingSteps.length"
+              [attr.aria-valuenow]="readingStep() + 1"
+            >
+              <span [style.width.%]="readingProgress()"></span>
+            </div>
+            <nav class="reading-navigation" aria-label="Pasos de la lectura">
+              <button
+                type="button"
+                class="reading-button reading-previous"
+                [disabled]="readingStep() === 0"
+                (click)="previousReadingStep()"
+              >
+                <span aria-hidden="true">‹</span>
+                Anterior
+              </button>
+              @if (readingStep() === readingSteps.length - 1) {
+                <button
+                  type="button"
+                  class="reading-button reading-finish"
+                  (click)="closeExercise()"
+                >
+                  Terminar lectura
+                  <span aria-hidden="true">✓</span>
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="reading-button reading-next"
+                  (click)="nextReadingStep()"
+                >
+                  Siguiente
+                  <span aria-hidden="true">›</span>
+                </button>
+              }
+            </nav>
+          </article>
+        }
+        @case ('sonidos') {
+          <app-offline-sounds />
+        }
+        @case ('pensamientos') {
+          <app-thought-defusion />
+        }
+        @case ('cuerpo') {
+          <app-body-release />
+        }
+        @case ('herramientas') {
+          <section class="exercise-card tools-card" aria-labelledby="tools-heading">
+            <p class="eyebrow">A TU RITMO</p>
+            <h1 id="tools-heading">Herramientas para este viaje</h1>
+            <p class="intro">Elige una práctica breve o vuelve cuando quieras.</p>
+            <nav class="tool-links" aria-label="Prácticas disponibles">
+              <a routerLink="/apoyo/calmarme">Respirar con calma · 1 minuto</a>
+              <a routerLink="/apoyo/enraizar">Conectar con el presente</a>
+              <a routerLink="/apoyo/sobrecarga">Refugio visual para mucho ruido o gente</a>
+              <a routerLink="/apoyo/despejar">Hacer una pausa atenta</a>
+            </nav>
+          </section>
+        }
+        @default {
+          <section class="exercise-card" aria-labelledby="missing-heading">
+            <h1 id="missing-heading">No encontramos esa herramienta</h1>
+            <p class="intro">Puedes volver al inicio y elegir otra opción.</p>
+          </section>
+        }
+      }
+
+      @if (hapticsUnavailable()) {
+        <p class="gentle-note" role="status">
+          La vibración no está disponible; puedes continuar con la guía visual.
+        </p>
+      }
+
+      @if (activity() !== 'calmarme') {
+        <button class="close-exercise" type="button" (click)="closeExercise()">
+          Terminar por ahora
+        </button>
+      }
+    }
+
+    <p class="offline-note">
+      @if (activity() === 'sonidos') {
+        Los sonidos se generan en este dispositivo y se detienen al salir.
+      } @else if (activity() === 'sobrecarga') {
+        Esta práctica funciona en silencio; el sonido de lluvia es opcional.
+      } @else {
+        Estas prácticas están disponibles sin conexión y no requieren una cuenta.
+      }
+    </p>
+  </main>
+</ion-content>

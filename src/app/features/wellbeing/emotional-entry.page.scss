@@ -47,6 +47,23 @@ h2 {
   font-weight: 650;
 }
 
+.session-note,
+.session-message {
+  background: #edf5f1;
+  border: 1px solid #d5e7df;
+  border-radius: 0.85rem;
+  color: #405c53;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  padding: 0.7rem 0.8rem;
+}
+
+.session-message {
+  background: #fff7e7;
+  border-color: #e8d8ae;
+  color: #5b4b22;
+}
+
 .form-card {
   background: #fff;
   border: 1px solid #ece9f5;

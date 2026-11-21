@@ -1,0 +1,133 @@
+.body-tool {
+  background: linear-gradient(155deg, #fff, #edf5f0);
+  border: 1px solid #d8e8dd;
+  border-radius: 1.35rem;
+  box-shadow: var(--app-card-shadow);
+  display: grid;
+  gap: 0.85rem;
+  padding: clamp(1rem, 5vw, 1.4rem);
+}
+
+.body-tool h1 {
+  color: #315f55;
+  font-size: clamp(1.5rem, 6vw, 1.95rem);
+  line-height: 1.16;
+  margin: 0;
+}
+
+.eyebrow,
+.phase-label {
+  color: #397b75;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.body-intro,
+.body-cue > p:last-child,
+.body-complete,
+.body-note {
+  color: #53665b;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.body-illustration {
+  align-items: center;
+  background: #e4efe6;
+  border-radius: 1.1rem;
+  display: flex;
+  justify-content: center;
+  margin-inline: auto;
+  max-width: 13rem;
+  width: 100%;
+
+  img {
+    display: block;
+    height: auto;
+    width: 100%;
+  }
+}
+
+.body-progress {
+  background: #dce9df;
+  border-radius: 999px;
+  height: 0.5rem;
+  overflow: hidden;
+
+  span {
+    background: linear-gradient(90deg, #8bb59a, #47776a);
+    border-radius: inherit;
+    display: block;
+    height: 100%;
+    transition: width 250ms ease;
+  }
+}
+
+.body-cue {
+  background: rgb(255 255 255 / 72%);
+  border: 1px solid #dbe9df;
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.4rem;
+  min-height: 8rem;
+  padding: 0.85rem;
+
+  h2 {
+    color: #315f55;
+    font-size: 1.08rem;
+    margin: 0;
+  }
+}
+
+.body-timer {
+  color: #397b75;
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+  margin: -0.5rem 0 0;
+  text-align: center;
+}
+
+.body-complete {
+  background: #edf5f1;
+  border-radius: 0.8rem;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.body-primary,
+.body-haptics {
+  border-radius: 0.9rem;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 750;
+  min-height: 3rem;
+  padding: 0.6rem 0.8rem;
+
+  &:focus-visible {
+    outline: 3px solid #47776a;
+    outline-offset: 3px;
+  }
+}
+
+.body-primary {
+  background: #47776a;
+  border: 0;
+  color: #fff;
+}
+
+.body-haptics {
+  background: #f0edf5;
+  border: 1px solid #dcd4e8;
+  color: #514968;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .body-progress span {
+    transition: none;
+  }
+}

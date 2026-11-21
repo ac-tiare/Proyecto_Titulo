@@ -1,0 +1,192 @@
+.thought-tool {
+  background: linear-gradient(155deg, #fff, #f3eff8);
+  border: 1px solid #e4dced;
+  border-radius: 1.35rem;
+  box-shadow: var(--app-card-shadow);
+  display: grid;
+  gap: 0.9rem;
+  padding: clamp(1rem, 5vw, 1.4rem);
+}
+
+.thought-tool h1 {
+  color: #41395c;
+  font-size: clamp(1.5rem, 6vw, 1.95rem);
+  line-height: 1.16;
+  margin: 0;
+}
+
+.eyebrow {
+  color: #66577d;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.thought-intro,
+.gentle-note {
+  color: #625c70;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.thought-progress {
+  background: #e6deed;
+  border-radius: 999px;
+  height: 0.45rem;
+  overflow: hidden;
+
+  span {
+    background: linear-gradient(90deg, #756486, #7ba893);
+    border-radius: inherit;
+    display: block;
+    height: 100%;
+    transition: width 180ms ease;
+  }
+}
+
+.step-label {
+  color: #66577d;
+  font-size: 0.76rem;
+  font-weight: 750;
+  margin: -0.5rem 0 0;
+  text-align: right;
+}
+
+.thought-step {
+  display: grid;
+  gap: 0.75rem;
+  min-height: 13rem;
+  align-content: start;
+
+  h2 {
+    color: #514968;
+    font-size: 1.04rem;
+    line-height: 1.35;
+    margin: 0;
+  }
+}
+
+.thought-choices,
+.reframe-choices {
+  display: grid;
+  gap: 0.5rem;
+
+  button {
+    background: rgb(255 255 255 / 78%);
+    border: 1px solid #ded5e8;
+    border-radius: 0.9rem;
+    color: #514968;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 650;
+    line-height: 1.4;
+    min-height: 3rem;
+    padding: 0.7rem 0.8rem;
+    text-align: left;
+
+    &.selected {
+      background: #e5dfef;
+      border-color: #9c8bb3;
+      box-shadow: 0 0 0 2px rgb(117 100 134 / 12%);
+    }
+
+    &:focus-visible {
+      outline: 3px solid #756486;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.thought-cloud {
+  animation: thought-float 5s ease-in-out infinite;
+  background: #fff;
+  border: 1px solid #e3d9ee;
+  border-radius: 1.2rem 1.2rem 1.2rem 0.35rem;
+  box-shadow: 0 0.4rem 1rem rgb(76 62 105 / 9%);
+  color: #625c70;
+  display: grid;
+  gap: 0.35rem;
+  justify-self: center;
+  max-width: 22rem;
+  padding: 1rem;
+  text-align: center;
+  width: 100%;
+
+  span {
+    font-size: 0.8rem;
+  }
+
+  strong {
+    color: #514968;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+}
+
+.reframe-message {
+  background: #edf5f1;
+  border-left: 3px solid #8bb59a;
+  border-radius: 0.2rem 0.75rem 0.75rem 0.2rem;
+  color: #405c53;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+}
+
+.thought-navigation {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  button {
+    border-radius: 0.9rem;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 750;
+    min-height: 3rem;
+    padding: 0.65rem 0.8rem;
+
+    &:focus-visible {
+      outline: 3px solid #756486;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+  }
+}
+
+.thought-secondary {
+  background: #fff;
+  border: 1px solid #ded5e8;
+  color: #514968;
+}
+
+.thought-primary {
+  background: linear-gradient(120deg, #756486, #587f70);
+  border: 0;
+  color: #fff;
+}
+
+@keyframes thought-float {
+  50% {
+    transform: translateY(-0.3rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thought-cloud {
+    animation: none;
+  }
+
+  .thought-progress span {
+    transition: none;
+  }
+}

@@ -67,6 +67,9 @@ Para reconstruir y actualizar:
 docker compose up -d --build
 ```
 
+Después de actualizar el frontend, recarga completamente la pestaña para activar
+la versión nueva y limpiar la caché offline anterior.
+
 Para detener el sistema sin perder la base de datos:
 
 ```powershell
@@ -155,10 +158,14 @@ La eliminación de una cuenta borra sus datos activos en PostgreSQL, pero no pue
 ## Pantallas conectadas
 
 - Login y registro crean sesiones y cuentas reales en el backend.
-- Registro emocional e historial usan persistencia remota, filtro por semana/mes/año y paginación.
-- El plan guarda señales, acciones y lugares. Los contactos se administran en una lista única en Red de Apoyo y se enlazan desde el plan para evitar duplicarlos.
+- Inicio registra un check-in emocional con un toque. Las personas invitadas lo conservan solo durante la sesión; las cuentas autenticadas lo sincronizan con la API cuando hay conexión.
+- Explorar reúne prácticas visuales y lecturas breves que no necesitan conexión. Los enlaces a sitios oficiales requieren internet.
+- Bienestar ofrece historial autenticado por semana/mes/año, paginación, patrones emocionales y acceso a avisos. Los check-ins de invitado se muestran durante la sesión.
+- Mi Plan reúne el plan de seguridad con una vista accionable de los contactos de confianza, que también se pueden administrar desde Red de Apoyo.
 - Perfil actualiza los datos de cuenta y el cierre de sesión revoca la sesión en el backend.
 - Los recursos oficiales de ayuda y las preferencias locales de notificación no se sincronizan.
+
+Inicio (`/inicio`), Explorar (`/explorar`), las prácticas de `/apoyo/...` y la ayuda urgente (`/necesito-ayuda`) no requieren iniciar sesión. Las prácticas, el check-in y la lista de microprácticas funcionan localmente. En Capacitor, las vistas y sus recursos estáticos forman parte del paquete instalado. En web, el service worker guarda los recursos estáticos y el router precarga las vistas después de una primera visita con conexión. Los enlaces a sitios oficiales y las operaciones de cuenta, historial y sincronización requieren conectividad.
 
 La aplicación ofrece apoyo temprano; no diagnostica, no reemplaza la atención profesional ni los servicios de emergencia.
 

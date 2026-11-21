@@ -1,0 +1,69 @@
+<section class="exercise-card sound-tool" aria-labelledby="sounds-heading">
+  <p class="eyebrow">SONIDO OPCIONAL · 100% LOCAL</p>
+  <h1 id="sounds-heading">Sonidos para aislar el ruido</h1>
+  <p class="sound-intro">
+    Elige un paisaje suave. Si llevas audífonos, mantén un volumen cómodo.
+  </p>
+
+  <fieldset class="sound-options">
+    <legend>Elige un sonido</legend>
+    @for (track of tracks; track track.id) {
+      <button
+        class="sound-choice"
+        type="button"
+        [class.selected]="selectedTrack() === track.id"
+        [attr.aria-pressed]="selectedTrack() === track.id"
+        (click)="selectTrack(track.id)"
+      >
+        <span>{{ track.label }}</span>
+        <small>{{ track.detail }}</small>
+      </button>
+    }
+  </fieldset>
+
+  <fieldset class="duration-options">
+    <legend>Apagado automático</legend>
+    <div role="group" aria-label="Duración del sonido">
+      @for (duration of durations; track duration) {
+        <button
+          type="button"
+          [class.selected]="durationMinutes() === duration"
+          [attr.aria-pressed]="durationMinutes() === duration"
+          (click)="selectDuration(duration)"
+        >
+          {{ duration }} min
+        </button>
+      }
+    </div>
+  </fieldset>
+
+  <div
+    class="sound-visualizer"
+    [class.is-playing]="playing()"
+    aria-hidden="true"
+  >
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+  </div>
+  <p class="sound-timer" role="timer" aria-live="off">
+    {{ timerLabel() }} restantes
+  </p>
+  <button
+    class="sound-play"
+    type="button"
+    [disabled]="starting()"
+    [attr.aria-label]="playing() ? 'Pausar sonido' : 'Reproducir sonido'"
+    (click)="togglePlayback()"
+  >
+    <span aria-hidden="true">{{ playing() ? 'Ⅱ' : '▶' }}</span>
+    {{ starting() ? 'Preparando…' : playing() ? 'Pausar' : 'Reproducir' }}
+  </button>
+  <p class="sound-status" [attr.role]="errorMessage() ? 'alert' : 'status'">
+    {{
+      errorMessage() ||
+        (playing()
+          ? 'El sonido está activo y se apagará automáticamente.'
+          : 'El audio se genera en este dispositivo. También puedes seguir sin sonido.')
+    }}
+  </p>
+</section>

@@ -1,5 +1,18 @@
 <ion-content class="need-help-content">
   <main class="page-content">
+    <header class="page-header">
+      <button
+        class="back-button"
+        type="button"
+        aria-label="Volver a la pantalla anterior"
+        (click)="goBack()"
+      >
+        <span aria-hidden="true">‹</span>
+        Volver
+      </button>
+      <span class="header-caption">CONTIGO · ORIENTACIÓN</span>
+    </header>
+
     <p class="eyebrow">APOYO HUMANO</p>
     <h1>Necesito ayuda</h1>
     <p class="intro">
@@ -7,47 +20,10 @@
       persona que te genere confianza y cuéntale cómo te sientes.
     </p>
 
-    <ion-card class="help-card">
-      <ion-card-header>
-        <ion-card-title>Línea nacional *4141</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>
-          Si necesitas apoyo, puedes llamar a la línea de prevención del
-          suicidio. CONTIGO te pedirá confirmación antes de abrir la aplicación
-          de teléfono.
-        </p>
-        <ion-button
-          expand="block"
-          class="official-call-button"
-          type="button"
-          (click)="callOfficialLine()"
-        >
-          Llamar al *4141
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card class="help-card">
-      <ion-card-header>
-        <ion-card-title>Salud Responde</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>
-          Puedes llamar al 600 360 7777 para recibir orientación en salud.
-          CONTIGO te pedirá confirmación antes de abrir la aplicación de
-          teléfono.
-        </p>
-        <ion-button
-          expand="block"
-          class="official-call-button"
-          type="button"
-          (click)="callSaludResponde()"
-        >
-          Llamar a Salud Responde
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
+    <section class="direct-resources" aria-labelledby="direct-resources-heading">
+      <h2 id="direct-resources-heading">Líneas directas de apoyo y emergencia</h2>
+      <app-official-support-resources />
+    </section>
 
     <ion-card class="regional-card">
       <ion-card-header>
@@ -62,6 +38,7 @@
         <ion-button
           expand="block"
           fill="outline"
+          class="resource-button"
           href="https://www.gobiernosantiago.cl/?s=Qu%C3%A9date"
           target="_blank"
           rel="noopener noreferrer"
@@ -81,7 +58,12 @@
           versión no puede consultarlos ni iniciar llamadas o mensajes a partir
           de ellos; los datos remotos no se han eliminado.
         </p>
-        <ion-button type="button" fill="outline" routerLink="/red-apoyo">
+        <ion-button
+          type="button"
+          fill="outline"
+          class="network-button"
+          routerLink="/red-apoyo"
+        >
           Ver mi Red de Apoyo
         </ion-button>
       </ion-card-content>
@@ -102,13 +84,28 @@
     </ion-card>
 
     <nav class="quick-links" aria-label="Accesos rápidos">
-      <ion-button expand="block" fill="outline" routerLink="/red-apoyo">
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="quick-link-network"
+        routerLink="/red-apoyo"
+      >
         Mi Red de Apoyo
       </ion-button>
-      <ion-button expand="block" fill="outline" routerLink="/plan-seguridad">
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="quick-link-plan"
+        routerLink="/plan-seguridad"
+      >
         Mi Plan de Seguridad
       </ion-button>
-      <ion-button expand="block" fill="outline" routerLink="/mi-bienestar">
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="quick-link-wellbeing"
+        routerLink="/mi-bienestar"
+      >
         Registro Emocional
       </ion-button>
     </nav>

@@ -71,7 +71,7 @@ describe('request validators', () => {
     ).toBe(false);
   });
 
-  it('requires emotions and validates the optional Other detail', () => {
+  it('allows a mood-only check-in and validates optional emotion details', () => {
     expect(
       createEmotionSchema.safeParse({
         moodId: 'mal',
@@ -79,7 +79,7 @@ describe('request validators', () => {
         note: '',
         otherEmotion: '',
       }).success,
-    ).toBe(false);
+    ).toBe(true);
     expect(
       createEmotionSchema.safeParse({
         moodId: 'bien',

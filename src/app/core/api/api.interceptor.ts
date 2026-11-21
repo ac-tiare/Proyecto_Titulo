@@ -23,7 +23,7 @@ import { NativeSessionStore } from './native-session.store';
 let refreshRequest: Observable<unknown> | null = null;
 
 const isAuthenticationEndpoint = (url: string): boolean =>
-  /\/auth\/(csrf|register|login|refresh|logout|forgot-password|reset-password)(?:\?|$)/.test(
+  /\/auth\/(csrf|register|login|refresh|logout|me|forgot-password|reset-password)(?:\?|$)/.test(
     url,
   );
 

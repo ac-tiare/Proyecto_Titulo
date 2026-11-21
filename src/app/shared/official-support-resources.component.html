@@ -1,0 +1,53 @@
+<section class="support-resources" aria-label="Líneas y canales oficiales de apoyo">
+  <div class="support-resource-list">
+    @for (resource of resources; track resource.id) {
+      <article class="support-resource">
+        <div class="resource-heading">
+          <span class="resource-icon" aria-hidden="true">
+            <ion-icon
+              [name]="resource.type === 'phone' ? 'call-outline' : 'open-outline'"
+            ></ion-icon>
+          </span>
+          <div class="resource-title">
+            <h3>{{ resource.title }}</h3>
+            <span class="availability-label">{{ resource.availability }}</span>
+          </div>
+        </div>
+        <p class="resource-description">{{ resource.description }}</p>
+        <div class="resource-actions">
+          @if (resource.type === 'phone') {
+            <a class="resource-action call-action" [href]="resource.href">
+              <ion-icon name="call-outline" aria-hidden="true"></ion-icon>
+              {{ resource.actionLabel }}
+            </a>
+          } @else {
+            <a
+              class="resource-action web-action"
+              [href]="resource.href"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ resource.actionLabel }}
+              <ion-icon name="open-outline" aria-hidden="true"></ion-icon>
+            </a>
+          }
+          @if (resource.type === 'phone' && resource.officialUrl) {
+            <a
+              class="official-link"
+              [href]="resource.officialUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ resource.officialLabel }}
+              <ion-icon name="open-outline" aria-hidden="true"></ion-icon>
+            </a>
+          }
+        </div>
+      </article>
+    }
+  </div>
+  <p class="connectivity-note" role="note">
+    Las llamadas de emergencia funcionan sin datos de internet, pero requieren
+    cobertura telefónica. Los sitios web necesitan conexión.
+  </p>
+</section>

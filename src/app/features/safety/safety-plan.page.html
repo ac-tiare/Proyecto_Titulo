@@ -12,6 +12,10 @@
         Prepara ideas y apoyos que quieras tener a mano en un momento difícil.
         Puedes completar solo las secciones que te sirvan.
       </p>
+      <ion-button class="network-shortcut" routerLink="/red-apoyo" fill="outline">
+        <ion-icon slot="start" name="people-outline" aria-hidden="true"></ion-icon>
+        Mi Red de Apoyo y contactos
+      </ion-button>
     </header>
 
     @if (loading()) {
@@ -26,6 +30,49 @@
       @if (saveMessage()) {
         <p class="support-notice" role="status">{{ saveMessage() }}</p>
       }
+
+      <section class="contacts-preview" aria-labelledby="contacts-preview-heading">
+        <div class="card-heading">
+          <div>
+            <p class="step-label">PERSONAS DE CONFIANZA</p>
+            <h2 id="contacts-preview-heading">Mi Red de Apoyo</h2>
+          </div>
+          <ion-button routerLink="/red-apoyo" fill="outline">
+            Administrar
+          </ion-button>
+        </div>
+        @if (contactsLoading()) {
+          <p class="empty-section" role="status">Cargando tus contactos…</p>
+        } @else if (contactsError()) {
+          <p class="support-error" role="alert">{{ contactsError() }}</p>
+          <ion-button fill="outline" (click)="loadContacts()">Reintentar</ion-button>
+        } @else if (trustedContacts().length) {
+          <ul class="trusted-contact-preview">
+            @for (contact of trustedContacts(); track contact.id) {
+              <li>
+                <span>
+                  <strong>{{ contact.name }}</strong>
+                  <small>{{ contact.phone }}</small>
+                </span>
+                <ion-button
+                  type="button"
+                  fill="outline"
+                  (click)="callContact(contact)"
+                >
+                  Llamar
+                </ion-button>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="empty-section">
+            Aún no agregas contactos. Puedes sumar a alguien de confianza.
+          </p>
+          <ion-button routerLink="/red-apoyo" fill="outline">
+            Agregar un contacto
+          </ion-button>
+        }
+      </section>
 
       <ol class="plan-steps" aria-label="Etapas del plan de seguridad">
         @for (section of sections; track section.id; let index = $index) {

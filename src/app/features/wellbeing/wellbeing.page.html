@@ -1,35 +1,333 @@
 <ion-content class="wellbeing-content">
   <main class="page-content">
     <header class="page-heading">
-      <div class="heading-label-row">
-        <span class="heading-icon" aria-hidden="true">
-          <ion-icon name="heart-outline"></ion-icon>
-        </span>
-        <p class="eyebrow">BIENESTAR EMOCIONAL</p>
+      <div class="heading-topline">
+        <div class="heading-label-row">
+          <span class="heading-icon" aria-hidden="true">
+            <ion-icon name="heart-outline"></ion-icon>
+          </span>
+          <p class="eyebrow">BIENESTAR EMOCIONAL</p>
+        </div>
+        @if (guestView()) {
+          <a
+            class="reminders-button"
+            routerLink="/login"
+            aria-label="Inicia sesión para configurar avisos y recordatorios"
+            title="Inicia sesión para configurar avisos"
+          >
+            <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+          </a>
+        } @else {
+          <a
+            class="reminders-button"
+            routerLink="/configuracion-notificaciones"
+            aria-label="Avisos y recordatorios"
+            title="Avisos y recordatorios"
+          >
+            <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+          </a>
+        }
       </div>
       <h1>Mi Bienestar</h1>
       <p class="intro">
-        Tus registros se guardan en tu cuenta y están disponibles después de volver a ingresar.
+        @if (guestView()) {
+          Tus check-ins de esta sesión se conservan solo en este dispositivo.
+        } @else {
+          Un espacio para observar cómo te has sentido, a tu ritmo.
+        }
       </p>
     </header>
 
-    @if (loading()) {
-      <p class="loading-state" role="status" aria-live="polite">
-        Cargando tu historial emocional…
-      </p>
-    } @else if (loadError()) {
-      <section class="empty-state error-state" aria-labelledby="error-heading">
-        <span class="empty-icon" aria-hidden="true">!</span>
-        <h2 id="error-heading">No pudimos cargar tu historial</h2>
-        <p role="alert">{{ loadError() }}</p>
-        <ion-button expand="block" (click)="loadRecords()">Reintentar</ion-button>
+    @if (sessionError()) {
+      <p class="load-error" role="status">{{ sessionError() }}</p>
+    }
+
+    <div class="view-selector" role="tablist" aria-label="Vistas de Mi Bienestar">
+      <button
+        id="summary-tab"
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeView() === 'summary'"
+        aria-controls="summary-panel"
+        [class.active]="activeView() === 'summary'"
+        (click)="selectView('summary')"
+      >
+        Resumen
+      </button>
+      <button
+        id="history-tab"
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeView() === 'history'"
+        aria-controls="history-panel"
+        [class.active]="activeView() === 'history'"
+        (click)="selectView('history')"
+      >
+        Historial
+      </button>
+    </div>
+
+    @if (activeView() === 'summary') {
+      <section
+        class="summary-view"
+        id="summary-panel"
+        role="tabpanel"
+        aria-labelledby="summary-tab"
+      >
+        <section class="summary-card today-card" aria-labelledby="today-heading">
+          @if (todayRecord(); as record) {
+            <div class="summary-card-heading">
+              <div>
+                <p class="card-eyebrow">HOY</p>
+                <h2 id="today-heading">Gracias por hacer una pausa</h2>
+              </div>
+              <span
+                class="today-mood-mark"
+                [class.mood-positive]="record.moodId === 'muy-bien' || record.moodId === 'bien'"
+                [class.mood-neutral]="record.moodId === 'mas-o-menos'"
+                [class.mood-low]="record.moodId === 'mal' || record.moodId === 'muy-mal'"
+                aria-hidden="true"
+              >
+                {{ moodEmojis[record.moodId] }}
+              </span>
+            </div>
+            <p class="today-mood-copy">
+              Hoy te sentiste <strong>{{ moodLabels[record.moodId] | lowercase }}</strong>.
+            </p>
+            @if (record.emotionIds.length || record.otherEmotion) {
+              <div class="record-emotions" aria-label="Emociones destacadas">
+                @for (emotionId of record.emotionIds; track emotionId) {
+                  <span>{{ emotionLabels[emotionId] }}</span>
+                }
+                @if (record.otherEmotion) {
+                  <span>{{ record.otherEmotion }}</span>
+                }
+              </div>
+            }
+            @if (record.note) {
+              <p class="today-note">{{ record.note }}</p>
+            }
+            <a class="text-link" routerLink="/registro-emocional">Agregar otra reflexión</a>
+          } @else {
+            <p class="card-eyebrow">UNA PAUSA PARA TI</p>
+            <h2 id="today-heading">Aún no has registrado cómo te sientes hoy</h2>
+            <p class="card-copy">
+              No hay una forma correcta de sentir. Si te sirve, tómate un momento para notarlo.
+            </p>
+            <a class="primary-link" routerLink="/registro-emocional">
+              Registrar ahora
+              <span aria-hidden="true">→</span>
+            </a>
+          }
+        </section>
+
+        <section class="summary-card balance-card" aria-labelledby="balance-heading">
+          <div class="summary-card-heading">
+            <div>
+              <p class="card-eyebrow">OBSERVA A TU RITMO</p>
+              <h2 id="balance-heading">Áreas de bienestar</h2>
+            </div>
+            <span class="balance-icon" aria-hidden="true">✧</span>
+          </div>
+          <p class="card-copy">
+            Cada eje muestra menciones relacionadas en tus check-ins; no es una puntuación ni un diagnóstico.
+          </p>
+          <div class="radar-chart">
+            <svg
+              viewBox="0 0 240 240"
+              role="img"
+              aria-labelledby="radar-title radar-description"
+            >
+              <title id="radar-title">Temas mencionados en tus registros</title>
+              <desc id="radar-description">
+                Gráfico radial interactivo de calma mental, energía física, manejo del estrés y conexión y apoyo.
+              </desc>
+              @for (grid of balanceGridPoints; track grid) {
+                <polygon class="radar-grid" [attr.points]="grid"></polygon>
+              }
+              @for (axis of balanceAxes(); track axis.id) {
+                <line
+                  class="radar-spoke"
+                  x1="120"
+                  y1="120"
+                  [attr.x2]="axis.x"
+                  [attr.y2]="axis.y"
+                ></line>
+              }
+              <polygon
+                class="radar-value"
+                [attr.points]="balancePolygonPoints()"
+              ></polygon>
+              @for (axis of balanceAxes(); track axis.id) {
+                <circle
+                  class="radar-value-point"
+                  [attr.cx]="120 + (axis.x - 120) * axis.value / 100"
+                  [attr.cy]="120 + (axis.y - 120) * axis.value / 100"
+                  r="4"
+                ></circle>
+                <circle
+                  class="radar-hit-area"
+                  [class.axis-active]="selectedAxis() === axis.id"
+                  [attr.cx]="axis.x"
+                  [attr.cy]="axis.y"
+                  r="17"
+                  tabindex="0"
+                  role="button"
+                  [attr.aria-label]="axis.label + ': ' + axis.count + ' menciones. Ver detalle.'"
+                  [attr.aria-pressed]="selectedAxis() === axis.id"
+                  (click)="selectAxis(axis.id)"
+                  (keydown.enter)="selectAxis(axis.id)"
+                  (keydown.space)="$event.preventDefault(); selectAxis(axis.id)"
+                ></circle>
+              }
+            </svg>
+          </div>
+          <div class="axis-selector" aria-label="Áreas del gráfico">
+            @for (axis of balanceAxes(); track axis.id) {
+              <button
+                type="button"
+                [class.selected]="selectedAxis() === axis.id"
+                [attr.aria-pressed]="selectedAxis() === axis.id"
+                (click)="selectAxis(axis.id)"
+              >
+                <span>{{ axis.label }}</span>
+                <strong>{{ axis.count }}</strong>
+              </button>
+            }
+          </div>
+          @if (selectedBalanceAxis(); as axis) {
+            <p class="axis-description" aria-live="polite">
+              @if (axis.id === 'energy') {
+                Se encontraron {{ axis.count }}
+                {{ axis.count === 1 ? 'nota con palabras asociadas' : 'notas con palabras asociadas' }}
+                a energía o cansancio entre los registros cargados.
+              } @else if (axis.count) {
+                “{{ axis.label }}” aparece {{ axis.count }}
+                {{ axis.count === 1 ? 'mención' : 'menciones' }} en los registros de este período.
+              } @else {
+                Aún no hay menciones de “{{ axis.label }}” en este período.
+              }
+            </p>
+          }
+          <p class="data-disclaimer">
+            La energía se observa en las notas cargadas. Las prácticas no se contabilizan como actividad.
+          </p>
+        </section>
+
+        <section class="summary-card trend-card" aria-labelledby="trend-heading">
+          <div class="summary-card-heading">
+            <div>
+              <p class="card-eyebrow">TUS REGISTROS</p>
+              <h2 id="trend-heading">Tendencia emocional</h2>
+            </div>
+            <span class="record-count" aria-label="Registros en el período">
+              {{ summaryRecordCount() }}
+            </span>
+          </div>
+          <div class="period-selector" role="group" aria-label="Período del resumen">
+            <button
+              type="button"
+              [class.active]="selectedPeriod() === 'week'"
+              [attr.aria-pressed]="selectedPeriod() === 'week'"
+              (click)="selectPeriod('week')"
+            >
+              Semana
+            </button>
+            <button
+              type="button"
+              [class.active]="selectedPeriod() === 'month'"
+              [attr.aria-pressed]="selectedPeriod() === 'month'"
+              (click)="selectPeriod('month')"
+            >
+              Mes
+            </button>
+            <button
+              type="button"
+              [class.active]="selectedPeriod() === 'year'"
+              [attr.aria-pressed]="selectedPeriod() === 'year'"
+              (click)="selectPeriod('year')"
+            >
+              Año
+            </button>
+          </div>
+          @if (patternsLoading() && !guestView()) {
+            <p class="loading-state" role="status">Actualizando tu resumen…</p>
+          } @else if (patternsError() && !guestView()) {
+            <div class="inline-error">
+              <p role="alert">{{ patternsError() }}</p>
+              <button type="button" class="text-link" (click)="loadPatterns()">Reintentar</button>
+            </div>
+          } @else {
+            <div
+              class="mood-distribution"
+              [class.is-empty]="summaryRecordCount() === 0"
+              role="img"
+              [attr.aria-label]="moodDistributionLabel()"
+            >
+              @for (item of summaryMoodCounts(); track item.id) {
+                <span
+                  [style.flex-grow]="item.count || 0.12"
+                  [style.background-color]="summaryRecordCount() ? item.color : '#e5e0e9'"
+                ></span>
+              }
+            </div>
+            <ul class="mood-legend" aria-label="Distribución de estados">
+              @for (item of summaryMoodCounts(); track item.id) {
+                <li>
+                  <span class="legend-dot" [style.background-color]="item.color"></span>
+                  <span>{{ item.label }}</span>
+                  <strong>{{ item.count }}</strong>
+                </li>
+              }
+            </ul>
+            <div class="frequent-emotions">
+              <h3>Emociones frecuentes</h3>
+              @if (summaryEmotionCounts().length) {
+                <div class="emotion-chips">
+                  @for (emotion of summaryEmotionCounts(); track emotion.id) {
+                    <span>{{ emotion.label }} <strong>{{ emotion.count }}</strong></span>
+                  }
+                </div>
+              } @else {
+                <p>Aún no hay emociones registradas en este período.</p>
+              }
+            </div>
+            @if (summaryRecordCount() === 0) {
+              <div class="preview-note">
+                <div class="preview-bars" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <p>
+                  Cuando registres tus primeros estados, aquí podrás observar tus tendencias.
+                </p>
+                <small>Vista ilustrativa · no representa datos personales</small>
+              </div>
+            }
+          }
+          @if (guestView()) {
+            <p class="data-disclaimer">
+              Tus registros de invitado se guardan solo durante esta sesión en este dispositivo.
+            </p>
+          }
+        </section>
       </section>
     } @else {
-      <section class="history-section" aria-labelledby="history-heading">
+      <section
+        class="history-section"
+        id="history-panel"
+        role="tabpanel"
+        aria-labelledby="history-tab"
+      >
         <div class="section-title">
           <div>
-            <h2 id="history-heading">Tu historial</h2>
-            <p>Elige un período para revisar tus registros.</p>
+            <h2>Tu historial</h2>
+            <p>
+              @if (guestView()) {
+                Check-ins realizados durante esta sesión.
+              } @else {
+                Revisa tus registros guardados en tu cuenta.
+              }
+            </p>
           </div>
           <span class="record-count" aria-label="Registros en el período">
             {{ pagination().total }}
@@ -63,93 +361,36 @@
           </button>
         </div>
 
-        <section class="patterns-section" aria-labelledby="patterns-heading">
-          <button
-            type="button"
-            class="patterns-toggle"
-            [attr.aria-expanded]="patternsOpen()"
-            aria-controls="emotional-patterns"
-            (click)="togglePatterns()"
-          >
-            <span>
-              <span class="patterns-title" id="patterns-heading">Patrones emocionales</span>
-              <span class="patterns-description">Tendencias descriptivas de tu historial</span>
-            </span>
-            <span aria-hidden="true">{{ patternsOpen() ? '−' : '+' }}</span>
-          </button>
-
-          @if (patternsOpen()) {
-            <div id="emotional-patterns" class="patterns-content">
-              @if (patternsLoading()) {
-                <p role="status">Revisando tus registros del período…</p>
-              } @else if (patternsError()) {
-                <p role="alert">{{ patternsError() }}</p>
-                <ion-button fill="outline" (click)="loadPatterns()">Reintentar</ion-button>
-              } @else if (patterns(); as summary) {
-                <p class="patterns-disclaimer">
-                  Este resumen solo describe frecuencias de tus registros. No es
-                  un diagnóstico ni una evaluación clínica.
-                </p>
-                @if (summary.recordCount === 0) {
-                  <p>Aún no hay registros suficientes para mostrar tendencias.</p>
-                } @else {
-                  <p>{{ summary.recordCount }} registros en este período.</p>
-                  @if (patternMoodCounts().length) {
-                    <h3>Estados registrados</h3>
-                    <ul>
-                      @for (item of patternMoodCounts(); track item.label) {
-                        <li>{{ item.label }}: {{ item.count }}</li>
-                      }
-                    </ul>
-                  }
-                  @if (patternEmotionCounts().length) {
-                    <h3>Emociones frecuentes</h3>
-                    <ul>
-                      @for (item of patternEmotionCounts(); track item.label) {
-                        <li>{{ item.label }}: {{ item.count }}</li>
-                      }
-                    </ul>
-                  }
-                  @if (summary.hasTemporalComparison) {
-                    <h3>Registros por tramo</h3>
-                    <ul>
-                      @for (bucket of patternBuckets(); track bucket.startDate) {
-                        <li>
-                          {{ bucket.startDate }}: {{ bucket.recordCount }} registros
-                          @if (bucket.moodSummary) { ({{ bucket.moodSummary }}) }
-                        </li>
-                      }
-                    </ul>
-                  } @else {
-                    <p>Aún no hay registros en distintos días para comparar períodos.</p>
-                  }
-                }
-              }
-            </div>
-          }
-        </section>
-
-        @if (!pagination().total) {
-          <section class="empty-state" aria-labelledby="empty-heading">
-            <span class="empty-icon" aria-hidden="true">♡</span>
-            <h2 id="empty-heading">Tu historial comienza aquí</h2>
-            <p>
-              Cuando guardes un registro emocional, aparecerá en esta sección.
-            </p>
-            <ion-button routerLink="/registro-emocional" expand="block">
-              Registrar cómo me siento
-            </ion-button>
+        @if (loading()) {
+          <p class="loading-state" role="status" aria-live="polite">
+            Cargando tu historial emocional…
+          </p>
+        } @else if (loadError() && !guestView()) {
+          <section class="empty-state error-state" aria-labelledby="error-heading">
+            <span class="empty-icon" aria-hidden="true">!</span>
+            <h2 id="error-heading">No pudimos cargar tu historial</h2>
+            <p role="alert">{{ loadError() }}</p>
+            <ion-button expand="block" (click)="loadRecords()">Reintentar</ion-button>
           </section>
         } @else if (!filteredRecords().length) {
-          <section class="empty-state period-empty" aria-live="polite">
-            <h2>Aún no hay registros en este período</h2>
+          <section class="empty-state" aria-labelledby="empty-heading">
+            <span class="empty-icon" aria-hidden="true">♡</span>
+            <h2 id="empty-heading">
+              {{ pagination().total ? 'Aún no hay registros en este período' : 'Tu historial comienza aquí' }}
+            </h2>
             <p>
-              Tus registros de otros períodos siguen disponibles. Puedes cambiar
-              el filtro o crear un registro nuevo.
+              @if (guestView()) {
+                Cuando hagas un check-in durante esta sesión, aparecerá aquí.
+              } @else if (pagination().total) {
+                Puedes cambiar el filtro o crear un registro nuevo.
+              } @else {
+                Cuando guardes un registro emocional, aparecerá en esta sección.
+              }
             </p>
-            <ion-button routerLink="/registro-emocional" expand="block" fill="outline">
-              Registrar cómo me siento
-            </ion-button>
+            <a class="primary-link" routerLink="/registro-emocional">
+              {{ pagination().total ? 'Registrar ahora' : 'Hacer un check-in' }}
+              <span aria-hidden="true">→</span>
+            </a>
           </section>
         } @else {
           <section class="record-list" aria-label="Historial emocional">
@@ -210,4 +451,19 @@
       </section>
     }
   </main>
+
+  <ion-fab
+    slot="fixed"
+    vertical="bottom"
+    horizontal="end"
+    class="quick-entry-fab"
+  >
+    <ion-fab-button
+      routerLink="/registro-emocional"
+      aria-label="Crear un registro emocional"
+      title="Registrar cómo te sientes"
+    >
+      <ion-icon name="add" aria-hidden="true"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

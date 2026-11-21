@@ -16,6 +16,8 @@ import {
 } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 
+import { OfficialSupportResourcesComponent } from '../../shared/official-support-resources.component';
+
 import {
   ResourceApiService,
   ResourceCategoryId,
@@ -48,6 +50,7 @@ const categoryLabels: Record<ResourceCategoryId, string> = {
     IonItem,
     IonLabel,
     IonSpinner,
+    OfficialSupportResourcesComponent,
   ],
 })
 export class ResourcesPage {

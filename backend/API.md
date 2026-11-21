@@ -138,7 +138,7 @@ El éxito responde `200`; un token inválido, vencido, usado o consumido concurr
 
 ## Registros emocionales
 
-Todas las rutas requieren sesión. `moodId` acepta `muy-bien`, `bien`, `mas-o-menos`, `mal` o `muy-mal`. `emotionIds` requiere entre 1 y 8 valores distintos de `tristeza`, `ansiedad`, `miedo`, `enojo`, `soledad`, `calma`, `esperanza` y `otra`. `note` y `otherEmotion` son opcionales, texto de hasta 500 caracteres. Si se selecciona `otra`, `otherEmotion` debe tener contenido; si no, debe estar vacío.
+Todas las rutas requieren sesión. `moodId` acepta `muy-bien`, `bien`, `mas-o-menos`, `mal` o `muy-mal`. `emotionIds` acepta entre 0 y 8 valores distintos de `tristeza`, `ansiedad`, `miedo`, `enojo`, `soledad`, `calma`, `esperanza` y `otra`; un arreglo vacío permite registrar un check-in rápido de un solo toque. `note` y `otherEmotion` son opcionales, texto de hasta 500 caracteres. Si se selecciona `otra`, `otherEmotion` debe tener contenido; si no, debe estar vacío.
 
 ### Crear
 

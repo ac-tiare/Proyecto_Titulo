@@ -25,7 +25,7 @@ export type EmotionId = (typeof emotionValues)[number];
 export const createEmotionSchema = z
   .object({
     moodId: z.enum(moodValues),
-    emotionIds: z.array(z.enum(emotionValues)).min(1).max(emotionValues.length),
+    emotionIds: z.array(z.enum(emotionValues)).max(emotionValues.length),
     note: z.string().max(500).default(''),
     otherEmotion: z.string().max(500).default(''),
     dateTimestamp: z.coerce.number().int().positive().optional(),

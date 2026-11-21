@@ -4,8 +4,14 @@ import { IonButton, IonContent, IonIcon } from '@ionic/angular';
 import { finalize } from 'rxjs';
 
 import { apiErrorMessage } from '../../core/api/api-error';
-import { SafetyPlan, SafetyPlanRequest } from '../../core/api/api.models';
+import {
+  SafetyPlan,
+  SafetyPlanRequest,
+  TrustedContact,
+} from '../../core/api/api.models';
 import { SafetyPlanApiService } from '../../core/api/safety-plan-api.service';
+import { TrustedContactApiService } from '../../core/api/trusted-contact-api.service';
+import { PhoneIntentService } from '../../core/phone-intent.service';
 
 export type SafetyPlanSectionId =
   | 'warning-signs'
@@ -28,6 +34,8 @@ interface SafetyPlanSection {
 })
 export class SafetyPlanPage {
   private readonly safetyPlanApi = inject(SafetyPlanApiService);
+  private readonly trustedContactApi = inject(TrustedContactApiService);
+  private readonly phoneIntent = inject(PhoneIntentService);
 
   readonly sections: readonly SafetyPlanSection[] = [
     {
@@ -74,9 +82,30 @@ export class SafetyPlanPage {
   readonly loadError = signal('');
   readonly saveError = signal('');
   readonly saveMessage = signal('');
+  readonly trustedContacts = signal<readonly TrustedContact[]>([]);
+  readonly contactsLoading = signal(false);
+  readonly contactsError = signal('');
 
   ionViewWillEnter(): void {
     this.loadPlan();
+    this.loadContacts();
+  }
+
+  loadContacts(): void {
+    this.contactsLoading.set(true);
+    this.contactsError.set('');
+    this.trustedContactApi
+      .list(1, 3)
+      .pipe(finalize(() => this.contactsLoading.set(false)))
+      .subscribe({
+        next: (result) => this.trustedContacts.set(result.items),
+        error: (error: unknown) =>
+          this.contactsError.set(apiErrorMessage(error)),
+      });
+  }
+
+  callContact(contact: TrustedContact): Promise<void> {
+    return this.phoneIntent.confirmAndOpen(contact.phone, 'call', contact.name);
   }
 
   loadPlan(): void {

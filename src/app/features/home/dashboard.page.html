@@ -1,0 +1,209 @@
+<ion-content class="dashboard-content">
+  <main class="dashboard-page">
+    <header class="page-heading">
+      <p class="eyebrow">UN MOMENTO PARA TI</p>
+      <h1>¿Cómo te sientes ahora mismo?</h1>
+      <p class="intro">
+        Puedes elegir una opción y seguir con tu trayecto a tu ritmo.
+      </p>
+    </header>
+
+    @if (sessionMessage()) {
+      <p class="session-message" role="status">{{ sessionMessage() }}</p>
+    }
+
+    <section class="check-in-card" aria-labelledby="check-in-heading">
+      <h2 id="check-in-heading">Elige un estado</h2>
+      <div class="mood-options" role="radiogroup" aria-labelledby="check-in-heading">
+        @for (mood of moods; track mood.id) {
+          <button
+            type="button"
+            class="mood-option"
+            [attr.data-mood]="mood.id"
+            [class.selected]="activeMoodId() === mood.id"
+            [attr.aria-checked]="activeMoodId() === mood.id"
+            [attr.aria-label]="mood.label"
+            role="radio"
+            (click)="selectMood(mood.id)"
+          >
+            <span class="mood-emoji" aria-hidden="true">{{ mood.emoji }}</span>
+            <span class="mood-label">{{ mood.label }}</span>
+          </button>
+        }
+      </div>
+      @if (checkInMessage()) {
+        <p class="check-in-message" role="status" aria-live="polite">
+          {{ checkInMessage() }}
+          @if (selectedRecord(); as record) {
+            <time>{{ record.date }}</time>
+          }
+        </p>
+        <a class="history-link" routerLink="/bienestar">
+          Ver mi historial emocional
+        </a>
+      }
+      @if (syncMessage()) {
+        <div
+          class="sync-message"
+          [class.pending]="checkIns.hasPendingRecords()"
+          role="status"
+        >
+          <p>{{ syncMessage() }}</p>
+          @if (checkIns.hasPendingRecords()) {
+            <ion-button fill="outline" size="small" (click)="retrySync()">
+              Reintentar sincronización
+            </ion-button>
+          }
+        </div>
+      }
+      @if (draftMoodId()) {
+        <section class="mood-word-picker" aria-labelledby="mood-words-heading">
+          <h3 id="mood-words-heading">¿Qué palabras describen mejor cómo te sientes?</h3>
+          <div class="mood-word-options" role="group" aria-labelledby="mood-words-heading">
+            @for (word of moodWords(); track word.label) {
+              <button
+                type="button"
+                class="mood-word"
+                [class.selected]="isMoodWordSelected(word.label)"
+                [attr.aria-pressed]="isMoodWordSelected(word.label)"
+                (click)="toggleMoodWord(word)"
+              >
+                {{ word.label }}
+              </button>
+            }
+          </div>
+          @if (isOtherWordSelected()) {
+            <ion-input
+              label="¿Qué otra emoción? (opcional)"
+              labelPlacement="floating"
+              fill="outline"
+              maxlength="500"
+              [value]="customOtherEmotion()"
+              (ionInput)="updateOtherEmotion($event.detail.value ?? '')"
+            ></ion-input>
+          }
+          <ion-textarea
+            class="note-input"
+            label="Nota (opcional)"
+            labelPlacement="floating"
+            fill="outline"
+            autoGrow="true"
+            maxlength="500"
+            [value]="note()"
+            (ionInput)="updateNote($event.detail.value ?? '')"
+          ></ion-textarea>
+          @if (draftMessage()) {
+            <p class="detail-message" role="alert">{{ draftMessage() }}</p>
+          } @else if (isOtherWordSelected() && !customOtherEmotion().trim()) {
+            <p class="save-hint">Describe la emoción marcada como “Otros”.</p>
+          } @else if (!selectedEmotionIds().length) {
+            <p class="save-hint">Elige al menos una emoción para continuar.</p>
+          }
+          <ion-button
+            class="save-button"
+            type="button"
+            expand="block"
+            [disabled]="!canSaveMood()"
+            (click)="saveMood()"
+          >
+            Guardar estado emocional
+          </ion-button>
+        </section>
+      }
+      @if (poorMoodSelected()) {
+        <aside class="immediate-support" aria-labelledby="pause-heading">
+          <div>
+            <p class="support-eyebrow">UN PASO PEQUEÑO</p>
+            <h3 id="pause-heading">¿Necesitas bajar la intensidad ahora?</h3>
+            <p>Guía visual y vibración de 60 segundos • Sin audífonos</p>
+          </div>
+          <ion-button routerLink="/apoyo/respirar" expand="block">
+            Iniciar pausa de respiración
+          </ion-button>
+        </aside>
+      }
+    </section>
+
+    <section class="daily-section" aria-labelledby="daily-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">A TU RITMO</p>
+          <h2 id="daily-heading">Para tu trayecto hoy</h2>
+        </div>
+      </div>
+      <nav class="practice-list" aria-label="Prácticas sugeridas para hoy">
+        @for (practice of practices; track practice.id) {
+          <a
+            class="practice-card"
+            [attr.data-tone]="practice.tone"
+            [routerLink]="practice.route"
+            [attr.aria-label]="practice.title + ', ' + practice.duration"
+          >
+            <span class="practice-illustration" aria-hidden="true">
+              <img
+                [src]="practice.illustration"
+                alt=""
+                aria-hidden="true"
+                decoding="async"
+              />
+            </span>
+            <span class="practice-copy">
+              <strong>{{ practice.title }}</strong>
+              <small>{{ practice.category }} · {{ practice.duration }}</small>
+            </span>
+            <span class="practice-trailing" aria-hidden="true">
+              <ion-icon class="practice-arrow" name="chevron-forward-outline"></ion-icon>
+            </span>
+          </a>
+        }
+      </nav>
+    </section>
+
+    <section class="explore-section" aria-labelledby="explore-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">HERRAMIENTAS BREVES</p>
+          <h2 id="explore-heading">Explora herramientas</h2>
+        </div>
+        <a routerLink="/explorar" class="text-link">Ver todas</a>
+      </div>
+      <div class="shortcut-carousel" role="list" aria-label="Herramientas por necesidad">
+        @for (shortcut of exploreShortcuts; track shortcut.title) {
+          <a
+            class="shortcut-card"
+            [attr.data-tone]="shortcut.tone"
+            role="listitem"
+            [routerLink]="shortcut.route"
+          >
+            <span class="shortcut-illustration" aria-hidden="true">
+              <img
+                [src]="shortcut.illustration"
+                alt=""
+                aria-hidden="true"
+                decoding="async"
+              />
+            </span>
+            <strong>{{ shortcut.title }}</strong>
+            <span>{{ shortcut.description }}</span>
+            <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+          </a>
+        }
+      </div>
+    </section>
+
+    <a class="guidance-card" routerLink="/necesito-ayuda">
+      <span class="guidance-icon" aria-hidden="true">
+        <ion-icon name="help-circle-outline"></ion-icon>
+      </span>
+      <span>
+        <strong>¿Buscas ayuda presencial o líneas gratuitas?</strong>
+        <small>Encuentra orientación y apoyo cuando lo necesites.</small>
+      </span>
+      <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+    </a>
+
+    <p class="offline-note">
+      Estas prácticas y el check-in de esta sesión están disponibles sin conexión.
+    </p>
+  </main>
+</ion-content>

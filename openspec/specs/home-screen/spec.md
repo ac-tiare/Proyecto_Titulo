@@ -2,42 +2,88 @@
 
 ## Purpose
 
-La pantalla Inicio ofrece una entrada clara y acogedora al registro emocional y a las herramientas de apoyo de CONTIGO, con una presentación accesible y adaptable a dispositivos móviles.
+Inicio ofrece un check-in emocional inmediato, prácticas breves para el trayecto
+y accesos a herramientas de apoyo. Explorar reúne ejercicios locales y recursos
+oficiales.
 
 ## Requirements
 
-### Requirement: Inicio presenta la bienvenida y la selección emocional
-Inicio MUST presentar la bienvenida de la referencia y cinco estados emocionales identificables: «Muy bien», «Bien», «Regular», «Mal» y «Muy mal». Elegir un estado MUST abrir Registro Emocional con la selección previamente aplicada y MUST NOT crear ni guardar un registro antes de que la persona confirme «Guardar registro» en esa pantalla.
+### Requirement: La navegación principal contiene cuatro pestañas
+La navegación principal MUST mostrar exactamente Inicio, Explorar, Mi Plan y
+Bienestar. Mi Plan MUST reunir el plan de seguridad y un resumen accionable de
+la Red de Apoyo. Las rutas anteriores de recursos, red de apoyo, plan y avisos
+MUST permanecer accesibles.
 
-#### Scenario: La persona elige un estado emocional
-- **WHEN** la persona activa uno de los cinco estados en Inicio
-- **THEN** la aplicación conserva temporalmente la selección y navega a Registro Emocional con ese estado seleccionado, sin crear un registro
+#### Scenario: La persona navega por las vistas principales
+- **WHEN** la aplicación muestra la barra principal
+- **THEN** aparecen exactamente las cuatro pestañas y las vistas secundarias siguen disponibles desde enlaces contextuales
 
-#### Scenario: La persona cambia la selección inicial
-- **WHEN** la pantalla Registro Emocional se abre con un estado preseleccionado y la persona elige otro estado
-- **THEN** el nuevo estado queda seleccionado para el borrador del registro y todavía no se crea un registro
+### Requirement: Inicio registra el estado emocional en un toque
+Inicio MUST mostrar los cinco estados emocionales. Elegir uno MUST registrar el
+check-in inmediatamente, sin exigir emociones ni una nota. Las cuentas
+autenticadas MUST sincronizarlo con la API cuando haya conexión y las personas
+invitadas MUST conservarlo solo en memoria durante la sesión.
 
-### Requirement: Inicio ofrece un mensaje visual de acompañamiento
-Inicio MUST incluir una tarjeta de acompañamiento cálida y no diagnóstica, con texto legible y un elemento visual decorativo accesible.
+#### Scenario: La persona invitada registra su estado
+- **WHEN** selecciona uno de los cinco estados en Inicio
+- **THEN** el check-in queda disponible en la sesión actual sin crear datos de cuenta
 
-#### Scenario: Se muestra el acompañamiento en Inicio
-- **WHEN** la persona abre Inicio
-- **THEN** encuentra un mensaje de apoyo que no diagnostica, no predice crisis y no sustituye los canales de ayuda
+#### Scenario: La cuenta autenticada registra su estado
+- **WHEN** selecciona uno de los cinco estados en Inicio con sesión y conexión
+- **THEN** la aplicación crea el registro remoto con el estado seleccionado y sin exigir emociones ni nota
 
-### Requirement: Inicio conserva sus accesos a herramientas y ayuda
-Inicio MUST ofrecer accesos distinguibles a Mi Plan de Seguridad, Mi Red de Apoyo, Información y recursos y Necesito ayuda, conservando las rutas y acciones actuales.
+#### Scenario: La conexión no está disponible
+- **WHEN** la persona registra su estado sin conexión
+- **THEN** el check-in permanece disponible durante la sesión y la interfaz comunica que no se sincronizó
 
-#### Scenario: La persona activa un acceso de apoyo
-- **WHEN** la persona activa cualquiera de los accesos de herramientas o ayuda
-- **THEN** la aplicación navega al destino existente correspondiente
+### Requirement: Inicio ofrece detalles opcionales y apoyo contextual
+Después del check-in, Inicio MUST permitir expandir u ocultar emociones y nota
+opcionales. Si el estado seleccionado es Mal o Muy mal, MUST ofrecer una pausa
+breve de acceso directo.
 
-### Requirement: El contenido de Inicio es accesible y adaptable
-El contenido de Inicio MUST mantener texto legible, controles operables con teclado y áreas táctiles cómodas, y adaptarse desde 320 píxeles de ancho sin desbordamiento horizontal. La cabecera y la navegación compartidas MUST permanecer sin cambios.
+#### Scenario: La persona amplía un check-in
+- **WHEN** abre «Agregar emociones o nota (opcional)»
+- **THEN** puede agregar detalles sin que sean requisito para registrar el estado
 
-#### Scenario: Inicio se muestra en una pantalla móvil estrecha
-- **WHEN** Inicio se visualiza a 320 píxeles de ancho
-- **THEN** su contenido permanece legible y operable sin desplazamiento horizontal
+#### Scenario: La persona elige un estado de malestar
+- **WHEN** selecciona Mal o Muy mal
+- **THEN** aparece un acceso directo a una práctica de pausa breve
 
-#### Scenario: Se recorre Inicio con teclado
-- **WHEN** la persona mueve el foco por los controles interactivos de Inicio
-- **THEN** cada control muestra un indicador de foco perceptible y conserva su acción
+### Requirement: Inicio propone microprácticas del trayecto
+Inicio MUST presentar entre dos y tres prácticas breves con categoría,
+duración, indicador pendiente/completada y apertura en un toque. La finalización
+MUST durar solo durante la sesión.
+
+#### Scenario: La persona termina una práctica
+- **WHEN** cierra una práctica sugerida
+- **THEN** Inicio marca esa práctica como completada durante la sesión actual
+
+### Requirement: Explorar ofrece ejercicios y ayuda oficial
+Explorar MUST presentar ejercicios visuales disponibles sin conexión y recursos
+oficiales claramente distinguidos como enlaces externos.
+
+#### Scenario: La persona abre una práctica sin conexión
+- **WHEN** abre un ejercicio local desde Explorar
+- **THEN** la guía se muestra sin solicitar datos al backend
+
+#### Scenario: La persona vuelve a la aplicación web sin conexión
+- **WHEN** vuelve a abrir la aplicación después de una visita inicial con conexión y de que se hayan precargado las vistas
+- **THEN** el service worker sirve las vistas y recursos estáticos de Inicio y Explorar desde caché
+
+### Requirement: La cabecera conserva los accesos globales
+Las vistas principales MUST conservar en la cabecera el acceso a Perfil y la
+ayuda urgente.
+
+#### Scenario: La persona necesita ayuda desde una pestaña
+- **WHEN** se encuentra en cualquiera de las cuatro vistas principales
+- **THEN** puede acceder a Perfil y a `/necesito-ayuda` desde la cabecera compartida
+
+### Requirement: La interfaz conserva la identidad visual y es accesible
+Las nuevas vistas MUST reutilizar la paleta, tipografía, iconos y tarjetas de
+CONTIGO. Los controles MUST ser operables con teclado y tener etiquetas
+accesibles; el contenido MUST adaptarse a pantallas móviles estrechas sin
+desbordamiento horizontal.
+
+#### Scenario: Se usan Inicio y Explorar en una pantalla móvil
+- **WHEN** las vistas se muestran en un dispositivo móvil
+- **THEN** sus controles permanecen legibles, táctiles y accesibles sin cambiar la identidad visual de CONTIGO

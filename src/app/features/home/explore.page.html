@@ -1,0 +1,120 @@
+<ion-content class="explore-content">
+  <main class="explore-page">
+    <header class="page-heading">
+      <p class="eyebrow">HERRAMIENTAS PARA TU TRAYECTO</p>
+      <h1>Explorar</h1>
+      <p class="intro">
+        Prácticas breves, visuales y disponibles sin conexión.
+      </p>
+    </header>
+
+    <nav class="filter-scroller" aria-label="Filtrar prácticas por intención">
+      @for (filter of filters; track filter.id) {
+        <button
+          type="button"
+          class="filter-chip"
+          [class.active]="activeFilter() === filter.id"
+          [attr.aria-pressed]="activeFilter() === filter.id"
+          (click)="selectFilter(filter.id)"
+        >
+          {{ filter.label }}
+        </button>
+      }
+    </nav>
+
+    @if (showFeaturedPractice()) {
+      <section class="featured-card" aria-labelledby="featured-heading">
+        <div class="featured-copy">
+          <p class="featured-eyebrow">PARA ESTE MOMENTO</p>
+          <h2 id="featured-heading">Protocolo de calma rápida</h2>
+          <p>60 seg · Sin audífonos · Sigue el ritmo que te acomode.</p>
+          <a
+            class="featured-action"
+            routerLink="/apoyo/calmarme"
+            [queryParams]="{ returnTo: 'explorar' }"
+          >
+            Empezar una pausa
+            <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+          </a>
+        </div>
+        <img
+          class="featured-illustration"
+          src="assets/illustrations/anxiety-calm.svg"
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+        />
+      </section>
+    }
+
+    <section class="exercise-section" aria-labelledby="exercise-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">A TU RITMO</p>
+          <h2 id="exercise-heading">Elige una práctica</h2>
+        </div>
+        <span class="exercise-count" aria-label="Prácticas disponibles">
+          {{ filteredExercises().length }}
+        </span>
+      </div>
+      <div class="exercise-list">
+        @for (exercise of filteredExercises(); track exercise.route) {
+          <a
+            class="exercise-card"
+            [attr.data-category]="exercise.category"
+            [routerLink]="exercise.route"
+            [queryParams]="{ returnTo: 'explorar' }"
+            [attr.aria-label]="exercise.title + ', ' + exercise.modality"
+          >
+            <span class="exercise-art">
+              <img
+                [src]="exercise.illustration"
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+              />
+              <span class="exercise-duration">{{ exercise.modality }}</span>
+            </span>
+            <span class="exercise-copy">
+              <strong>{{ exercise.title }}</strong>
+              <small>{{ exercise.description }}</small>
+              <span class="offline-label">
+                <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+                Incluida en la app
+              </span>
+            </span>
+            <ion-icon
+              class="exercise-arrow"
+              name="chevron-forward-outline"
+              aria-hidden="true"
+            ></ion-icon>
+          </a>
+        }
+      </div>
+    </section>
+
+    <section class="official-section" aria-labelledby="official-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ORIENTACIÓN</p>
+          <h2 id="official-heading">Recursos oficiales de ayuda</h2>
+        </div>
+        <a routerLink="/recursos" class="text-link">Ver recursos</a>
+      </div>
+      <app-official-support-resources />
+      <a class="urgent-help" routerLink="/necesito-ayuda">
+        <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        <span>
+          <strong>Necesito ayuda ahora</strong>
+          <small>Encuentra opciones de orientación y apoyo urgente.</small>
+        </span>
+        <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+      </a>
+    </section>
+
+    <p class="offline-note">
+      Los ejercicios están incluidos en la app. Los sitios oficiales necesitan conexión.
+    </p>
+  </main>
+</ion-content>

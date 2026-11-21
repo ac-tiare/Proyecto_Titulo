@@ -52,7 +52,7 @@ describe('LoginPage', () => {
     );
 
     expect(content).toContain('Bienvenido/a');
-    expect(content).toContain('Tu espacio de apoyo y bienestar');
+    expect(content).toContain('Inicia sesión para ver tu perfil personal');
     expect(content).not.toContain('Modo demostración');
     expect(email.getAttribute('label')).toBe('Correo electrónico');
     expect(password.getAttribute('label')).toBe('Contraseña');
@@ -161,6 +161,18 @@ describe('LoginPage', () => {
 
     expect(actions[0].getAttribute('routerLink')).toBe('/forgot-password');
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('continues as a guest to the public welcome screen', async () => {
+    await configure();
+
+    const fixture = TestBed.createComponent(LoginPage);
+    fixture.detectChanges();
+
+    const guestLink = fixture.nativeElement.querySelector(
+      '.guest-link',
+    ) as HTMLAnchorElement;
+    expect(guestLink.getAttribute('href')).toBe('/bienvenida');
   });
 
   it('navigates to Crear Cuenta from Login', async () => {

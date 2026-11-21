@@ -1,24 +1,53 @@
 import { authGuard } from './core/api/auth.guard';
 import { routes } from './app.routes';
+import { DashboardPage } from './features/home/dashboard.page';
+import { ExplorePage } from './features/home/explore.page';
 
 describe('application routes', () => {
   const shellRoute = routes.find((route) => route.path === '' && route.children);
   const childRoutes = shellRoute?.children ?? [];
 
-  it('opens Login by default outside the application shell', () => {
+  it('opens the public Inicio dashboard by default', async () => {
     expect(routes).toContainEqual(
       expect.objectContaining({
-        path: 'login',
+        path: '',
+        redirectTo: 'inicio',
+        pathMatch: 'full',
+      }),
+    );
+    expect(routes).toContainEqual(
+      expect.objectContaining({
+        path: 'bienvenida',
+        loadComponent: expect.any(Function),
+      }),
+    );
+    expect(shellRoute?.canActivate).toBeUndefined();
+    const inicio = childRoutes.find((route) => route.path === 'inicio');
+    const explorar = childRoutes.find((route) => route.path === 'explorar');
+    expect(await inicio?.loadComponent?.()).toBe(DashboardPage);
+    expect(await explorar?.loadComponent?.()).toBe(ExplorePage);
+  });
+
+  it('provides standalone guest support and emergency routes', () => {
+    expect(routes).toContainEqual(
+      expect.objectContaining({
+        path: 'bienvenida',
         loadComponent: expect.any(Function),
       }),
     );
     expect(routes).toContainEqual(
       expect.objectContaining({
-        path: '',
-        redirectTo: 'login',
-        pathMatch: 'full',
+        path: 'apoyo/:activity',
+        loadComponent: expect.any(Function),
       }),
     );
+    expect(routes).toContainEqual(
+      expect.objectContaining({
+        path: 'necesito-ayuda',
+        loadComponent: expect.any(Function),
+      }),
+    );
+    expect(childRoutes.map((route) => route.path)).not.toContain('necesito-ayuda');
   });
 
   it('provides the standalone Crear Cuenta route', () => {
@@ -44,16 +73,17 @@ describe('application routes', () => {
     );
   });
 
-  it('provides a route for every initial screen', () => {
+  it('keeps the existing subviews accessible behind authentication when needed', () => {
     expect(childRoutes.map((route) => route.path)).toEqual(
       expect.arrayContaining([
         'inicio',
+        'explorar',
         'bienestar',
         'registro-emocional',
         'mi-bienestar',
+        'mi-plan',
         'plan-seguridad',
         'red-apoyo',
-        'necesito-ayuda',
         'informacion-recursos',
         'recursos',
         'recursos-informacion',
@@ -61,17 +91,30 @@ describe('application routes', () => {
         'perfil',
       ]),
     );
+    expect(childRoutes.find((route) => route.path === 'bienestar')?.canActivate)
+      .toBeUndefined();
+    expect(
+      childRoutes.find((route) => route.path === 'registro-emocional')?.canActivate,
+    ).toBeUndefined();
+    for (const path of [
+      'mi-bienestar',
+      'mi-plan',
+      'plan-seguridad',
+      'red-apoyo',
+      'configuracion-notificaciones',
+      'perfil',
+    ]) {
+      expect(childRoutes.find((route) => route.path === path)?.canActivate).toContain(
+        authGuard,
+      );
+    }
   });
 
-  it('protects feature routes behind the authenticated session guard', () => {
-    expect(shellRoute?.canActivate).toContain(authGuard);
-  });
-
-  it('redirects unknown routes to Login', () => {
+  it('redirects unknown routes to Inicio', () => {
     expect(routes.at(-1)).toEqual(
       expect.objectContaining({
         path: '**',
-        redirectTo: 'login',
+        redirectTo: 'inicio',
       }),
     );
   });

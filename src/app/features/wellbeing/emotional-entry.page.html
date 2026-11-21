@@ -4,6 +4,14 @@
       <p class="eyebrow">BIENESTAR EMOCIONAL</p>
       <h1>Registro emocional</h1>
       <p class="intro">¿Cómo te sientes hoy?</p>
+      @if (guestMode()) {
+        <p class="session-note">
+          Este registro se conserva solo durante tu sesión en este dispositivo.
+        </p>
+      }
+      @if (sessionMessage()) {
+        <p class="session-message" role="status">{{ sessionMessage() }}</p>
+      }
     </header>
 
     <section class="form-card" aria-labelledby="mood-heading">
@@ -81,7 +89,7 @@
       class="save-button"
       expand="block"
       type="button"
-      [disabled]="(draft()?.saved ?? false) || isSaving()"
+      [disabled]="!sessionReady() || (draft()?.saved ?? false) || isSaving()"
       (click)="save()"
     >
       {{ isSaving() ? 'Guardando…' : 'Guardar registro' }}
@@ -89,6 +97,11 @@
 
     @if (saveMessage()) {
       <p class="save-message" role="status" aria-live="polite">{{ saveMessage() }}</p>
+    }
+    @if (draft()?.saved) {
+      <ion-button routerLink="/bienestar" fill="clear">
+        Volver a Mi Bienestar
+      </ion-button>
     }
   </main>
 </ion-content>

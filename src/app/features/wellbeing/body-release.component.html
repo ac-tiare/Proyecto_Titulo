@@ -1,0 +1,66 @@
+<section class="exercise-card body-tool" aria-labelledby="body-heading">
+  <p class="eyebrow">GUÍA VISUAL Y SILENCIOSA · 90 SEG</p>
+  <h1 id="body-heading">Soltar tensión del cuerpo</h1>
+  <p class="body-intro">
+    Desde tu asiento, prueba una indicación a la vez. Puedes parar o saltarte cualquier movimiento.
+  </p>
+
+  <div class="body-illustration" aria-hidden="true">
+    <img src="assets/illustrations/body-release.svg" alt="" />
+  </div>
+
+  <div
+    class="body-progress"
+    role="progressbar"
+    aria-label="Progreso de la pausa corporal"
+    [attr.aria-valuemin]="0"
+    [attr.aria-valuemax]="100"
+    [attr.aria-valuenow]="progress()"
+  >
+    <span [style.width.%]="progress()"></span>
+  </div>
+
+  @if (remainingSeconds() > 0) {
+    <div class="body-cue" aria-live="polite" aria-atomic="true">
+      <p class="phase-label">
+        @switch (phase()) {
+          @case ('shoulders') { HOMBROS · 30 SEG }
+          @case ('hands') { MANOS · 30 SEG }
+          @case ('jaw') { MANDÍBULA · 30 SEG }
+        }
+      </p>
+      <h2>{{ phaseCopy().title }}</h2>
+      <p>{{ phaseCopy().instruction }}</p>
+    </div>
+    <p class="body-timer" role="timer" aria-live="off">{{ timerLabel() }} restantes</p>
+  } @else {
+    <p class="body-complete" role="status">
+      La pausa terminó. Quédate el tiempo que necesites.
+    </p>
+  }
+
+  <button class="body-primary" type="button" (click)="toggleTimer()">
+    @if (remainingSeconds() === 0) {
+      Repetir la pausa
+    } @else if (paused()) {
+      Continuar la pausa
+    } @else if (started()) {
+      Pausar
+    } @else {
+      Comenzar 90 segundos
+    }
+  </button>
+  <button
+    class="body-haptics"
+    type="button"
+    [attr.aria-pressed]="guestSession.vibrationEnabled()"
+    (click)="toggleHaptics()"
+  >
+    {{ guestSession.vibrationEnabled() ? 'Desactivar vibración opcional' : 'Activar vibración opcional' }}
+  </button>
+  @if (hapticsUnavailable()) {
+    <p class="body-note" role="status">
+      La vibración no está disponible. Puedes continuar con la guía visual.
+    </p>
+  }
+</section>

@@ -51,32 +51,28 @@
   <ion-router-outlet></ion-router-outlet>
   <ion-tab-bar slot="bottom" aria-label="Navegación principal">
     <ion-tab-button tab="inicio" href="/inicio" aria-label="Inicio">
-      <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
+      <span class="tab-icon-wrap" aria-hidden="true">
+        <ion-icon name="home-outline"></ion-icon>
+      </span>
       <ion-label>Inicio</ion-label>
     </ion-tab-button>
-    <ion-tab-button tab="bienestar" href="/bienestar" aria-label="Mi bienestar">
-      <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
-      <ion-label>Mi bienestar</ion-label>
+    <ion-tab-button tab="explorar" href="/explorar" aria-label="Explorar">
+      <span class="tab-icon-wrap" aria-hidden="true">
+        <ion-icon name="compass-outline"></ion-icon>
+      </span>
+      <ion-label>Explorar</ion-label>
     </ion-tab-button>
-    <ion-tab-button tab="plan-seguridad" href="/plan-seguridad" aria-label="Plan de seguridad">
-      <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
-      <ion-label>Plan</ion-label>
+    <ion-tab-button tab="mi-plan" href="/mi-plan" aria-label="Mi Plan">
+      <span class="tab-icon-wrap" aria-hidden="true">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+      </span>
+      <ion-label>Mi Plan</ion-label>
     </ion-tab-button>
-    <ion-tab-button tab="red-apoyo" href="/red-apoyo" aria-label="Red de apoyo">
-      <ion-icon name="people-outline" aria-hidden="true"></ion-icon>
-      <ion-label>Red de apoyo</ion-label>
-    </ion-tab-button>
-    <ion-tab-button tab="recursos" href="/recursos" aria-label="Recursos">
-      <ion-icon name="book-outline" aria-hidden="true"></ion-icon>
-      <ion-label>Recursos</ion-label>
-    </ion-tab-button>
-    <ion-tab-button
-      tab="configuracion-notificaciones"
-      href="/configuracion-notificaciones"
-      aria-label="Avisos"
-    >
-      <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
-      <ion-label>Avisos</ion-label>
+    <ion-tab-button tab="bienestar" href="/bienestar" aria-label="Bienestar">
+      <span class="tab-icon-wrap" aria-hidden="true">
+        <ion-icon name="heart-outline"></ion-icon>
+      </span>
+      <ion-label>Bienestar</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>

@@ -31,6 +31,11 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "contigo-sw.js",
+                "input": "src",
+                "output": "/"
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
@@ -48,7 +53,7 @@
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "6kb",
-                  "maximumError": "10kb"
+                  "maximumError": "15kb"
                 }
               ],
               "fileReplacements": [

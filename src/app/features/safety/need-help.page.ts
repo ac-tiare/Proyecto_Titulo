@@ -1,5 +1,6 @@
+import { Location } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonButton,
   IonCard,
@@ -8,7 +9,8 @@ import {
   IonCardTitle,
   IonContent,
 } from '@ionic/angular';
-import { PhoneIntentService } from '../../core/phone-intent.service';
+
+import { OfficialSupportResourcesComponent } from '../../shared/official-support-resources.component';
 
 @Component({
   selector: 'app-need-help',
@@ -21,25 +23,22 @@ import { PhoneIntentService } from '../../core/phone-intent.service';
     IonCardHeader,
     IonCardTitle,
     IonContent,
+    OfficialSupportResourcesComponent,
     RouterLink,
   ],
 })
 export class NeedHelpPage {
-  private readonly phoneIntent = inject(PhoneIntentService);
+  private readonly location = inject(Location);
+  private readonly router = inject(Router);
 
-  async callOfficialLine(): Promise<void> {
-    await this.phoneIntent.confirmAndOpen(
-      '*4141',
-      'call',
-      'Línea nacional de prevención del suicidio',
-    );
+  goBack(): void {
+    const navigationId = window.history.state?.navigationId;
+    if (typeof navigationId === 'number' && navigationId > 1) {
+      this.location.back();
+      return;
+    }
+
+    void this.router.navigateByUrl('/inicio');
   }
 
-  async callSaludResponde(): Promise<void> {
-    await this.phoneIntent.confirmAndOpen(
-      '600 360 7777',
-      'call',
-      'Salud Responde',
-    );
-  }
 }

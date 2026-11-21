@@ -99,13 +99,52 @@
 }
 
 .plan-card,
-.official-help {
+.official-help,
+.contacts-preview {
   background: #fff;
   border: 1px solid #d3e9eb;
   border-radius: 1.2rem;
   box-shadow: var(--app-card-shadow);
   min-width: 0;
   padding: 1rem;
+}
+
+.network-shortcut {
+  justify-self: start;
+  --border-color: #8db9a2;
+  --color: #155e49;
+}
+
+.trusted-contact-preview {
+  display: grid;
+  gap: 0.6rem;
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+
+  li {
+    align-items: center;
+    border-top: 1px solid #e1e9e6;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    padding-top: 0.6rem;
+  }
+
+  li > span {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  strong {
+    color: #20302c;
+    overflow-wrap: anywhere;
+  }
+
+  small {
+    color: #495851;
+  }
 }
 
 .card-heading {

@@ -30,22 +30,54 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'bienvenida',
+    loadComponent: () =>
+      import('./features/home/home.page').then((module) => module.HomePage),
+  },
+  {
+    path: 'apoyo/:activity',
+    loadComponent: () =>
+      import('./features/wellbeing/quick-support.page').then(
+        (module) => module.QuickSupportPage,
+      ),
+  },
+  {
+    path: 'necesito-ayuda',
+    loadComponent: () =>
+      import('./features/safety/need-help.page').then(
+        (module) => module.NeedHelpPage,
+      ),
+  },
+  {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'inicio',
     pathMatch: 'full',
   },
   {
     path: '',
-    canActivate: [authGuard],
     loadComponent: () =>
       import('./core/layout/main-tabs/main-tabs.component').then(
         (module) => module.MainTabsComponent,
       ),
     children: [
       {
+        path: '',
+        redirectTo: 'inicio',
+        pathMatch: 'full',
+      },
+      {
         path: 'inicio',
         loadComponent: () =>
-          import('./features/home/home.page').then((module) => module.HomePage),
+          import('./features/home/dashboard.page').then(
+            (module) => module.DashboardPage,
+          ),
+      },
+      {
+        path: 'explorar',
+        loadComponent: () =>
+          import('./features/home/explore.page').then(
+            (module) => module.ExplorePage,
+          ),
       },
       {
         path: 'bienestar',
@@ -63,13 +95,23 @@ export const routes: Routes = [
       },
       {
         path: 'mi-bienestar',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/wellbeing/emotional-entry.page').then(
             (module) => module.EmotionalEntryPage,
           ),
       },
       {
+        path: 'mi-plan',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/safety/safety-plan.page').then(
+            (module) => module.SafetyPlanPage,
+          ),
+      },
+      {
         path: 'plan-seguridad',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/safety/safety-plan.page').then(
             (module) => module.SafetyPlanPage,
@@ -77,16 +119,10 @@ export const routes: Routes = [
       },
       {
         path: 'red-apoyo',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/safety/support-network.page').then(
             (module) => module.SupportNetworkPage,
-          ),
-      },
-      {
-        path: 'necesito-ayuda',
-        loadComponent: () =>
-          import('./features/safety/need-help.page').then(
-            (module) => module.NeedHelpPage,
           ),
       },
       {
@@ -112,6 +148,7 @@ export const routes: Routes = [
       },
       {
         path: 'configuracion-notificaciones',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/settings/notifications.page').then(
             (module) => module.NotificationsPage,
@@ -119,6 +156,7 @@ export const routes: Routes = [
       },
       {
         path: 'perfil',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./features/profile/profile.page').then(
             (module) => module.ProfilePage,
@@ -128,6 +166,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'login',
+    redirectTo: 'inicio',
   },
 ];
